@@ -13,7 +13,12 @@ export default function QuoteDetails({ id, navigate }: { id: string; navigate: (
   async function download() {
     if (!quote || !brand) return
     setDownloading(true); setPdfError('')
-    try { const { downloadQuotePdf } = await import('../lib/quote-pdf'); downloadQuotePdf(quote, brand) }
+    try {
+      const latestBrand = await api<Branding>('/branding')
+      setBrand(latestBrand)
+      const { downloadQuotePdf } = await import('../lib/quote-pdf')
+      downloadQuotePdf(quote, latestBrand)
+    }
     catch { setPdfError('No se pudo generar el PDF. Revisa que el logo sea una imagen válida e intenta nuevamente.') }
     finally { setDownloading(false) }
   }
