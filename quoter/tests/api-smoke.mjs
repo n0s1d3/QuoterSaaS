@@ -52,3 +52,18 @@ const brandSave = await fetch(base + '/api/branding',{method:'PUT',headers:{'con
 assert.equal(brandSave.status,200);assert.equal((await call('/branding')).logo,logo)
 await fetch(base + '/api/branding',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(originalBrand)})
 console.log('Brand logo persistence and invalid status rejection passed')
+const editTarget = quotes[1]
+const updatedInput = { customerId: customers.find(c => c.name === 'María López').id, issueDate: '2026-10-12', expiryDate: '2026-10-30', notes: 'Edited quote', discount: 50, total: 999, items: [{description:'Replacement item',quantity:2,unitPrice:250,taxRate:12}] }
+async function edit(data, expected = 200, id = editTarget.id) {
+  const response = await fetch(base + '/api/quotes/' + id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(data)})
+  assert.equal(response.status,expected,await response.clone().text());return response.json()
+}
+await fetch(base + '/api/quotes/' + editTarget.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status:'sent'})})
+const edited = await edit(updatedInput)
+assert.equal(edited.quoteNumber,editTarget.quoteNumber);assert.equal(edited.status,'sent');assert.equal(edited.id,editTarget.id)
+assert.equal(edited.total,450);assert.equal(edited.tax,0);assert.equal(edited.items.length,1);assert.equal(edited.items[0].description,'Replacement item')
+assert.equal(edited.customer.id,updatedInput.customerId);assert.equal(edited.notes,'Edited quote');assert.equal(edited.expiryDate,'2026-10-30')
+await edit({...updatedInput,items:[]},400)
+assert.equal((await call('/quotes/'+editTarget.id)).total,450)
+await edit(updatedInput,404,'nonexistent')
+console.log('Quote editing passed: identity/status preserved, items replaced, totals recalculated, invalid update leaves data intact')

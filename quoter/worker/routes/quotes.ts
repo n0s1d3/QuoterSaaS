@@ -3,6 +3,7 @@ import { getQuote, summaryColumns } from '../db/quotes'
 import { createQuote } from '../services/quote-service'
 export async function quotes(request: Request, db: D1Database, org: string, id?: string) {
   if (id) {
+    if (request.method === 'PUT') return Response.json(await createQuote(db, org, await body(request), id))
     if (request.method === 'PATCH') {
       const data = await body(request)
       if (!['draft', 'sent', 'accepted', 'rejected'].includes(data.status as string)) throw new HttpError(400, 'Invalid status')

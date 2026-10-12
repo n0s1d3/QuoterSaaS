@@ -70,10 +70,14 @@ The UI was verified with Chromium: customer creation, quote builder live totals,
 - `worker/db`: organization/customer/quote queries.
 - `migrations`, `seed.sql`: D1 schema and stable demo records.
 
-Authentication, subscriptions, invoices, PDFs, editing and public sharing are outside this phase.
+Authentication, subscriptions, invoices, PDFs and public sharing are outside this phase.
 
 ## Simplified mobile workflow
 
 The builder starts with an inline new customer or lets you choose an existing customer. Items use mobile cards without tax inputs, with visible add-item actions. Native date fields open the device calendar when supported. Quote cards include item previews, customer/date/total, a status selector (draft/sent/accepted/rejected), and deletion with confirmation. Deleting also removes quote items while keeping number sequences. `/settings` saves business name, PNG/JPEG/WebP logo (up to 280 KB), and primary/secondary colors in D1. Branding appears in quote detail and is ready for a future PDF export; PDF download is not implemented in this change.
 
 Additional endpoints: `PATCH /api/quotes/:id` (`{ "status": "sent" }`), `DELETE /api/quotes/:id`, and `GET/PUT /api/branding`.
+
+## Editing quotes
+
+Use Editar on a quote card or Editar cotización in the detail page. `/quotes/:id/edit` loads the existing customer, dates, ordered items, discount and notes. Cancel returns without saving. Saving sends `PUT /api/quotes/:id`; validation and calculation use the same server logic as creation. The quote ID, number and status are preserved; its items are replaced in the same D1 transaction as the header update. New or edited quotes use no taxes; historical taxed quotes show a warning before recalculating without taxes. No additional migration is required. `test:api` checks updates, preserved identity/status, recalculated totals, and failed validation leaving stored values intact.
