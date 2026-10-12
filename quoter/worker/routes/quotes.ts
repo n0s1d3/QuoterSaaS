@@ -1,3 +1,4 @@
+import { captureBranding } from '../db/branding'
 import { body, HttpError } from '../http'
 import { getQuote, summaryColumns } from '../db/quotes'
 import { createQuote } from '../services/quote-service'
@@ -6,6 +7,11 @@ export async function quotes(request: Request, db: D1Database, org: string, id?:
     if (request.method === 'PUT') return Response.json(await createQuote(db, org, await body(request), id))
     if (request.method === 'PATCH') {
       const data = await body(request)
+      if (data.refreshBranding === true) {
+        const result = await captureBranding(db, org, id).run()
+        if (!result.meta.changes) throw new HttpError(404, 'Quote not found')
+        return Response.json(await getQuote(db, org, id))
+      }
       if (!['draft', 'sent', 'accepted', 'rejected'].includes(data.status as string)) throw new HttpError(400, 'Invalid status')
       const result = await db.prepare('UPDATE quotes SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=? AND organization_id=?').bind(data.status, id, org).run()
       if (!result.meta.changes) throw new HttpError(404, 'Quote not found')

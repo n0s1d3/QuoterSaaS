@@ -9,7 +9,7 @@ function rgb(hex: string): [number, number, number] {
 }
 
 /** Generate from persisted server totals; never recalculate or mutate the quote. */
-export function createQuotePdf(quote: QuoteDetail, brand: Branding) {
+export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: false })
   doc.setProperties({ title: `Cotización ${quote.quoteNumber}`, author: brand.name, subject: `Cotización para ${quote.customer.name}` })
   const primary = rgb(brand.primaryColor)
@@ -21,6 +21,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding) {
   if (brand.logo) {
     // Invalid images cause a visible download error rather than a silently missing logo.
     const properties = doc.getImageProperties(brand.logo)
+    diagnostic('pdf.logo.decodificado', JSON.stringify({ width: properties.width, height: properties.height, format: properties.fileType }))
     const scale = Math.min(28 / properties.width, 28 / properties.height)
     logo = { width: properties.width * scale, height: properties.height * scale }
   }
@@ -31,7 +32,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding) {
     headedPages.add(page)
     doc.setFillColor(...accent); doc.rect(0, 0, 210, headerBottom - 3, 'F')
     doc.setFillColor(...primary); doc.rect(0, 0, 210, 3, 'F')
-    if (brand.logo && logo) doc.addImage(brand.logo, 14, 12, logo.width, logo.height)
+    if (brand.logo && logo) { doc.addImage(brand.logo, 14, 12, logo.width, logo.height); diagnostic('pdf.logo.incrustado', `Página ${page}; ${logo.width.toFixed(1)} × ${logo.height.toFixed(1)} mm`) }
     doc.setTextColor(...primary); doc.setFont('helvetica', 'bold'); doc.setFontSize(18)
     doc.text(nameLines, brand.logo ? 48 : 14, 18)
     doc.setFontSize(10); doc.text('COTIZACIÓN', 196, 16, { align: 'right' })
@@ -79,6 +80,6 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding) {
   return doc
 }
 
-export function downloadQuotePdf(quote: QuoteDetail, brand: Branding) {
-  createQuotePdf(quote, brand).save(`${quote.quoteNumber.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`)
+export function downloadQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
+  createQuotePdf(quote, brand, diagnostic).save(`${quote.quoteNumber.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`)
 }

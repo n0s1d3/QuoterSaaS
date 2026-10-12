@@ -1,3 +1,4 @@
+import { captureBranding } from '../db/branding'
 import { calculateQuote } from '../../src/lib/quote-calculator'
 import { HttpError, text } from '../http'
 import { findCustomer } from '../db/customers'
@@ -36,6 +37,7 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     db.prepare('INSERT INTO quote_sequences (organization_id, value) VALUES (?, 1) ON CONFLICT(organization_id) DO UPDATE SET value = value + 1').bind(org),
     db.prepare("INSERT INTO quotes (id, organization_id, customer_id, quote_number, issue_date, expiry_date, subtotal, discount, tax, total, notes) VALUES (?, ?, ?, (SELECT printf('Q-%04d', value) FROM quote_sequences WHERE organization_id = ?), ?, ?, ?, ?, ?, ?, ?)").bind(id, org, customerId, org, issueDate, expiryDate, totals.subtotal, totals.discount, totals.tax, totals.total, notes),
     ]),
+    ...(!existingId ? [captureBranding(db, org, id)] : []),
     ...totals.items.map((item, index) => db.prepare('INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), id, item.description, item.quantity, item.unitPrice, item.taxRate, item.lineSubtotal, item.lineTax, item.lineTotal, index)),
   ]
   await db.batch(statements)
