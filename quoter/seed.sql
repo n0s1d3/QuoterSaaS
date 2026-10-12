@@ -1,0 +1,2 @@
+INSERT OR IGNORE INTO organizations (id,name,slug,currency) VALUES ('00000000-0000-4000-8000-000000000001','Demo Business','demo','GTQ');
+INSERT OR IGNORE INTO customers (id,organization_id,name,company,phone,email) VALUES ('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000001','Juan Pérez','JP Electric','5555-1111','juan@example.com'),('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000001','María López','ML Designs','5555-2222','maria@example.com');
