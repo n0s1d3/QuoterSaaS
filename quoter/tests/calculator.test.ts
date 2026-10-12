@@ -23,3 +23,11 @@ test('invalid monetary values and negative totals rejected', () => {
   assert.throws(() => calculateQuote([item], -1))
   assert.throws(() => calculateQuote([{ ...item, unitPrice: Number.MAX_SAFE_INTEGER }]))
 })
+test('billing surcharge: fixed cents and percentage after discount',()=>{
+ const item={description:'Service',quantity:2,unitPrice:35000,taxRate:0}
+ assert.equal(calculateQuote([item],1000,{type:'fixed',value:500}).total,69500)
+ assert.equal(calculateQuote([item],1000,{type:'percent',value:1200}).total,77280)
+ assert.equal(calculateQuote([{...item,quantity:1,unitPrice:5}],0,{type:'percent',value:1000}).surcharge,1)
+ assert.throws(()=>calculateQuote([item],0,{type:'fixed',value:-1}))
+ assert.throws(()=>calculateQuote([item],0,{type:'percent',value:1.5}))
+})

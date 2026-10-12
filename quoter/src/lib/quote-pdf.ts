@@ -58,12 +58,12 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   autoTable(doc, {
     ...common, startY: lastY() + 6, theme: 'striped',
     head: [['Descripción', 'Cantidad', 'Precio unitario', 'Importe']],
-    body: quote.items.map(item => [item.description, String(item.quantity), formatMoney(item.unitPrice), formatMoney(item.lineTotal)]),
+    body: quote.items.map(item => [item.description + `\nUnidad: ${item.unit || "unidad"}` + (item.duration ? ` · Tiempo: ${item.duration}` : "") + (item.validUntil ? `\nVigencia: ${item.validUntil}` : ""), String(item.quantity), formatMoney(item.unitPrice), formatMoney(item.lineTotal)]),
     headStyles: { fillColor: primary, textColor: [255, 255, 255] },
     alternateRowStyles: { fillColor: [246, 248, 247] },
     columnStyles: { 0: { cellWidth: 88 }, 1: { cellWidth: 22, halign: 'right' }, 2: { cellWidth: 36, halign: 'right' }, 3: { cellWidth: 36, halign: 'right' } },
   })
-  const totals = [['Subtotal', formatMoney(quote.subtotal)], ...(quote.tax ? [['Impuestos anteriores', formatMoney(quote.tax)]] : []), ['Descuento', formatMoney(quote.discount)], ['TOTAL', formatMoney(quote.total)]]
+  const totals = [['Subtotal', formatMoney(quote.subtotal)], ...(quote.tax ? [['Impuestos anteriores', formatMoney(quote.tax)]] : []), ['Descuento', formatMoney(quote.discount)], ...(quote.surcharge ? [['Adicional por facturación', formatMoney(quote.surcharge)]] : []), ['TOTAL', formatMoney(quote.total)]]
   autoTable(doc, {
     ...common, startY: lastY() + 6, margin: { ...common.margin, left: 106 }, theme: 'plain', pageBreak: 'avoid',
     body: totals, columnStyles: { 1: { halign: 'right' } },

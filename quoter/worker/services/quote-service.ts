@@ -17,15 +17,21 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
   if (expiryDate && expiryDate < issueDate!) throw new HttpError(400, 'Expiration date precedes issue date')
   const notes = text(data.notes, 'Notes', false, 10000)
   if (!Array.isArray(data.items) || !data.items.length || data.items.length > 100) throw new HttpError(400, 'Provide between 1 and 100 items')
-  const items = data.items.map((raw: unknown) => {
+  const items = await Promise.all(data.items.map(async (raw: unknown) => {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, 'Invalid item')
     const item = raw as Record<string, unknown>
     const description = text(item.description, 'Description', true, 2000)!
     if (typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' || (item.taxRate !== undefined && typeof item.taxRate !== 'number')) throw new HttpError(400, 'Item amounts must be numbers')
-    return { description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: 0 }
-  })
+    const catalogItemId=text(item.catalogItemId,'Catalog item',false,100)
+    if (catalogItemId && !await db.prepare('SELECT id FROM catalog_items WHERE id=? AND organization_id=?').bind(catalogItemId,org).first()) throw new HttpError(400,'Catalog item does not belong to this organization')
+    const unit=text(item.unit,'Unit',false,50) || 'unidad'
+    const duration=text(item.duration,'Duration',false,200)
+    const validUntil=date(item.validUntil,'Item validity')
+    return { description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: 0, catalogItemId, unit, duration, validUntil }
+  }))
+  const additional = { type: (data.surchargeType ?? 'none') as 'none' | 'fixed' | 'percent', value: (data.surchargeValue ?? 0) as number }
   let totals
-  try { totals = calculateQuote(items, data.discount === undefined ? 0 : data.discount as number) } catch (error) { throw new HttpError(400, (error as Error).message) }
+  try { totals = calculateQuote(items, data.discount === undefined ? 0 : data.discount as number, additional) } catch (error) { throw new HttpError(400, (error as Error).message) }
   const id = existingId || crypto.randomUUID()
   // D1 batch is transactional: sequence allocation, quote and items commit together.
   // The unique organization/number index provides an additional consistency guard.
@@ -37,8 +43,9 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     db.prepare('INSERT INTO quote_sequences (organization_id, value) VALUES (?, 1) ON CONFLICT(organization_id) DO UPDATE SET value = value + 1').bind(org),
     db.prepare("INSERT INTO quotes (id, organization_id, customer_id, quote_number, issue_date, expiry_date, subtotal, discount, tax, total, notes) VALUES (?, ?, ?, (SELECT printf('Q-%04d', value) FROM quote_sequences WHERE organization_id = ?), ?, ?, ?, ?, ?, ?, ?)").bind(id, org, customerId, org, issueDate, expiryDate, totals.subtotal, totals.discount, totals.tax, totals.total, notes),
     ]),
+    db.prepare('UPDATE quotes SET surcharge_type=?,surcharge_value=?,surcharge=? WHERE id=? AND organization_id=?').bind(additional.type,additional.value,totals.surcharge,id,org),
     ...(!existingId ? [captureBranding(db, org, id)] : []),
-    ...totals.items.map((item, index) => db.prepare('INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), id, item.description, item.quantity, item.unitPrice, item.taxRate, item.lineSubtotal, item.lineTax, item.lineTotal, index)),
+    ...totals.items.map((item, index) => db.prepare('INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order,catalog_item_id,unit,duration,valid_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), id, item.description, item.quantity, item.unitPrice, item.taxRate, item.lineSubtotal, item.lineTax, item.lineTotal, index, item.catalogItemId, item.unit, item.duration, item.validUntil)),
   ]
   await db.batch(statements)
   return getQuote(db, org, id)

@@ -1,0 +1,15 @@
+ALTER TABLE catalog_items ADD COLUMN category TEXT NOT NULL DEFAULT 'Producto';
+ALTER TABLE catalog_items ADD COLUMN duration TEXT;
+ALTER TABLE catalog_items ADD COLUMN valid_until TEXT;
+ALTER TABLE catalog_items ADD COLUMN reviewed_at TEXT NOT NULL DEFAULT '2026-01-01';
+ALTER TABLE catalog_items ADD COLUMN stale_after_days INTEGER NOT NULL DEFAULT 90;
+ALTER TABLE catalog_items ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
+UPDATE catalog_items SET reviewed_at = substr(created_at,1,10);
+ALTER TABLE quote_items ADD COLUMN catalog_item_id TEXT REFERENCES catalog_items(id);
+ALTER TABLE quote_items ADD COLUMN unit TEXT NOT NULL DEFAULT 'unidad';
+ALTER TABLE quote_items ADD COLUMN duration TEXT;
+ALTER TABLE quote_items ADD COLUMN valid_until TEXT;
+ALTER TABLE quotes ADD COLUMN surcharge_type TEXT NOT NULL DEFAULT 'none';
+ALTER TABLE quotes ADD COLUMN surcharge_value INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE quotes ADD COLUMN surcharge INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX idx_quote_items_catalog ON quote_items(catalog_item_id);
