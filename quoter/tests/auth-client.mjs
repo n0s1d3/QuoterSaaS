@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict'
+import { randomUUID } from 'node:crypto'
+export const base=process.env.QUOTER_TEST_URL||'http://127.0.0.1:5173'
+export async function testAccount() {
+ const email=`test-${randomUUID()}@example.com`,password=`${randomUUID()}A!`
+ const response=await fetch(base+'/api/auth/register',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password,businessName:'Test business'})})
+ assert.equal(response.status,201,await response.clone().text())
+ let cookie=response.headers.get('set-cookie').split(';')[0]
+ const user=await response.json()
+ async function request(url,options={}) {const headers=new Headers(options.headers);headers.set('Cookie',cookie);if(options.method&&options.method!=='GET')headers.set('Content-Type','application/json');const response=await fetch(url,{...options,headers});const changed=response.headers.get('set-cookie');if(changed)cookie=changed.split(';')[0];return response}
+ return {email,password,user,request,cookie:()=>cookie}
+}

@@ -1,6 +1,6 @@
 # Quoter · Phase 1
 
-React + TypeScript frontend, Cloudflare Worker API, and D1 database. This phase uses the seeded Demo Business organization, without authentication. Do not expose the API publicly with real customer information before adding authentication and organization authorization.
+React + TypeScript frontend, Cloudflare Worker API, and D1 database. Registration creates a private business for each account. All data APIs require an authenticated session and derive the business from that session. Legacy Demo Business records remain preserved and can be explicitly assigned to an empty account using the local import command below.
 
 ## Local development
 
@@ -34,7 +34,7 @@ npx wrangler d1 execute quoter-db --remote --file seed.sql
 npm run deploy
 ```
 
-Apply `0001_initial.sql` (schema), `0002_quote_numbering.sql` (sequences), and `0003_branding.sql` (business name/logo/colors). Sequence allocation, quote insertion, and item insertion run in one transactional D1 batch. Future organization selection should be derived from authenticated membership, replacing the current `demoOrganization` lookup. No database was created remotely during implementation.
+Apply `0001_initial.sql` (schema), `0002_quote_numbering.sql` (sequences), and `0003_branding.sql` (business name/logo/colors). Sequence allocation, quote insertion, and item insertion run in one transactional D1 batch. Organization selection is derived from the authenticated user, never an organization ID supplied by the frontend. No database was created remotely during implementation.
 
 ## API
 
@@ -70,7 +70,7 @@ The UI was verified with Chromium: customer creation, quote builder live totals,
 - `worker/db`: organization/customer/quote queries.
 - `migrations`, `seed.sql`: D1 schema and stable demo records.
 
-Authentication, subscriptions, invoices and public sharing are outside this phase.
+Subscriptions, invoices, password recovery, invitations and public sharing are outside this phase.
 
 ## Simplified mobile workflow
 
@@ -109,3 +109,32 @@ GET/POST `/api/catalog`, PUT/DELETE `/api/catalog/:id` support listing, creation
 Each quote can have no additional, a fixed amount in cents, or a percentage. Percentage is applied to subtotal plus historical tax minus discount. The server calculates and rounds the additional to cents; the frontend displays a preview using the same calculator. API fields: `surchargeType` (`none`, `fixed`, `percent`), `surchargeValue` (integer cents for fixed, integer basis points for percent: 1200 = 12%). The returned `surcharge` is integer cents and included in total. The PDF and quote detail show the additional separately, along with line units, times and validity. This is an explicit quotation charge; no invoices or tax automation are implemented.
 
 Tests cover review/expiry warnings, fixed/percentage rounding, catalog validation and archival, accepted-quote ranking, historical price preservation, and surcharge persistence. Mobile browser verification includes creation of a custom advisory/hour item, selection into a quote, expired-price warnings, percentage additional, save/edit and PDF contents.
+
+## Accounts and separate businesses
+
+Apply `0006_accounts.sql`. The UI offers register, login and logout. Registration requires a business name, unique normalized email and a password of 12–128 characters. It creates a new private organization in a transaction. Every account currently owns one business; invitations and multiple memberships are not yet implemented.
+
+Passwords use Web Crypto PBKDF2-SHA256 with 100,000 iterations (the Cloudflare Workers per-call limit) and random per-user salts. Sessions use random 256-bit opaque tokens; only their SHA-256 digest is stored in D1. Session cookies are HttpOnly, SameSite=Strict, host-only and Secure with a __Host- prefix over HTTPS; local HTTP development uses a separate non-Secure cookie. Sessions expire after seven days. Logout revokes the token; login replaces any incoming session. Mutations require JSON and reject a supplied cross-origin Origin header. Authentication attempts are limited in D1 by email and IP over 15-minute windows. Deploy with HTTPS. Email verification and password recovery are not implemented.
+
+Endpoints: POST `/api/auth/register`, POST `/api/auth/login`, POST `/api/auth/logout`, GET `/api/auth/me`. All other API endpoints require the session. Customer/catalog/quote lookups and writes are scoped to its business; arbitrary organization IDs in request bodies cannot select another business.
+
+### Keep your existing local data
+
+The upgrade does not delete the previous demo business, customers, catalog, quotes or branding. Create your real account first, then, **before creating any data in its new empty business**, stop the server and run:
+
+```bash
+npm run account:import-demo -- your@email.com
+```
+
+This local command assigns the demo business to the existing account. It refuses an account with customers/catalog/quotes already present and refuses assigning a demo business already owned by another account. It preserves all records and leaves the original empty organization intact. Restart, sign out if needed, and sign in again. No automatic first-user takeover occurs. Remote data assignment is not exposed as an API operation.
+
+### Tests after the upgrade
+
+With the dev server running:
+
+```bash
+npm run test:auth
+npm run test:api
+```
+
+Both suites register isolated temporary test accounts; API fixtures are created inside their own businesses and do not change your records. Test accounts remain in the development database. Repeated rapid test runs can encounter the authentication limiter. The auth suite verifies cross-business reads and mutations, foreign customer/catalog references, brand isolation, session revocation, JSON/origin protection, duplicate registration, weak passwords and throttling. Mobile UI registration, quote creation, persistence, logout and login were also verified.

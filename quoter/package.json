@@ -14,7 +14,9 @@
     "db:seed": "wrangler d1 execute quoter-db --local --file seed.sql",
     "typecheck": "tsc -b",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "test:api": "node tests/api-smoke.mjs"
+    "test:api": "node tests/api-smoke.mjs",
+    "account:import-demo": "node scripts/import-demo.mjs",
+    "test:auth": "node tests/auth-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
