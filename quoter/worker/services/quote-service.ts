@@ -19,8 +19,8 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, 'Invalid item')
     const item = raw as Record<string, unknown>
     const description = text(item.description, 'Description', true, 2000)!
-    if (typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' || typeof item.taxRate !== 'number') throw new HttpError(400, 'Item amounts must be numbers')
-    return { description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: item.taxRate }
+    if (typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' || (item.taxRate !== undefined && typeof item.taxRate !== 'number')) throw new HttpError(400, 'Item amounts must be numbers')
+    return { description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: 0 }
   })
   let totals
   try { totals = calculateQuote(items, data.discount === undefined ? 0 : data.discount as number) } catch (error) { throw new HttpError(400, (error as Error).message) }

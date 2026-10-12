@@ -17,7 +17,7 @@ npm run db:seed
 npm run dev
 ```
 
-No Cloudflare login is needed for local D1. Local data is persisted in the ignored `.wrangler/state` directory. Seed commands are repeatable and preserve existing records. Open the Vite address on your own machine. Routes: `/`, `/customers`, `/quotes`, `/quotes/new`, `/quotes/:id`.
+No Cloudflare login is needed for local D1. Local data is persisted in the ignored `.wrangler/state` directory. Seed commands are repeatable and preserve existing records. Open the Vite address on your own machine. Routes: `/`, `/quotes`, `/quotes/new`, `/quotes/:id`, `/settings`. Customers are selected or created directly inside the quote builder.
 
 ## Database and manual Cloudflare configuration
 
@@ -34,7 +34,7 @@ npx wrangler d1 execute quoter-db --remote --file seed.sql
 npm run deploy
 ```
 
-Apply both `0001_initial.sql` (requested schema) and `0002_quote_numbering.sql` (per-organization sequence and unique quote-number index). Sequence allocation, quote insertion, and item insertion run in one transactional D1 batch. Future organization selection should be derived from authenticated membership, replacing the current `demoOrganization` lookup. No database was created remotely during implementation.
+Apply `0001_initial.sql` (schema), `0002_quote_numbering.sql` (sequences), and `0003_branding.sql` (business name/logo/colors). Sequence allocation, quote insertion, and item insertion run in one transactional D1 batch. Future organization selection should be derived from authenticated membership, replacing the current `demoOrganization` lookup. No database was created remotely during implementation.
 
 ## API
 
@@ -44,7 +44,7 @@ Apply both `0001_initial.sql` (requested schema) and `0002_quote_numbering.sql` 
 - `POST /api/quotes`: save customerId, issueDate, optional expiryDate/notes/discount, and 1–100 items (description, quantity, unitPrice, taxRate).
 - `GET /api/quotes/:id`: customer, ordered items, dates, notes, and totals.
 
-All money in API/database is integer cents (`35000` = Q 350.00). Quantities and percentage tax rates can be fractional. Decimal arithmetic rounds each line subtotal and line tax half up to integer cents. The server recalculates totals and ignores client-supplied totals. Discounts exceeding subtotal plus tax are rejected rather than permitting negative totals. Error responses use `{ "error": "message" }` and appropriate 400/404/405/503/500 status codes.
+All money in API/database is integer cents (`35000` = Q 350.00). Quantities can be fractional. New quotes are tax-free: the backend uses taxRate=0 even if an old client supplies a tax rate. Previously saved taxed quotes retain their historical totals. Decimal arithmetic rounds each line subtotal and line tax half up to integer cents. The server recalculates totals and ignores client-supplied totals. Discounts exceeding subtotal plus tax are rejected rather than permitting negative totals. Error responses use `{ "error": "message" }` and appropriate 400/404/405/503/500 status codes.
 
 ## Verification
 
@@ -57,13 +57,13 @@ npm run build
 npm run test:api     # Invalid requests, concurrency, persistence and ignored client totals
 ```
 
-`test:api` adds six clearly labeled smoke-test quotes to local D1 on each run. It supports `QUOTER_TEST_URL` to target another local port; use only a development database.
+`test:api` creates six smoke-test quotes and deletes one during validation. It also tests status changes and logo persistence. It supports `QUOTER_TEST_URL` to target another local port; use only a development database.
 
 The UI was verified with Chromium: customer creation, quote builder live totals, save, detail refresh, quote-list navigation, dashboard, and mobile page loading. Example: 2 × Q 350.00, tax 12%, discount Q 10.00 → Q 774.00. Persisted database values: subtotal 70000, tax 8400, discount 1000, total 77400.
 
 ## Structure
 
-- `src/pages`: dashboard/list, customers, quote builder and detail.
+- `src/pages`: dashboard/cards, inline customer quote builder, detail and brand settings.
 - `src/lib`: money conversion/formatting, shared calculator, API client and types.
 - `worker/routes`: customer and quote HTTP handlers.
 - `worker/services`: quote validation and transactional creation.
@@ -71,3 +71,9 @@ The UI was verified with Chromium: customer creation, quote builder live totals,
 - `migrations`, `seed.sql`: D1 schema and stable demo records.
 
 Authentication, subscriptions, invoices, PDFs, editing and public sharing are outside this phase.
+
+## Simplified mobile workflow
+
+The builder starts with an inline new customer or lets you choose an existing customer. Items use mobile cards without tax inputs, with visible add-item actions. Native date fields open the device calendar when supported. Quote cards include item previews, customer/date/total, a status selector (draft/sent/accepted/rejected), and deletion with confirmation. Deleting also removes quote items while keeping number sequences. `/settings` saves business name, PNG/JPEG/WebP logo (up to 280 KB), and primary/secondary colors in D1. Branding appears in quote detail and is ready for a future PDF export; PDF download is not implemented in this change.
+
+Additional endpoints: `PATCH /api/quotes/:id` (`{ "status": "sent" }`), `DELETE /api/quotes/:id`, and `GET/PUT /api/branding`.
