@@ -1,12 +1,12 @@
+import { limit } from '../auth/rate-limit'
+import { issueToken } from '../auth/email-tokens'
+import { sendAccountEmail } from '../auth/mail'
+import type { EmailEnvironment } from '../auth/environment'
+import { emailRoutes } from './account-email'
 import { body,HttpError,text } from '../http'
 import { account,cookieToken,digest,equalHashes,newSession,passwordHash,randomToken,sessionCookie } from '../auth/session'
-async function limit(db:D1Database,key:string,max:number) {
- const now=Math.floor(Date.now()/1000)
- await db.prepare('DELETE FROM auth_limits WHERE expires_at<=?').bind(now).run()
- const result=await db.prepare('INSERT INTO auth_limits (key,attempts,expires_at) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN expires_at<=? THEN 1 ELSE attempts+1 END,expires_at=CASE WHEN expires_at<=? THEN excluded.expires_at ELSE expires_at END RETURNING attempts').bind(await digest(key),now+900,now,now).first<{attempts:number}>()
- if(result&&result.attempts>max)throw new HttpError(429,'Demasiados intentos. Espera 15 minutos e intenta nuevamente')
-}
-export async function auth(request:Request,db:D1Database,path:string) {
+export async function auth(request:Request,db:D1Database,path:string,env:EmailEnvironment,context:ExecutionContext) {
+ if(['/api/auth/email-options','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification'].includes(path))return emailRoutes(request,db,path,env,context)
  if(path==='/api/auth/me'&&request.method==='GET')return Response.json(await account(request,db))
  if(request.method!=='POST')throw new HttpError(405,'Method not allowed')
  if(path==='/api/auth/logout') {
@@ -21,6 +21,8 @@ export async function auth(request:Request,db:D1Database,path:string) {
  await limit(db,`${path}:${request.headers.get('CF-Connecting-IP')||'local'}`,path.endsWith('register')?20:100)
  await limit(db,`${path}:${email}`,10)
  let userId:string
+ let expectedHash:string|undefined
+ let delivery:Record<string,string|undefined> = {}
  if(path.endsWith('register')) {
   if(data.password.length<12)throw new HttpError(400,'La contraseña debe tener al menos 12 caracteres')
   const name=text(data.businessName,'Nombre del negocio',true,200)
@@ -35,9 +37,13 @@ export async function auth(request:Request,db:D1Database,path:string) {
   const user=await db.prepare('SELECT id,password_hash AS hash,password_salt AS salt FROM users WHERE email=?').bind(email).first<{id:string;hash:string;salt:string}>()
   const calculated=await passwordHash(data.password,user?.salt||'0000000000000000000000000000000000000000000000000000000000000000')
   if(!user||!equalHashes(calculated,user.hash))throw new HttpError(401,'Correo o contraseña incorrectos')
-  userId=user.id
+  userId=user.id; expectedHash=user.hash
  }
- const cookie=await newSession(request,db,userId)
- const user=await db.prepare('SELECT u.id,u.email,u.organization_id AS organizationId,o.name AS organizationName FROM users u JOIN organizations o ON o.id=u.organization_id WHERE u.id=?').bind(userId).first()
- return Response.json(user,{status:path.endsWith('register')?201:200,headers:{'Set-Cookie':cookie}})
+ if(path.endsWith('register')) {
+  try {delivery=await sendAccountEmail(request,env,email,'verify',await issueToken(db,userId,'verify'))}
+  catch {delivery={emailDelivery:'unavailable',notice:'Cuenta creada. No se pudo enviar la verificación; vuelve a solicitarla cuando el correo esté configurado.'}}
+ }
+ const cookie=await newSession(request,db,userId,expectedHash)
+ const user=await db.prepare('SELECT u.id,u.email,(u.email_verified_at IS NOT NULL) AS emailVerified,u.organization_id AS organizationId,o.name AS organizationName FROM users u JOIN organizations o ON o.id=u.organization_id WHERE u.id=?').bind(userId).first<Record<string,unknown>>()
+ return Response.json({...user,emailVerified:!!user?.emailVerified,...delivery},{status:path.endsWith('register')?201:200,headers:{'Set-Cookie':cookie}})
 }

@@ -1,6 +1,6 @@
 # Quoter · Phase 1
 
-React + TypeScript frontend, Cloudflare Worker API, and D1 database. Registration creates a private business for each account. All data APIs require an authenticated session and derive the business from that session. Legacy Demo Business records remain preserved and can be explicitly assigned to an empty account using the local import command below.
+React + TypeScript frontend, Cloudflare Worker API, and D1 database. Registration creates a private business for each account; verified email is required before using its data. All data APIs require an authenticated session and derive the business from that session. Legacy Demo Business records remain preserved and can be explicitly assigned to an empty account using the local import command below.
 
 ## Local development
 
@@ -70,7 +70,7 @@ The UI was verified with Chromium: customer creation, quote builder live totals,
 - `worker/db`: organization/customer/quote queries.
 - `migrations`, `seed.sql`: D1 schema and stable demo records.
 
-Subscriptions, invoices, password recovery, invitations and public sharing are outside this phase.
+Subscriptions, invoices, invitations and public sharing are outside this phase.
 
 ## Simplified mobile workflow
 
@@ -114,7 +114,7 @@ Tests cover review/expiry warnings, fixed/percentage rounding, catalog validatio
 
 Apply `0006_accounts.sql`. The UI offers register, login and logout. Registration requires a business name, unique normalized email and a password of 12–128 characters. It creates a new private organization in a transaction. Every account currently owns one business; invitations and multiple memberships are not yet implemented.
 
-Passwords use Web Crypto PBKDF2-SHA256 with 100,000 iterations (the Cloudflare Workers per-call limit) and random per-user salts. Sessions use random 256-bit opaque tokens; only their SHA-256 digest is stored in D1. Session cookies are HttpOnly, SameSite=Strict, host-only and Secure with a __Host- prefix over HTTPS; local HTTP development uses a separate non-Secure cookie. Sessions expire after seven days. Logout revokes the token; login replaces any incoming session. Mutations require JSON and reject a supplied cross-origin Origin header. Authentication attempts are limited in D1 by email and IP over 15-minute windows. Deploy with HTTPS. Email verification and password recovery are not implemented.
+Passwords use Web Crypto PBKDF2-SHA256 with 100,000 iterations (the Cloudflare Workers per-call limit) and random per-user salts. Sessions use random 256-bit opaque tokens; only their SHA-256 digest is stored in D1. Session cookies are HttpOnly, SameSite=Strict, host-only and Secure with a __Host- prefix over HTTPS; local HTTP development uses a separate non-Secure cookie. Sessions expire after seven days. Logout revokes the token; login replaces any incoming session. Mutations require JSON and reject a supplied cross-origin Origin header. Authentication attempts are limited in D1 by email and IP over 15-minute windows. Deploy with HTTPS. Email verification and password recovery are implemented; see RESEND_SETUP.md.
 
 Endpoints: POST `/api/auth/register`, POST `/api/auth/login`, POST `/api/auth/logout`, GET `/api/auth/me`. All other API endpoints require the session. Customer/catalog/quote lookups and writes are scoped to its business; arbitrary organization IDs in request bodies cannot select another business.
 
@@ -137,4 +137,10 @@ npm run test:auth
 npm run test:api
 ```
 
-Both suites register isolated temporary test accounts; API fixtures are created inside their own businesses and do not change your records. Test accounts remain in the development database. Repeated rapid test runs can encounter the authentication limiter. The auth suite verifies cross-business reads and mutations, foreign customer/catalog references, brand isolation, session revocation, JSON/origin protection, duplicate registration, weak passwords and throttling. Mobile UI registration, quote creation, persistence, logout and login were also verified.
+Both suites require local email preview and register isolated temporary test accounts; API fixtures are created inside their own businesses and do not change your records. Test accounts remain in the development database. Repeated rapid test runs can encounter the authentication limiter. The auth suite verifies cross-business reads and mutations, foreign customer/catalog references, brand isolation, session revocation, JSON/origin protection, duplicate registration, weak passwords and throttling. Mobile UI registration, quote creation, persistence, logout and login were also verified.
+
+## Email verification and password recovery
+
+Apply `0007_email_security.sql`. Copy `.dev.vars.example` to `.dev.vars` if no local configuration exists, then restart Vite. Existing accounts must verify their email; their business data is preserved. Use Reenviar verificación and the local preview link to verify without a real provider. Forgot-password links reset passwords and revoke all existing sessions. `npm run test:email` covers expiry, single-use races, purpose validation, session revocation and new-password login.
+
+Production Resend setup, secure secret placement, sender DNS verification, public APP_URL and local testing instructions are documented in [RESEND_SETUP.md](RESEND_SETUP.md). Live delivery remains unvalidated until those settings are supplied. Public links/WhatsApp and invoicing remain deferred.

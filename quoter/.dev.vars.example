@@ -1,0 +1,6 @@
+# Local-only preview: links are shown in the UI instead of sending mail.
+EMAIL_MODE=preview
+# For real delivery, remove EMAIL_MODE=preview and configure securely:
+# RESEND_API_KEY=your-secret-in-environment-settings
+# MAIL_FROM=Quoter <accounts@your-verified-domain.com>
+# APP_URL=https://your-application-domain.com

@@ -16,7 +16,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:api": "node tests/api-smoke.mjs",
     "account:import-demo": "node scripts/import-demo.mjs",
-    "test:auth": "node tests/auth-smoke.mjs"
+    "test:auth": "node tests/auth-smoke.mjs",
+    "test:email": "node tests/email-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
