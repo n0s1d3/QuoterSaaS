@@ -8,7 +8,11 @@ export async function branding(request: Request, db: D1Database, org: string) {
     const primaryColor = text(data.primaryColor, 'Primary color', true)
     const accentColor = text(data.accentColor, 'Accent color', true)
     if (!/^#[a-fA-F0-9]{6}$/.test(primaryColor!) || !/^#[a-fA-F0-9]{6}$/.test(accentColor!)) throw new HttpError(400, 'Invalid color')
-    await db.prepare('UPDATE organizations SET name=?, logo=?, primary_color=?, accent_color=? WHERE id=?').bind(name, logo, primaryColor, accentColor, org).run()
+    const previous=await db.prepare('SELECT tax_id AS taxId,address,phone,contact_email AS contactEmail,payment_terms AS paymentTerms FROM organizations WHERE id=?').bind(org).first<Record<string,unknown>>()
+    const field=(name:string)=>data[name]===undefined?previous?.[name]:data[name]
+    const taxId=text(field('taxId'),'NIT',false,100), address=text(field('address'),'Address',false,500), phone=text(field('phone'),'Phone',false,100), contactEmail=text(field('contactEmail'),'Email',false,254), paymentTerms=text(field('paymentTerms'),'Payment terms',false,2000)
+    if(contactEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail))throw new HttpError(400,'Correo del negocio inválido')
+    await db.prepare('UPDATE organizations SET name=?,logo=?,primary_color=?,accent_color=?,tax_id=?,address=?,phone=?,contact_email=?,payment_terms=? WHERE id=?').bind(name,logo,primaryColor,accentColor,taxId,address,phone,contactEmail,paymentTerms,org).run()
   } else if (request.method !== 'GET') throw new HttpError(405, 'Method not allowed')
-  return Response.json(await db.prepare('SELECT name, logo, primary_color AS primaryColor, accent_color AS accentColor FROM organizations WHERE id=?').bind(org).first())
+  return Response.json(await db.prepare('SELECT name, logo, primary_color AS primaryColor, accent_color AS accentColor,tax_id AS taxId,address,phone,contact_email AS contactEmail,payment_terms AS paymentTerms FROM organizations WHERE id=?').bind(org).first())
 }

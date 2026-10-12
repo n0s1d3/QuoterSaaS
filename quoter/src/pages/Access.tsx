@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../lib/api'
-export interface Account { id:string; email:string; organizationId:string; organizationName:string; emailVerified:boolean; previewUrl?:string; notice?:string }
+export interface Account { id:string; email:string; organizationId:string; organizationName:string; emailVerified:boolean; role:'owner'|'editor'|'viewer'; previewUrl?:string; notice?:string }
 export default function Access({ signedIn }: { signedIn: (user:Account)=>void }) {
  const [mode,setMode]=useState<'login'|'register'|'forgot'>('login'),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[businessName,setBusinessName]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[preview,setPreview]=useState('')
  async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError('');setMessage('');setPreview('');try{

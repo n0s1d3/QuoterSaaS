@@ -28,7 +28,7 @@ The cloud environment configuration draft declares `RESEND_API_KEY` for destinat
 
 Registration sends a verification email. Verification links expire after 24 hours. Recovery links expire after 30 minutes. Both contain random one-use tokens; only digests are stored. Tokens are placed in URL fragments, consumed via POST, and not written to logs. Password reset atomically changes the hash, revokes every session and invalidates other recovery links. Recovery never signs a user in automatically.
 
-Accounts cannot access business data until verified. Existing customers, catalog, quotes and branding remain intact. No invitation, public sharing, WhatsApp or invoice features were added in this step.
+Accounts cannot access business data until verified. Existing customers, catalog, quotes and branding remain intact. Team invitations now use the same delivery adapter and local preview. They expire in three days and require a verified account with the invited email. Public quote sharing, WhatsApp and invoices remain deferred.
 
 ## Validation
 

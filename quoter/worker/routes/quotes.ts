@@ -2,7 +2,13 @@ import { captureBranding } from '../db/branding'
 import { body, HttpError } from '../http'
 import { getQuote, summaryColumns } from '../db/quotes'
 import { createQuote } from '../services/quote-service'
-export async function quotes(request: Request, db: D1Database, org: string, id?: string) {
+export async function quotes(request: Request, db: D1Database, org: string, id?: string, duplicate=false) {
+  if(id&&duplicate){
+    if(request.method!=='POST')throw new HttpError(405,'Method not allowed')
+    const source=await getQuote(db,org,id)
+    const issueDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guatemala',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
+    return Response.json(await createQuote(db,org,{...source,customerId:source.customerId,issueDate,expiryDate:null}),{status:201})
+  }
   if (id) {
     if (request.method === 'PUT') return Response.json(await createQuote(db, org, await body(request), id))
     if (request.method === 'PATCH') {

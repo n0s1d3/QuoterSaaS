@@ -70,7 +70,7 @@ The UI was verified with Chromium: customer creation, quote builder live totals,
 - `worker/db`: organization/customer/quote queries.
 - `migrations`, `seed.sql`: D1 schema and stable demo records.
 
-Subscriptions, invoices, invitations and public sharing are outside this phase.
+Subscriptions, invoices and public sharing are outside this phase.
 
 ## Simplified mobile workflow
 
@@ -112,7 +112,7 @@ Tests cover review/expiry warnings, fixed/percentage rounding, catalog validatio
 
 ## Accounts and separate businesses
 
-Apply `0006_accounts.sql`. The UI offers register, login and logout. Registration requires a business name, unique normalized email and a password of 12–128 characters. It creates a new private organization in a transaction. Every account currently owns one business; invitations and multiple memberships are not yet implemented.
+Apply `0006_accounts.sql`. The UI offers register, login and logout. Registration requires a business name, unique normalized email and a password of 12–128 characters. It creates a new private organization in a transaction. Every account starts with its own business and can join other businesses through verified invitations; roles apply to the active business.
 
 Passwords use Web Crypto PBKDF2-SHA256 with 100,000 iterations (the Cloudflare Workers per-call limit) and random per-user salts. Sessions use random 256-bit opaque tokens; only their SHA-256 digest is stored in D1. Session cookies are HttpOnly, SameSite=Strict, host-only and Secure with a __Host- prefix over HTTPS; local HTTP development uses a separate non-Secure cookie. Sessions expire after seven days. Logout revokes the token; login replaces any incoming session. Mutations require JSON and reject a supplied cross-origin Origin header. Authentication attempts are limited in D1 by email and IP over 15-minute windows. Deploy with HTTPS. Email verification and password recovery are implemented; see RESEND_SETUP.md.
 
@@ -144,3 +144,33 @@ Both suites require local email preview and register isolated temporary test acc
 Apply `0007_email_security.sql`. Copy `.dev.vars.example` to `.dev.vars` if no local configuration exists, then restart Vite. Existing accounts must verify their email; their business data is preserved. Use Reenviar verificación and the local preview link to verify without a real provider. Forgot-password links reset passwords and revoke all existing sessions. `npm run test:email` covers expiry, single-use races, purpose validation, session revocation and new-password login.
 
 Production Resend setup, secure secret placement, sender DNS verification, public APP_URL and local testing instructions are documented in [RESEND_SETUP.md](RESEND_SETUP.md). Live delivery remains unvalidated until those settings are supplied. Public links/WhatsApp and invoicing remain deferred.
+
+## Full business profile, organized quotes, and teams
+
+Apply `0008_business_team.sql`. Existing accounts become owners of their existing business, and active sessions are initialized to that business. No customer, catalog, quote or logo is deleted.
+
+### Profile and document defaults
+
+Mi negocio now saves NIT, address, phone, business email and default payment conditions. New quotes capture these profile fields in the brand snapshot. Payment conditions are separately saved on the quote and can be customized in the builder. Updating a historical quote’s brand updates its letterhead only; it does not silently change its contractual payment conditions. Full contact information appears in the repeated PDF letterhead; payment conditions have a dedicated section. Legacy snapshots remain unchanged until explicitly refreshed.
+
+### Quote organization
+
+Quote cards offer accent-insensitive customer/number search, inclusive issue-date bounds, status filters and an expired-only toggle. Draft/sent quotes warn when past their expiry or due within seven days; accepted/rejected quotes do not display these offer-expiry warnings. Duplicate creates a new draft with the next organization number, today’s Guatemala issue date and no copied expiration. It keeps customer, prices, items, discount, surcharge, notes and payment conditions, recalculates server totals, and captures the current business profile. It opens the duplicate in the editor for review. POST `/api/quotes/:id/duplicate` is authorized for owners/editors.
+
+### Team roles and memberships
+
+Equipo is available to owners. Invitations target an email and an editor or viewer role, expire in three days, and are single-use. Acceptance requires a verified account with exactly that email. Register/verify first if needed, then reopen the invitation. Accepting adds membership and switches the current session to the invited business; the member’s personal business remains intact. Negocio selects the active business.
+
+| Role | Capabilities in that business |
+| --- | --- |
+| Owner | All data, profile, team invitations/roles, removal and deletion |
+| Editor | Read/PDF; create/edit customers, catalog and quotes; change status, duplicate and refresh quote brand; no business profile/team changes or deletion/archive |
+| Viewer | Read and PDF download; no business-data mutations |
+
+The owner cannot remove or demote the owner. Removing membership revokes sessions active in that business. Role checks occur on every API request; UI visibility is an additional convenience. Reload to reflect permissions changed by another team member. Browser requests carry expected user/business context so a session switched in another tab cannot silently write to the wrong workspace.
+
+Endpoints: GET `/api/businesses`, POST `/api/businesses/switch`, GET `/api/team`, POST `/api/team/invitations`, DELETE `/api/team/invitations/:id`, PATCH/DELETE `/api/team/members/:userId`, POST `/api/invitations/accept`. Organization selection is validated against membership, not accepted as an arbitrary tenant ID.
+
+Invitations use Resend when fully configured. Without sender/public URL/key, local preview works via the existing `.dev.vars` preview configuration. Real invitation delivery remains untested until Resend is configured. [RESEND_SETUP.md](RESEND_SETUP.md) applies; the invitation route is `/account/invite#token=...`.
+
+Run `npm run test:business` with a preview-mode local server to check complete-profile snapshots, defaults, duplication, invitation ownership, role permissions, switching, member removal and revocation. The local suite creates isolated test businesses. Mobile UI and PDF contents were also verified.

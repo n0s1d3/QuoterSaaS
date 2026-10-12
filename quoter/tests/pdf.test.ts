@@ -16,3 +16,7 @@ test('Long quotes and notes paginate and repeat letterhead',()=>{
 test('Invalid logo causes a visible generation failure',()=>{
   assert.throws(()=>createQuotePdf(quote,{...brand,logo:'data:image/png;base64,invalid'}))
 })
+test('PDF includes complete business letterhead and saved payment conditions',()=>{
+ const doc=createQuotePdf({...quote,paymentTerms:'50% anticipo; 50% al entregar.'},{...brand,taxId:'12345-K',address:'Guatemala',phone:'5555-1010',contactEmail:'business@example.com'})
+ const output=doc.output();for(const value of ['12345-K','Guatemala','5555-1010','business@example.com','50% anticipo'])assert.ok(output.includes(value))
+})

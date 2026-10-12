@@ -17,7 +17,8 @@
     "test:api": "node tests/api-smoke.mjs",
     "account:import-demo": "node scripts/import-demo.mjs",
     "test:auth": "node tests/auth-smoke.mjs",
-    "test:email": "node tests/email-smoke.mjs"
+    "test:email": "node tests/email-smoke.mjs",
+    "test:business": "node tests/business-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

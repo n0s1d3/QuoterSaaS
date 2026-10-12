@@ -16,7 +16,10 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   const accent = rgb(brand.accentColor)
   doc.setFont('helvetica', 'bold'); doc.setFontSize(18)
   const nameLines: string[] = doc.splitTextToSize(brand.name, brand.logo ? 108 : 145)
-  const headerBottom = Math.max(42, 16 + nameLines.length * 7) + 8
+  doc.setFont('helvetica','normal');doc.setFontSize(9)
+  const contactLines:string[]=doc.splitTextToSize([brand.taxId?`NIT: ${brand.taxId}`:null,brand.address,brand.phone,brand.contactEmail].filter(Boolean).join('\n'),brand.logo?108:145)
+  const contactStart=18+(nameLines.length-1)*7+6
+  const headerBottom = Math.max(50,contactStart+contactLines.length*4.5+8)
   let logo: { width: number; height: number } | undefined
   if (brand.logo) {
     // Invalid images cause a visible download error rather than a silently missing logo.
@@ -35,7 +38,8 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     if (brand.logo && logo) { doc.addImage(brand.logo, 14, 12, logo.width, logo.height); diagnostic('pdf.logo.incrustado', `Página ${page}; ${logo.width.toFixed(1)} × ${logo.height.toFixed(1)} mm`) }
     doc.setTextColor(...primary); doc.setFont('helvetica', 'bold'); doc.setFontSize(18)
     doc.text(nameLines, brand.logo ? 48 : 14, 18)
-    doc.setFontSize(10); doc.text('COTIZACIÓN', 196, 16, { align: 'right' })
+    doc.setFont('helvetica','normal');doc.setFontSize(9);if(contactLines.length)doc.text(contactLines,brand.logo?48:14,contactStart)
+    doc.setFont('helvetica','bold');doc.setFontSize(10); doc.text('COTIZACIÓN', 196, 16, { align: 'right' })
     doc.setFontSize(14); doc.text(quote.quoteNumber, 196, 24, { align: 'right' })
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10)
     doc.text(statuses[quote.status] || quote.status, 196, 32, { align: 'right' })
@@ -69,6 +73,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     body: totals, columnStyles: { 1: { halign: 'right' } },
     didParseCell: cell => { if (cell.row.index === totals.length - 1) { cell.cell.styles.fontStyle = 'bold'; cell.cell.styles.fillColor = accent; cell.cell.styles.textColor = primary } },
   })
+  if(quote.paymentTerms)autoTable(doc,{...common,startY:lastY()+8,theme:'plain',head:[['CONDICIONES DE PAGO']],body:[[quote.paymentTerms]],headStyles:{textColor:primary}})
   if (quote.notes) autoTable(doc, {
     ...common, startY: lastY() + 8, theme: 'plain', head: [['NOTAS Y CONDICIONES']], body: [[quote.notes]], headStyles: { textColor: primary },
   })
