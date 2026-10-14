@@ -31,7 +31,16 @@ export async function quotes(request: Request, db: D1Database, org: string, id?:
     if (request.method !== 'GET') throw new HttpError(405, 'Method not allowed')
     return Response.json(await getQuote(db, org, id))
   }
-  if (request.method === 'GET') return Response.json((await db.prepare(`SELECT ${summaryColumns}, q.notes FROM quotes q JOIN customers c ON c.id = q.customer_id WHERE q.organization_id = ? ORDER BY q.created_at DESC, q.quote_number DESC`).bind(org).all()).results)
+  if (request.method === 'GET') {
+    const rows = (await db.prepare(`SELECT ${summaryColumns}, q.notes,
+      (SELECT json_group_array(category) FROM (
+        SELECT DISTINCT COALESCE(catalog.category, 'Sin categoría') AS category
+        FROM quote_items i LEFT JOIN catalog_items catalog ON catalog.id=i.catalog_item_id AND catalog.organization_id=q.organization_id
+        WHERE i.quote_id=q.id
+      )) AS categoriesJson
+      FROM quotes q JOIN customers c ON c.id = q.customer_id WHERE q.organization_id = ? ORDER BY q.created_at DESC, q.quote_number DESC`).bind(org).all<{categoriesJson:string}>()).results
+    return Response.json(rows.map(({categoriesJson,...row}) => ({...row,categories:JSON.parse(categoriesJson)})))
+  }
   if (request.method === 'POST') return Response.json(await createQuote(db, org, await body(request)), { status: 201 })
   throw new HttpError(405, 'Method not allowed')
 }
