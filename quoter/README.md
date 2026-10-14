@@ -74,7 +74,7 @@ Subscriptions, invoices and public sharing are outside this phase.
 
 ## Simplified mobile workflow
 
-The builder starts with an inline new customer or lets you choose an existing customer. Items use mobile cards without tax inputs, with visible add-item actions. Native date fields open the device calendar when supported. Quote cards include item previews, customer/date/total, status buttons (draft/sent/accepted/rejected), and icon buttons for viewing, editing and duplicating at the bottom. Deletion is available only to owners inside quote detail, with confirmation. Deleting also removes quote items while keeping number sequences. `/settings` saves business name, PNG/JPEG/WebP logo (uploads up to 10 MB, automatically resized), and primary/secondary colors in D1. Branding appears in quote detail and in downloaded PDFs.
+The builder starts with an inline new customer or lets you choose an existing customer. Items use mobile cards without tax inputs, with visible add-item actions. Native date fields open the device calendar when supported. Compact quote cards show a two-line notes preview (or Sin notas), customer/date/total, status buttons (draft/sent/accepted/rejected), and icon buttons for viewing, editing and duplicating at the bottom. Deletion is available only to owners inside quote detail, with confirmation. Deleting also removes quote items while keeping number sequences. `/settings` saves business name, PNG/JPEG/WebP logo (uploads up to 10 MB, automatically resized), and primary/secondary colors in D1. Branding appears in quote detail and in downloaded PDFs.
 
 Additional endpoints: `PATCH /api/quotes/:id` (`{ "status": "sent" }`), `DELETE /api/quotes/:id`, and `GET/PUT /api/branding`.
 
