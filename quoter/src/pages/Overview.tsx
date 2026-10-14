@@ -10,12 +10,12 @@ import DashboardSummary from '../components/DashboardSummary'
 import QuoteActionIcon from '../components/QuoteActionIcon'
 export default function Overview({ dashboard, navigate }: { dashboard: boolean; navigate: (path: string) => void }) {
   const {canEdit}=usePermissions()
-  const [search,setSearch]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[expired,setExpired]=useState(false)
+  const [search,setSearch]=useState(() => new URLSearchParams(window.location.search).get('search') || ''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[expired,setExpired]=useState(false)
   const [date]=useState(today)
   const [quotes, setQuotes] = useState<QuoteSummary[] | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState(() => { const value = new URLSearchParams(window.location.search).get('status'); return value && Object.hasOwn(statuses, value) ? value : 'all' })
   useEffect(() => { api<QuoteSummary[]>('/quotes').then(setQuotes).catch(e => setError(e.message)) }, [])
   async function change(q: QuoteSummary, status: string) {
     setBusy(q.id); setError('')
