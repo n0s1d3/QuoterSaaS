@@ -1,11 +1,14 @@
+import { challenge,challengeOptions,signupDailyLimit } from '../auth/turnstile'
+import { newPasswordHash,verifyPassword,legacyPasswordHash } from '../auth/passwords'
 import { limit } from '../auth/rate-limit'
 import { issueToken } from '../auth/email-tokens'
 import { sendAccountEmail } from '../auth/mail'
 import type { EmailEnvironment } from '../auth/environment'
 import { emailRoutes } from './account-email'
 import { body,HttpError,text } from '../http'
-import { account,cookieToken,digest,equalHashes,newSession,passwordHash,randomToken,sessionCookie } from '../auth/session'
+import { account,cookieToken,digest,newSession,randomToken,sessionCookie } from '../auth/session'
 export async function auth(request:Request,db:D1Database,path:string,env:EmailEnvironment,context:ExecutionContext) {
+ if(path==='/api/auth/security-options'&&request.method==='GET')return Response.json(challengeOptions(request,env))
  if(['/api/auth/email-options','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification'].includes(path))return emailRoutes(request,db,path,env,context)
  if(path==='/api/auth/me'&&request.method==='GET')return Response.json(await account(request,db))
  if(request.method!=='POST')throw new HttpError(405,'Method not allowed')
@@ -25,11 +28,13 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
  let expectedHash:string|undefined
  let delivery:Record<string,string|undefined> = {}
  if(path.endsWith('register')) {
+  await challenge(request,env,data.turnstileToken,'quoter_register')
   if(data.password.length<12)throw new HttpError(400,'La contraseña debe tener al menos 12 caracteres')
   const name=text(data.businessName,'Nombre del negocio',true,200)
   const existing=await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first()
   if(existing)throw new HttpError(409,'Este correo ya tiene una cuenta')
-  userId=crypto.randomUUID();const orgId=crypto.randomUUID(),salt=randomToken(),hash=await passwordHash(data.password,salt)
+  await limit(db,`signup:day:${Math.floor(Date.now()/86400000)}`,signupDailyLimit(env),86400-Math.floor(Date.now()/1000)%86400,'Se alcanzó el límite diario de registros. Intenta más tarde.')
+  userId=crypto.randomUUID();const orgId=crypto.randomUUID(),salt=randomToken(),hash=await newPasswordHash(data.password,salt)
   try {await db.batch([
    db.prepare('INSERT INTO organizations (id,name,slug) VALUES (?,?,?)').bind(orgId,name,orgId),
    db.prepare('INSERT INTO users (id,organization_id,email,password_hash,password_salt) VALUES (?,?,?,?,?)').bind(userId,orgId,email,hash,salt),
@@ -37,10 +42,16 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
   ])}catch(error){if(await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first())throw new HttpError(409,'Este correo ya tiene una cuenta');throw error}
  }else{
   const user=await db.prepare('SELECT id,password_hash AS hash,password_salt AS salt,suspended_at AS suspendedAt FROM users WHERE email=?').bind(email).first<{id:string;hash:string;salt:string;suspendedAt:string|null}>()
-  const calculated=await passwordHash(data.password,user?.salt||'0000000000000000000000000000000000000000000000000000000000000000')
-  if(!user||!equalHashes(calculated,user.hash))throw new HttpError(401,'Correo o contraseña incorrectos')
+  const valid=await verifyPassword(data.password,user?.salt||'0'.repeat(64),user?.hash||'pbkdf2-sha256$600000$'+'0'.repeat(64))
+  if(!user||!valid)throw new HttpError(401,'Correo o contraseña incorrectos')
   if(user.suspendedAt)throw new HttpError(403,'Tu cuenta fue desactivada. Contacta a la administración para recuperar el acceso.')
   userId=user.id; expectedHash=user.hash
+  if(legacyPasswordHash(user.hash)){
+   const salt=randomToken(),upgraded=await newPasswordHash(data.password,salt)
+   const result=await db.prepare('UPDATE users SET password_hash=?,password_salt=? WHERE id=? AND password_hash=? AND password_salt=? AND suspended_at IS NULL').bind(upgraded,salt,user.id,user.hash,user.salt).run()
+   if(!result.meta.changes)throw new HttpError(401,'La cuenta cambió. Vuelve a iniciar sesión')
+   expectedHash=upgraded
+  }
  }
  if(path.endsWith('register')) {
   try {delivery=await sendAccountEmail(request,env,email,'verify',await issueToken(db,userId,'verify'))}

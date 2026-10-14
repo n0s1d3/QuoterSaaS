@@ -52,7 +52,7 @@ console.log('Status update and deletion passed')
 const invalidStatus = await authFetch(base + '/api/quotes/' + quotes[1].id, {method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status:'invalid'})})
 assert.equal(invalidStatus.status,400)
 const originalBrand = await call('/branding')
-const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII='
+const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP4/x8AAwAB//wl3FEAAAAASUVORK5CYII='
 const brandSave = await authFetch(base + '/api/branding',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({...originalBrand,logo})})
 assert.equal(brandSave.status,200);assert.equal((await call('/branding')).logo,logo)
 await authFetch(base + '/api/branding',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(originalBrand)})

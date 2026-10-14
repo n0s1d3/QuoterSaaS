@@ -32,7 +32,8 @@
     "test:security": "node tests/security-smoke.mjs",
     "test:mfa": "node tests/mfa-smoke.mjs",
     "admin:reset-mfa": "node scripts/reset-admin-mfa.mjs",
-    "mfa:setup": "node scripts/configure-local-mfa.mjs"
+    "mfa:setup": "node scripts/configure-local-mfa.mjs",
+    "test:hardening": "node tests/hardening-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

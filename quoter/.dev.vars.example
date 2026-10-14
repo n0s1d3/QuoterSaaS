@@ -7,3 +7,8 @@ EMAIL_MODE=preview
 
 # Admin MFA: run npm run mfa:setup to generate a private local 32-byte encryption key.
 # In production use the MFA_ENCRYPTION_KEY secret binding; never expose it in VITE_ variables.
+
+# Production signup/recovery: create a managed Turnstile widget for the public hostname.
+# TURNSTILE_SITE_KEY=public-widget-key
+# TURNSTILE_SECRET_KEY=private-secret-in-worker-settings
+# SIGNUP_DAILY_LIMIT=250

@@ -3,9 +3,9 @@ const encoder = new TextEncoder()
 function hex(bytes: ArrayBuffer | Uint8Array) { return Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), byte=>byte.toString(16).padStart(2,'0')).join('') }
 export function randomToken() { return hex(crypto.getRandomValues(new Uint8Array(32))) }
 export async function digest(value: string) { return hex(await crypto.subtle.digest('SHA-256',encoder.encode(value))) }
-export async function passwordHash(password: string, salt: string) {
+export async function passwordHash(password: string, salt: string, iterations = 100000) {
  const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveBits'])
- return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:encoder.encode(salt),iterations:100000},key,256))
+ return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:encoder.encode(salt),iterations},key,256))
 }
 export function equalHashes(a: string,b: string) { let diff=a.length ^ b.length;for(let i=0;i<Math.max(a.length,b.length);i++)diff|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);return diff===0 }
 function cookieName(request: Request) { return new URL(request.url).protocol==='https:'?'__Host-quoter_session':'quoter_session' }

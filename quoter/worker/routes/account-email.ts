@@ -1,3 +1,4 @@
+import { challenge } from '../auth/turnstile'
 import { body,HttpError,text } from '../http'
 import { account,sessionCookie } from '../auth/session'
 import { consumeToken,issueToken } from '../auth/email-tokens'
@@ -22,6 +23,7 @@ export async function emailRoutes(request:Request,db:D1Database,path:string,env:
   return Response.json({message:'Verificación solicitada.',...await sendAccountEmail(request,env,user.email,'verify',await issueToken(db,user.id,'verify'))})
  }
  if(path==='/api/auth/forgot-password') {
+  await challenge(request,env,data.turnstileToken,'quoter_recovery')
   const email=text(data.email,'Correo',true,254)!.toLowerCase()
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HttpError(400,'Correo inválido')
   await limit(db,`reset:${email}`,5)

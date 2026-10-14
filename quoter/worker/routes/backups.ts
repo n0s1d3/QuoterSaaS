@@ -1,3 +1,4 @@
+import { inspectLogo,validateRaster } from '../../src/lib/raster'
 import { backupIdentity } from '../db/backup-identity'
 import { backupLimit, quotesCsv, validateBackup } from '../../src/lib/backup'
 import { digest, randomToken, type Account } from '../auth/session'
@@ -28,7 +29,9 @@ export async function backups(request:Request,db:D1Database,user:Account,path:st
  const raw=await boundedText(request,backupLimit+4096)
  if(new TextEncoder().encode(raw).length>backupLimit+4096)throw new HttpError(413,'El archivo supera el límite de 8 MB')
  let envelope:Record<string,unknown>,backup
- try{envelope=JSON.parse(raw);backup=validateBackup(envelope.backup)}catch(e){throw new HttpError(400,e instanceof Error?e.message:'Respaldo inválido')}
+ try{envelope=JSON.parse(raw);backup=validateBackup(envelope.backup)
+ const logos=new Set<string>();if(backup.business.logo)logos.add(backup.business.logo as string);for(const quote of backup.quotes){if(quote.branding_snapshot){const brand=JSON.parse(quote.branding_snapshot as string);if(brand.logo)logos.add(brand.logo)}}
+ let pixels=0;for(const logo of logos){const info=inspectLogo(logo);pixels+=info.width*info.height;if(pixels>16777216)throw new Error('El respaldo supera el límite de píxeles de logos distintos');await validateRaster(info)}}catch(e){throw new HttpError(400,e instanceof Error?e.message:'Respaldo inválido')}
  if(backup.customers.length+backup.catalog.length+backup.quotes.length+backup.items.length>2000)throw new HttpError(400,'La restauración admite hasta 2000 registros por archivo')
  const hash=await digest(JSON.stringify({mode:'overwrite-v3-customers',backup}))
  const identity=await backupIdentity(db,org,backup)

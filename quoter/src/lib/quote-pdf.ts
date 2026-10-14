@@ -1,3 +1,4 @@
+import { inspectLogo,validateLogo } from './raster.ts'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import type { Branding, QuoteDetail } from './types.ts'
@@ -23,6 +24,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   let logo: { width: number; height: number } | undefined
   if (brand.logo) {
     // Invalid images cause a visible download error rather than a silently missing logo.
+    inspectLogo(brand.logo)
     const properties = doc.getImageProperties(brand.logo)
     diagnostic('pdf.logo.decodificado', JSON.stringify({ width: properties.width, height: properties.height, format: properties.fileType }))
     const scale = Math.min(28 / properties.width, 28 / properties.height)
@@ -82,6 +84,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   return doc
 }
 
-export function downloadQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
+export async function downloadQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
+  await validateLogo(brand.logo)
   createQuotePdf(quote, brand, diagnostic).save(`${quote.quoteNumber.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`)
 }

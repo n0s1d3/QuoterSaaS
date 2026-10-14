@@ -25,11 +25,11 @@ El panel maestro expone metadatos operativos permitidos: identificación de cuen
 
 ## Contraseñas, sesiones y recuperación
 
-Las contraseñas ya estaban protegidas; no se guardan en texto plano ni con un cifrado reversible. Se usa PBKDF2-HMAC-SHA256 con 100.000 iteraciones, una sal aleatoria de 256 bits por contraseña y comparación de digests. Una contraseña idéntica produce hashes diferentes con sales distintas. La sal no es un secreto y debe conservarse para validar el acceso.
+Las contraseñas ya estaban protegidas; no se guardan en texto plano ni con un cifrado reversible. Al inicio de la revisión se usaba PBKDF2-HMAC-SHA256 con 100.000 iteraciones, una sal aleatoria de 256 bits por contraseña y comparación de digests. Una contraseña idéntica produce hashes diferentes con sales distintas. La sal no es un secreto y debe conservarse para validar el acceso.
 
 Los tokens de sesión y de correo son aleatorios y se guardan como hashes SHA-256. Las sesiones tienen vencimiento, cookies HttpOnly y SameSite=Strict; en HTTPS se usan Secure y el prefijo __Host. Los enlaces de verificación y recuperación vencen, son de un solo uso y su consumo es transaccional. La recuperación mantiene respuestas genéricas para no revelar si existe una cuenta.
 
-**Pendiente de mejorar:** 100.000 iteraciones está por debajo de la recomendación actual de OWASP para PBKDF2-HMAC-SHA256 (600.000). No se elevó ciegamente: se necesita medir y comprobar soporte/límites del runtime Workers, definir una versión del hash y migrar durante un inicio de sesión válido. Alternativas: Argon2id con una implementación revisada compatible o identidad administrada. Cambiar el algoritmo sin esta migración bloquearía cuentas existentes. Referencia: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+**Seguimiento:** el runtime actual admitió PBKDF2-HMAC-SHA256 con 600.000 iteraciones en una prueba nativa de Workers (aproximadamente 73 ms de tiempo de pared local; no representa CPU o latencia del servicio público). Nuevas cuentas y recuperaciones usan un hash versionado de 600.000 iteraciones; las cuentas antiguas se actualizan con una nueva sal al iniciar sesión correctamente, con comprobación atómica de la credencial anterior. La lectura del hash sigue siendo compatible con el formato anterior. Debe confirmarse el presupuesto de CPU del plan Cloudflare y el comportamiento remoto antes de publicar. Referencia: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
 ## Cliente, PDF, archivos y dependencias
 
@@ -42,10 +42,10 @@ La restauración valida y proyecta campos, descarta datos de autenticación y ca
 ## Riesgos pendientes y siguiente orden recomendado
 
 1. **Cuenta maestra: seguimiento resuelto en código.** Se añadió MFA TOTP obligatorio para Administración, secreto cifrado AES-GCM, autorización de una hora ligada a la sesión, códigos de recuperación de un solo uso y restablecimiento exclusivo por operador con revocación de sesiones. Véase [ADMIN_MFA.md](ADMIN_MFA.md). Queda pendiente inscribir el autenticador real del propietario y configurar la clave del servidor publicado. TOTP no es resistente a phishing como una passkey.
-2. **Abuso de registro y disponibilidad.** Límites por IP/cuenta y cuotas comerciales no detienen bots distribuidos. Clientes, elementos archivados y papelera pueden crecer sin consumir esas cuotas. Añadir Turnstile, límites operativos y presupuestos de almacenamiento; acordar retención antes de eliminar datos. No se realizó una prueba de saturación del servicio.
-3. **Fortaleza del hash.** Implementar la actualización versionada descrita arriba y medir CPU/latencia en el entorno final.
+2. **Abuso de registro y disponibilidad.** Se integró Turnstile validado por servidor para registro/recuperación, con límite diario global configurable (250 por defecto) además de límites por IP/cuenta. Las claves y el hostname real aún deben configurarse. Clientes, archivo y papelera siguen fuera de las cuotas comerciales; monitorear D1 y acordar presupuestos de almacenamiento/retención. No se realizó una prueba de saturación del servicio.
+3. **Fortaleza del hash.** Actualización versionada implementada y verificada con cuentas antiguas/nuevas. Medir CPU/latencia en el entorno final y conservar compatibilidad del lector al planificar un rollback.
 4. **Enumeración y bloqueo dirigido.** El registro revela si un correo ya existe. El límite de intentos por correo puede usarse para bloquear temporalmente a una persona. Revisar respuestas y combinar señales de abuso/captcha sin retirar la protección contra fuerza bruta.
-5. **Logos no confiables.** La interfaz reduce el tamaño de imagen, pero una petición directa o un respaldo puede evitar esa normalización. El límite de bytes y la prohibición de SVG no equivalen a validar completamente PNG/JPEG/WebP ni sus dimensiones. Añadir validación real del formato y un presupuesto de píxeles para reducir riesgos de consumo de memoria al generar PDF.
+5. **Logos no confiables.** Se añadieron comprobaciones de firmas, dimensiones, estructura y MIME en API, respaldos e interfaz. PNG además comprueba CRC y limita expansión de imagen/metadatos. JPEG/WebP se inspeccionan estructuralmente sin una decodificación completa del servidor; no se consideran libres de posibles fallas del decodificador. La descarga PDF realiza prevalidación, incluida para marcas históricas.
 6. **Operación y privacidad.** Los respaldos JSON son archivos sin cifrar; quien obtiene el archivo puede leer sus datos. Proteger descargas y copias, permisos D1 y secretos del proveedor. Agregar controles de CI y revisiones periódicas de dependencias.
 7. **Publicación.** Nunca exponer Vite/Wrangler dev ni su explorador de base de datos como servicio público. No publicar `.dev.vars`, `.env`, `.wrangler` ni respaldos. El modo EMAIL_MODE=preview es solo local: devuelve enlaces de prueba y no sustituye un proveedor real. Publicar únicamente el Worker y sus assets compilados; configurar HTTPS, secretos y permisos mínimos en Cloudflare. HSTS no sustituye una redirección HTTPS inicial en el dominio.
 
@@ -74,3 +74,6 @@ npm run build
 `npm run test:security` necesita un servidor local con migraciones aplicadas y EMAIL_MODE=preview. Crea registros de prueba. `QUOTER_TEST_URL` selecciona su URL; `QUOTER_IMPORT_STATE` debe coincidir con el directorio de persistencia D1 del servidor. `QUOTER_BROWSER_PATH` habilita la prueba de Chromium y debe usarse con los assets compilados para comprobar `_headers`. Las pruebas de administrador requieren un estado aislado: no deben ejecutarse sobre los datos reales del administrador.
 
 Después de confirmar el correo, el usuario ahora debe iniciar sesión de nuevo con su contraseña. Las sesiones anteriores a la verificación dejan de funcionar deliberadamente.
+
+
+Seguimiento de esta revisión: véase [SECURITY_HARDENING.md](SECURITY_HARDENING.md) para las mejoras posteriores y sus pruebas.

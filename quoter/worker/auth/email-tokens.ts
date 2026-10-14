@@ -1,6 +1,7 @@
+import { newPasswordHash,verifyPassword } from './passwords.ts'
 import { limit } from './rate-limit'
 import { HttpError } from '../http'
-import { digest,equalHashes,passwordHash,randomToken } from './session'
+import { digest,randomToken } from './session'
 export async function issueToken(db:D1Database,userId:string,purpose:'verify'|'reset') {
  const token=randomToken(),now=Math.floor(Date.now()/1000),expiry=now+(purpose==='verify'?86400:1800)
  await db.batch([db.prepare('DELETE FROM account_tokens WHERE expires_at<=? OR used_at IS NOT NULL').bind(now),db.prepare('INSERT INTO account_tokens (token_hash,user_id,purpose,expires_at) VALUES (?,?,?,?)').bind(await digest(token),userId,purpose,expiry)])
@@ -15,13 +16,13 @@ export async function consumeToken(db:D1Database,token:unknown,purpose:'verify'|
  if(purpose==='verify'){
   if(typeof password!=='string'||password.length<1||password.length>128)throw new HttpError(400,'Ingresa la contraseña actual de tu cuenta')
   await limit(db,`verify-password:${hash}`,10)
-  if(!equalHashes(await passwordHash(password,user.salt),user.hash))throw new HttpError(403,'La contraseña no es correcta')
+  if(!await verifyPassword(password,user.salt,user.hash))throw new HttpError(403,'La contraseña no es correcta')
  }
  const expectedHash=purpose==='verify'?user.hash:null
  const consumption=randomToken()
  const condition='SELECT user_id FROM account_tokens WHERE token_hash=? AND consumption_id=?'
  let update:D1PreparedStatement
- if(purpose==='reset') {const salt=randomToken(),passwordDigest=await passwordHash(password as string,salt);update=db.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=(${condition})`).bind(passwordDigest,salt,hash,consumption)}
+ if(purpose==='reset') {const salt=randomToken(),passwordDigest=await newPasswordHash(password as string,salt);update=db.prepare(`UPDATE users SET password_hash=?,password_salt=? WHERE id=(${condition})`).bind(passwordDigest,salt,hash,consumption)}
  else update=db.prepare(`UPDATE users SET email_verified_at=CURRENT_TIMESTAMP WHERE id=(${condition})`).bind(hash,consumption)
  const consumedAt=Math.floor(Date.now()/1000)
  const statements=[db.prepare('UPDATE account_tokens SET used_at=?,consumption_id=? WHERE token_hash=? AND purpose=? AND used_at IS NULL AND expires_at>? AND (? IS NULL OR EXISTS(SELECT 1 FROM users u WHERE u.id=account_tokens.user_id AND u.password_hash=?))').bind(consumedAt,consumption,hash,purpose,consumedAt,expectedHash,expectedHash),update]

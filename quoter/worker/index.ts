@@ -26,7 +26,7 @@ export default {
     headers.set("Referrer-Policy", "no-referrer")
     headers.set("X-Frame-Options","DENY")
     headers.set("Permissions-Policy","camera=(), microphone=(), geolocation=()")
-    if (response.status === 429) headers.set("Retry-After", "900")
+    if (response.status === 429&&!headers.has("Retry-After")) headers.set("Retry-After", "900")
     return new Response(response.body, { status: response.status, headers })
   },
 } satisfies ExportedHandler<Env>
@@ -65,7 +65,7 @@ async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRY
       if (path === '/api/customers') return await customers(request, db, org)
       return await quotes(request, db, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'),user)
     } catch (error) {
-      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:error.message===suspendedMessage?{code:'BUSINESS_SUSPENDED'}:{}) }, { status: error.status })
+      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:error.message===suspendedMessage?{code:'BUSINESS_SUSPENDED'}:{}) }, { status: error.status,headers:error.retryAfter?{'Retry-After':String(error.retryAfter)}:undefined })
       const message=String(error)
       if(message.includes('QUOTER_BUSINESS_SUSPENDED'))return Response.json({error:suspendedMessage,code:'BUSINESS_SUSPENDED'},{status:403})
       if(message.includes('QUOTER_SUBSCRIPTION_EXPIRED'))return Response.json({error:expiredMessage,code:'SUBSCRIPTION_EXPIRED'},{status:403})

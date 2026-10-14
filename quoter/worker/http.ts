@@ -1,4 +1,4 @@
-export class HttpError extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status } }
+export class HttpError extends Error { status: number; retryAfter?:number; constructor(status: number, message: string,retryAfter?:number) { super(message); this.status = status;this.retryAfter=retryAfter } }
 export function text(value: unknown, name: string, required = false, max = 1000): string | null {
   if (value == null || value === '') { if (required) throw new HttpError(400, `El campo ${name} es obligatorio`); return null }
   if (typeof value !== 'string' || value.length > max || value.trim().length > max || (required && !value.trim())) throw new HttpError(400, `El campo ${name} no es válido`)

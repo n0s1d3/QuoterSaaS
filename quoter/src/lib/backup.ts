@@ -1,3 +1,4 @@
+import { inspectLogo } from './raster.ts'
 import { statuses } from './statuses.ts'
 import { calculateQuote } from './quote-calculator.ts'
 export const backupLimit = 8 * 1024 * 1024
@@ -6,7 +7,7 @@ function object(value:unknown):Record<string,unknown>{if(!value||typeof value!==
 function string(value:unknown,max:number,required=false){if(value==null&&!required)return;if(typeof value!=='string'||value.length>max||(required&&!value.trim()))throw new Error('Texto inválido en el respaldo')}
 function number(value:unknown,integer=true){if(typeof value!=='number'||!Number.isFinite(value)||value<0||(integer&&!Number.isSafeInteger(value)))throw new Error('Importe inválido en el respaldo')}
 function date(value:unknown,required=false){if(value==null&&!required)return;string(value,10,true);if(!/^\d{4}-\d{2}-\d{2}$/.test(value as string)||new Date(value as string).toISOString().slice(0,10)!==value)throw new Error('Fecha inválida en el respaldo')}
-function brand(value:unknown){const row=object(value);string(row.name,200,true);for(const field of ['primaryColor','accentColor'])if(typeof row[field]!=='string'||!/^#[\da-f]{6}$/i.test(row[field] as string))throw new Error('Color inválido');string(row.logo,400000);if(row.logo&&!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(row.logo as string))throw new Error('Logo inválido');for(const [key,max] of [['taxId',100],['address',500],['phone',100],['contactEmail',254],['paymentTerms',2000]] as const)string(row[key],max);return row}
+function brand(value:unknown){const row=object(value);string(row.name,200,true);for(const field of ['primaryColor','accentColor'])if(typeof row[field]!=='string'||!/^#[\da-f]{6}$/i.test(row[field] as string))throw new Error('Color inválido');string(row.logo,400000);if(row.logo)inspectLogo(row.logo as string);for(const [key,max] of [['taxId',100],['address',500],['phone',100],['contactEmail',254],['paymentTerms',2000]] as const)string(row[key],max);return row}
 export function validateBackup(value:unknown):BusinessBackup {
  const data=object(value)
  if(data.format!=='quoter-business-backup'||data.version!==1)throw new Error('Formato o versión de respaldo no compatible')

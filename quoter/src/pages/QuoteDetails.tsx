@@ -42,7 +42,7 @@ export default function QuoteDetails({ id, navigate }: { id: string; navigate: (
       setQuote(latestQuote); setBrand(latestBrand)
       brandLog('pdf.marca.snapshot', brandMetadata(latestBrand))
       const { downloadQuotePdf } = await import('../lib/quote-pdf')
-      downloadQuotePdf(latestQuote, latestBrand, brandLog)
+      await downloadQuotePdf(latestQuote, latestBrand, brandLog)
       brandLog('pdf.generado', `Logo incluido: ${!!latestBrand.logo}`)
     }
     catch(e) { const detail = e instanceof Error ? e.message : String(e); brandLog('pdf.error', detail); setPdfError(`No se pudo generar el PDF: ${detail}`) }

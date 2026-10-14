@@ -44,6 +44,6 @@ Agregar `--remote` únicamente cuando se quiera modificar la D1 publicada. El re
 
 ## Pruebas
 
-38 pruebas unitarias incluyen vectores RFC 6238, códigos vencidos/reutilizados y cifrado ligado a la cuenta. `test:mfa` comprueba inscripción obligatoria, contraseña de configuración, recuperación concurrente de un solo uso, aislamiento entre sesiones, vencimiento, privacidad de respaldos, restablecimiento por operador y acceso desde móvil. `test:admin` conserva las pruebas de privacidad, activación de planes y permisos, ahora con MFA.
+44 pruebas unitarias incluyen vectores RFC 6238, códigos vencidos/reutilizados y cifrado ligado a la cuenta. `test:mfa` comprueba inscripción obligatoria, contraseña de configuración, recuperación concurrente de un solo uso, aislamiento entre sesiones, vencimiento, privacidad de respaldos, restablecimiento por operador y acceso desde móvil. `test:admin` conserva las pruebas de privacidad, activación de planes y permisos, ahora con MFA.
 
 Las pruebas MFA y administrativas cambian la designación de cuenta maestra: usar exclusivamente un estado D1 local aislado, con `QUOTER_ADMIN_ISOLATED=1`, `QUOTER_IMPORT_STATE`, `QUOTER_TEST_URL` y, opcionalmente, `QUOTER_BROWSER_PATH`. No usar una base con clientes o una cuenta maestra real.
