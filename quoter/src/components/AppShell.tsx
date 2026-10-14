@@ -19,7 +19,7 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
   const initials = user.email.slice(0, 2).toUpperCase()
   const links: {url:string;label:string;icon:AppIconName}[] = [
     {url:'/',label:'Resumen',icon:'dashboard'}, {url:'/quotes',label:'Cotizaciones',icon:'quotes'}, {url:'/catalog',label:'Catálogo',icon:'catalog'},
-    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}] : []),
+    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}, {url:'/data',label:'Datos y recuperación',icon:'catalog' as const}] : []),
   ]
   useEffect(() => { const media = window.matchMedia('(max-width: 700px)'); const change = () => {setMobile(media.matches);setMenuOpen(false)}; media.addEventListener('change',change); return () => media.removeEventListener('change',change) }, [])
   useEffect(() => { if(!menuOpen || !mobile) return; const trigger = menuButton.current; const overflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; sidebar.current?.querySelector<HTMLButtonElement>('.mobile-nav-close')?.focus(); return () => {document.body.style.overflow = overflow;trigger?.focus()} }, [menuOpen,mobile])

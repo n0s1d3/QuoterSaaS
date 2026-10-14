@@ -3,9 +3,9 @@ export function formatMoney(cents: number, currency = 'GTQ') {
   return `${currency === 'GTQ' ? 'Q' : currency} ${amount}`
 }
 export function toCents(value: string): number {
-  if (!/^\d+(\.\d{0,2})?$/.test(value)) throw new Error('Use a nonnegative amount with at most two decimals')
+  if (!/^\d+(\.\d{0,2})?$/.test(value)) throw new Error('Usa un importe no negativo con un máximo de dos decimales')
   const [whole, fraction = ''] = value.split('.')
   const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
-  if (!Number.isSafeInteger(cents)) throw new Error('Amount is too large')
+  if (!Number.isSafeInteger(cents)) throw new Error('El importe es demasiado grande')
   return cents
 }

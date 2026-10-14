@@ -1,3 +1,6 @@
+import { dashboard } from './routes/dashboard'
+import { dataHistory } from './routes/data-history'
+import { backups } from './routes/backups'
 import { diagnostics } from './routes/diagnostics'
 import { permissions } from './auth/permissions'
 import { team, businesses, acceptInvitation, previewInvitation } from './routes/team'
@@ -36,17 +39,20 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       if(path.startsWith('/api/businesses'))return await businesses(request,env.DB,user,path)
       if(expectedBusiness&&expectedBusiness!==user.organizationId)throw new HttpError(409,'El negocio activo cambió. Recarga antes de continuar')
       if(path==='/api/diagnostics')return await diagnostics(request,env.DB,user)
+      if(path==='/api/history'||path.startsWith('/api/trash')||/^\/api\/quotes\/[^/]+\/history$/.test(path))return await dataHistory(request,env.DB,user,path)
+      if(path.startsWith('/api/backups/'))return await backups(request,env.DB,user,path)
+      if(path==='/api/dashboard')return await dashboard(request,env.DB,user.organizationId)
       permissions(user,request,path)
       if(path.startsWith('/api/team'))return await team(request,env.DB,user,path,env)
-      if (path !== '/api/catalog' && !/^\/api\/catalog\/[^/]+$/.test(path) && path !== '/api/branding' && path !== '/api/customers' && path !== '/api/quotes' && !/^\/api\/quotes\/[^/]+(?:\/duplicate)?$/.test(path)) throw new HttpError(404, 'Route not found')
+      if (path !== '/api/catalog' && !/^\/api\/catalog\/[^/]+$/.test(path) && path !== '/api/branding' && path !== '/api/customers' && path !== '/api/quotes' && !/^\/api\/quotes\/[^/]+(?:\/duplicate)?$/.test(path)) throw new HttpError(404, 'Ruta no encontrada')
       const org = user.organizationId
       if (path === '/api/catalog' || path.startsWith('/api/catalog/')) return await catalog(request, env.DB, org, path.startsWith('/api/catalog/') ? decodeURIComponent(path.slice(13)) : undefined)
       if (path === '/api/branding') return await branding(request, env.DB, org)
       if (path === '/api/customers') return await customers(request, env.DB, org)
-      return await quotes(request, env.DB, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'))
+      return await quotes(request, env.DB, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'),user)
     } catch (error) {
       if (error instanceof HttpError) return Response.json({ error: error.message }, { status: error.status })
       console.error('API failure', error)
-      return Response.json({ error: 'Unable to complete the request' }, { status: 500 })
+      return Response.json({ error: 'No se pudo completar la solicitud' }, { status: 500 })
     }
 }

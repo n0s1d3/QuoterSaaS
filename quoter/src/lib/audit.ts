@@ -1,0 +1,4 @@
+export interface AuditEvent {id:string;action:string;actorEmail:string;detail:string;createdAt:string;quoteNumber?:string}
+export const auditLabels:Record<string,string>={'quote.imported':'Cotización importada','quote.created':'Cotización creada','quote.edited':'Cotización editada','quote.status.changed':'Estado actualizado','quote.brand.updated':'Marca de la cotización actualizada','quote.trashed':'Cotización enviada a la papelera','quote.restored':'Cotización recuperada','backup.exported':'Datos exportados','backup.restored':'Respaldo restaurado'}
+
+export function auditTime(value:string){const date=new Date(value.includes('T')?value:value.replace(' ','T')+'Z');return Number.isNaN(date.getTime())?value:date.toLocaleString('es-GT',{timeZone:'America/Guatemala'})}

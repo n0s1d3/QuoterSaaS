@@ -18,7 +18,9 @@
     "account:import-demo": "node scripts/import-demo.mjs",
     "test:auth": "node tests/auth-smoke.mjs",
     "test:email": "node tests/email-smoke.mjs",
-    "test:business": "node tests/business-smoke.mjs"
+    "test:business": "node tests/business-smoke.mjs",
+    "test:data": "node tests/data-smoke.mjs",
+    "test:ui": "node tests/browser-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
@@ -33,6 +35,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "playwright": "^1.62.1",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "wrangler": "^4.149.0"

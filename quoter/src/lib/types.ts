@@ -5,3 +5,5 @@ export interface QuoteSummary { categories?: string[]; notes?: string | null; id
 export interface QuoteDetail extends QuoteSummary { paymentTerms?: string | null; surcharge?: number; surchargeType?: 'none' | 'fixed' | 'percent'; surchargeValue?: number; branding?: Branding | null; brandingCapturedAt?: string | null; customer: Customer; expiryDate: string | null; notes: string | null; items: CalculatedItem[] }
 
 export interface CatalogItem { id: string; name: string; description: string | null; category: string; unit: string; unitPrice: number; duration: string | null; validUntil: string | null; reviewedAt: string; staleAfterDays: number; active: number; soldQuantity?: number }
+
+export interface DashboardData { quoteCount:number; statusCounts:Record<string,number>;recent:QuoteSummary[];metrics:ReturnType<typeof import('./dashboard').dashboardMetrics> & {expiredCount:number;upcomingCount:number;draftsCount:number} }
