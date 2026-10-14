@@ -19,5 +19,5 @@ export async function plans(request:Request,db:D1Database,user:Account,env:Email
   db.prepare('SELECT (SELECT COUNT(*) FROM quotes WHERE organization_id=? AND deleted_at IS NULL) AS quotes,(SELECT COUNT(*) FROM catalog_items WHERE organization_id=? AND active=1) AS catalog,(SELECT COUNT(*) FROM memberships WHERE organization_id=?) AS members,(SELECT used FROM business_seat_usage WHERE organization_id=?) AS seats').bind(org,org,org,org),
  ])
  const usage=result[2].results[0]
- return Response.json({plan:result[0].results[0],plans:result[1].results,usage:{...usage,pendingInvitations:Number(usage.seats)-Number(usage.members)},preview})
+ return Response.json({businessId:org,plan:result[0].results[0],plans:result[1].results,usage:{...usage,pendingInvitations:Number(usage.seats)-Number(usage.members)},preview})
 }

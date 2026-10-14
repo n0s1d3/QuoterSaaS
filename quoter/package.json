@@ -21,7 +21,9 @@
     "test:business": "node tests/business-smoke.mjs",
     "test:data": "node tests/data-smoke.mjs",
     "test:ui": "node tests/browser-smoke.mjs",
-    "test:plans": "node tests/plans-smoke.mjs"
+    "test:plans": "node tests/plans-smoke.mjs",
+    "plan:activate": "node scripts/activate-plan.mjs",
+    "test:activation": "node tests/activation-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

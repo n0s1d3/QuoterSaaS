@@ -3,6 +3,7 @@ import { base,testAccount } from './auth-client.mjs'
 const owner=await testAccount(),editor=await testAccount(),viewer=await testAccount(),outsider=await testAccount()
 const post=(client,path,data,method='POST')=>client.request(base+'/api'+path,{method,body:JSON.stringify(data)})
 const get=async(client,path)=>(await client.request(base+'/api'+path)).json()
+assert.equal((await post(owner,'/plans',{planId:'pro'},'PATCH')).status,200)
 const profile={...(await get(owner,'/branding')),taxId:'12345-K',address:'Ciudad de Guatemala',phone:'5555-1010',contactEmail:'negocio@example.com',paymentTerms:'50% anticipo y 50% al entregar.'}
 assert.equal((await post(owner,'/branding',profile,'PUT')).status,200)
 const customer=await(await post(owner,'/customers',{name:'Cliente de equipo'})).json()

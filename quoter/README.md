@@ -215,13 +215,13 @@ npm run test:ui
 
 ## Business plans and capacity
 
-Apply `0010_business_plans.sql`. Existing and new businesses default to Gratis; existing records and team access are preserved, even when already over a limit. Plans are provisional capacity limits, without prices or monthly resets:
+Apply migrations through `0011_paid_capacity_plans.sql`. Existing businesses keep their assigned tier; new businesses start with Plan 1 capacity. No tier is marketed as free. Existing records and team access are preserved, even when already over a limit. Plans are provisional capacity limits, without prices or monthly resets:
 
 | Plan | Quotes outside trash | Active catalog | Members + pending seats |
 | --- | ---: | ---: | ---: |
-| Gratis | 25 | 100 | 3 |
-| Pro | 500 | 1000 | 10 |
-| Negocio | 5000 | 10000 | 30 |
+| Plan 1 | 25 | 15 | 1 |
+| Plan 2 | 50 | 25 | 3 |
+| Plan 3 | 100 | 50 | 5 |
 
 All quote states and expired quotes outside trash count. Archived catalog and trash do not count; the owner counts as a team member, and unique unexpired invitations reserve seats until accepted, revoked or expired. Reinviting the same email does not consume another seat. The owner-only **Plan y uso** page (`/plan`, GET `/api/plans`) displays usage, limits and warnings from 80% capacity. Mutation/route changes refresh notices; quota failures explain which resource reached its limit. Business switching keeps usage isolated.
 
@@ -230,3 +230,17 @@ SQLite triggers enforce limits inside write transactions, covering creation, dup
 `PATCH /api/plans` is a simulation for owners only when `EMAIL_MODE=preview` and the request origin is localhost/127.0.0.1/::1. It records an audit event, applies real local capacity limits, and does not activate a subscription or charge money. Public deployments reject this endpoint even if preview mode was mistakenly enabled; their plan changes require trusted administrative provisioning until a billing integration is implemented. No checkout, subscription billing, prices or payment provider are implemented.
 
 `npm run test:plans` covers concurrent quote quotas/rollback, duplication, editing at capacity, trash recovery, downgrade preservation, catalog/reactivation, backup enforcement, reserved seats/resends/acceptance, role restrictions and business isolation. Unit tests check warning thresholds and reject plan simulation outside local preview. The permanent browser suite also verifies local plan switching; additional mobile/desktop checks exercised usage warnings and 320/390/768/1280/1920 px layouts.
+
+### Manual activation after a P2P payment
+
+The operator verifies the bank/wallet payment outside Quoter, then uses the business ID shown on **Plan y uso**. From `quoter`:
+
+```sh
+npm run plan:activate -- --business BUSINESS_ID --plan 2 --reference bank-transfer-123 --operator admin@example.com
+```
+
+This defaults to the local database. Only add `--remote` when administering the published Cloudflare D1 database with your own Wrangler credentials. Apply migrations on that database first. Do not share database credentials with customers. The command assigns the tier and records the operator, payment reference, timestamp and previous tier atomically. References are globally unique: repeating the same business/plan/reference is a no-op, and reusing a reference for another business or plan fails. A repeat does not undo a subsequent plan change. A new payment requires a new reference. Tests may target an isolated local database with `QUOTER_IMPORT_STATE`.
+
+Internal tier IDs remain `gratis`, `pro`, `negocio` for migration compatibility; displayed names are Plan 1/2/3. Existing records remain accessible even above the new limits. There is no checkout, automatic payment verification, recurring charge or automatic expiry. Assigning default Plan 1 capacity does not prove payment: unpaid signup access is not yet gated. Commercial suspension/trial rules and prices still need to be defined before launch. The public API cannot activate a paid plan; the local preview switch is only a simulation.
+
+`npm run test:activation` verifies manual assignment and audit, unique-reference conflicts, replay safety, missing businesses and downgrades against isolated local fixture accounts.

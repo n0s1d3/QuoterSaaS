@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { base,testAccount } from './auth-client.mjs'
 const owner=await testAccount(),target=await testAccount(),viewer=await testAccount()
 async function call(user,path,data,method='POST',expected=200){const response=await user.request(base+'/api'+path,data===undefined?{}:{method,body:JSON.stringify(data)});assert.equal(response.status,expected,await response.clone().text());return response.json()}
+await call(owner,'/plans',{planId:'pro'},'PATCH')
 const profile=await call(owner,'/branding');await call(owner,'/branding',{...profile,name:'Origen respaldo',primaryColor:'#6a040f'},'PUT')
 const customer=await call(owner,'/customers',{name:'=1+1'},'POST',201)
 const item=await call(owner,'/catalog',{name:'Producto origen',category:'Producto',unit:'unidad',unitPrice:100,staleAfterDays:90},'POST',201)
