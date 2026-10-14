@@ -1,3 +1,4 @@
+import { diagnostics } from './routes/diagnostics'
 import { permissions } from './auth/permissions'
 import { team, businesses, acceptInvitation, previewInvitation } from './routes/team'
 import type { EmailEnvironment } from './auth/environment'
@@ -34,6 +35,7 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       if(path==='/api/invitations/accept')return await acceptInvitation(request,env.DB,user)
       if(path.startsWith('/api/businesses'))return await businesses(request,env.DB,user,path)
       if(expectedBusiness&&expectedBusiness!==user.organizationId)throw new HttpError(409,'El negocio activo cambió. Recarga antes de continuar')
+      if(path==='/api/diagnostics')return await diagnostics(request,env.DB,user)
       permissions(user,request,path)
       if(path.startsWith('/api/team'))return await team(request,env.DB,user,path,env)
       if (path !== '/api/catalog' && !/^\/api\/catalog\/[^/]+$/.test(path) && path !== '/api/branding' && path !== '/api/customers' && path !== '/api/quotes' && !/^\/api\/quotes\/[^/]+(?:\/duplicate)?$/.test(path)) throw new HttpError(404, 'Route not found')
