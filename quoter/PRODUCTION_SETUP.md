@@ -31,3 +31,9 @@ El dominio de envío puede ser distinto al hostname de la app. Una URL workers.d
 Verificar registro con Turnstile real, recepción/consumo de verificación, inicio de sesión y recuperación real. Luego comprobar MFA del maestro, aislamiento entre negocios, cotización con logo y descarga PDF desde móvil/escritorio, renovación P2P, vencimientos y restauración. Confirmar ausencia de secretos en assets y que HTTP redirige a HTTPS. Comprobar los límites y el coste de PBKDF2 en el runtime publicado. Un despliegue exitoso por sí solo no marca el 100 %.
 
 Las pruebas que envíen correo real deben realizarse con destinatarios propios acordados; no se ha enviado correo externo en esta etapa.
+
+## Primera prueba sin dominio comprado
+
+Usar la URL gratuita workers.dev para la app. Para probar Resend sin dominio propio, configurar MAIL_FROM como `Quoter <onboarding@resend.dev>`. Este remitente de prueba solo permite enviar a la dirección asociada a la cuenta Resend; comprobar cuál es antes de iniciar la prueba. No utilizar una dirección gmail.com como MAIL_FROM: el propietario de Quoter no puede verificar el dominio gmail.com en Resend. Gmail puede mantenerse como correo de cuenta/contacto.
+
+Esta combinación sirve para probar la cuenta propia, la verificación y recuperación. No habilita correos de acceso a clientes con direcciones distintas: para ese lanzamiento será necesario un dominio de envío verificado o cambiar de proveedor con un mecanismo autorizado para el remitente elegido. No publicar como lista para clientes una instalación que no puede entregar sus verificaciones.
