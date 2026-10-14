@@ -28,7 +28,8 @@
     "test:subscription": "node tests/subscription-smoke.mjs",
     "test:subscription-ui": "node tests/subscription-browser.mjs",
     "admin:master": "node scripts/admin-master.mjs",
-    "test:admin": "node tests/platform-admin-smoke.mjs"
+    "test:admin": "node tests/platform-admin-smoke.mjs",
+    "test:security": "node tests/security-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

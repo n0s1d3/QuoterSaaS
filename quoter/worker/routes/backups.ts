@@ -3,7 +3,7 @@ import { backupLimit, quotesCsv, validateBackup } from '../../src/lib/backup'
 import { digest, randomToken, type Account } from '../auth/session'
 import { limit } from '../auth/rate-limit'
 import { auditStatement } from '../db/audit'
-import { HttpError } from '../http'
+import { boundedText,HttpError } from '../http'
 const profileColumns='name,currency,logo,primary_color AS primaryColor,accent_color AS accentColor,tax_id AS taxId,address,phone,contact_email AS contactEmail,payment_terms AS paymentTerms'
 export async function backups(request:Request,db:D1Database,user:Account,path:string) {
  if(user.role!=='owner')throw new HttpError(403,'Solo el propietario puede administrar respaldos')
@@ -25,7 +25,7 @@ export async function backups(request:Request,db:D1Database,user:Account,path:st
  if(!['/api/backups/preview','/api/backups/restore'].includes(path)||request.method!=='POST')throw new HttpError(405,'Operación de respaldo no válida')
  await limit(db,`backup:${user.id}`,30)
  if(Number(request.headers.get('Content-Length')||0)>backupLimit*1.1)throw new HttpError(413,'El archivo supera el límite de 8 MB')
- const raw=await request.text()
+ const raw=await boundedText(request,backupLimit+4096)
  if(new TextEncoder().encode(raw).length>backupLimit+4096)throw new HttpError(413,'El archivo supera el límite de 8 MB')
  let envelope:Record<string,unknown>,backup
  try{envelope=JSON.parse(raw);backup=validateBackup(envelope.backup)}catch(e){throw new HttpError(400,e instanceof Error?e.message:'Respaldo inválido')}

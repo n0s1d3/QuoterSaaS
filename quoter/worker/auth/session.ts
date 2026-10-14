@@ -1,4 +1,4 @@
-import { HttpError } from '../http'
+import { HttpError } from '../http.ts'
 const encoder = new TextEncoder()
 function hex(bytes: ArrayBuffer | Uint8Array) { return Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), byte=>byte.toString(16).padStart(2,'0')).join('') }
 export function randomToken() { return hex(crypto.getRandomValues(new Uint8Array(32))) }
@@ -30,6 +30,7 @@ export async function newSession(request:Request,db:D1Database,userId:string,exp
 }
 export function guardMutation(request:Request) {
  if(['GET','HEAD','OPTIONS'].includes(request.method))return
+ if(request.headers.get('Sec-Fetch-Site')==='cross-site')throw new HttpError(403,'Origen de solicitud no permitido')
  const origin=request.headers.get('Origin')
  if(origin&&origin!==new URL(request.url).origin)throw new HttpError(403,'Origen de solicitud no permitido')
  if(!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))throw new HttpError(415,'Usa application/json')
