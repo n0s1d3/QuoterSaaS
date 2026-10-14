@@ -1,3 +1,4 @@
+import { requireSubscription } from '../auth/subscription'
 import { body,HttpError,text } from '../http'
 import { account,cookieToken,digest,randomToken } from '../auth/session'
 import type { Account } from '../auth/session'
@@ -28,9 +29,10 @@ export async function acceptInvitation(request:Request,db:D1Database,user:Accoun
  const data=await body(request)
  if(typeof data.token!=='string'||!/^[a-f0-9]{64}$/.test(data.token))throw new HttpError(400,'Invitación inválida')
  const hash=await digest(data.token),nonce=randomToken(),now=Math.floor(Date.now()/1000)
- const invitation=await db.prepare('SELECT email FROM team_invitations WHERE token_hash=? AND expires_at>? AND accepted_at IS NULL').bind(hash,now).first<{email:string}>()
+ const invitation=await db.prepare('SELECT email,organization_id AS organizationId FROM team_invitations WHERE token_hash=? AND expires_at>? AND accepted_at IS NULL').bind(hash,now).first<{email:string;organizationId:string}>()
  if(!invitation)throw new HttpError(400,'Invitación vencida o utilizada')
  if(invitation.email!==user.email)throw new HttpError(403,'Inicia sesión con el correo al que se envió la invitación')
+ await requireSubscription(db,invitation.organizationId)
  const results=await db.batch([
   db.prepare('UPDATE team_invitations SET accepted_at=?,consumption_id=? WHERE token_hash=? AND email=? AND accepted_at IS NULL AND expires_at>?').bind(now,nonce,hash,user.email,now),
   db.prepare('INSERT INTO memberships (user_id,organization_id,role) SELECT ?,organization_id,role FROM team_invitations WHERE token_hash=? AND consumption_id=? ON CONFLICT(user_id,organization_id) DO NOTHING').bind(user.id,hash,nonce),

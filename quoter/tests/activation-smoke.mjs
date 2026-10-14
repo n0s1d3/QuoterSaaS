@@ -7,7 +7,8 @@ const invoke=(business,plan,ref)=>spawnSync(process.execPath,['scripts/activate-
 const read=async()=>{const r=await owner.request(base+'/api/plans');assert.equal(r.status,200);return r.json()}
 const initial=await read();assert.equal(initial.businessId,owner.user.organizationId)
 let result=invoke(initial.businessId,'3',reference);assert.equal(result.status,0,result.stderr+result.stdout)
-assert.equal((await read()).plan.name,'Plan 3');assert.equal((await read()).plan.memberLimit,5)
+const activated=await read();assert.equal(activated.subscription.status,'active');assert.equal(activated.activations[0].periodStart,initial.subscription.trialExpiresAt);assert.ok(activated.subscription.paidUntil>initial.subscription.trialExpiresAt+27*86400);
+assert.equal(activated.plan.name,'Plan 3');assert.equal((await read()).plan.memberLimit,5)
 result=invoke(initial.businessId,'3',reference);assert.equal(result.status,0,result.stderr+result.stdout)
 result=invoke(other.user.organizationId,'2',reference);assert.notEqual(result.status,0);assert.equal((await(await other.request(base+'/api/plans')).json()).plan.name,'Plan 1')
 result=invoke(initial.businessId,'2',reference);assert.notEqual(result.status,0);assert.equal((await read()).plan.name,'Plan 3')

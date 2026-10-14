@@ -1,3 +1,4 @@
+import { businessSubscription } from '../auth/subscription.ts'
 import { localPreview,type EmailEnvironment } from '../auth/environment.ts'
 import type { Account } from '../auth/session'
 import { auditStatement } from '../db/audit.ts'
@@ -19,5 +20,7 @@ export async function plans(request:Request,db:D1Database,user:Account,env:Email
   db.prepare('SELECT (SELECT COUNT(*) FROM quotes WHERE organization_id=? AND deleted_at IS NULL) AS quotes,(SELECT COUNT(*) FROM catalog_items WHERE organization_id=? AND active=1) AS catalog,(SELECT COUNT(*) FROM memberships WHERE organization_id=?) AS members,(SELECT used FROM business_seat_usage WHERE organization_id=?) AS seats').bind(org,org,org,org),
  ])
  const usage=result[2].results[0]
- return Response.json({businessId:org,plan:result[0].results[0],plans:result[1].results,usage:{...usage,pendingInvitations:Number(usage.seats)-Number(usage.members)},preview})
+ const subscription=await businessSubscription(db,org)
+ const activations=(await db.prepare('SELECT p.name AS planName,a.created_at AS createdAt,a.period_start AS periodStart,a.period_end AS periodEnd,a.payment_reference AS reference FROM plan_activations a JOIN subscription_plans p ON p.id=a.plan_id WHERE a.organization_id=? ORDER BY a.rowid DESC LIMIT 10').bind(org).all()).results
+ return Response.json({businessId:org,subscription,activations,plan:result[0].results[0],plans:result[1].results,usage:{...usage,pendingInvitations:Number(usage.seats)-Number(usage.members)},preview})
 }

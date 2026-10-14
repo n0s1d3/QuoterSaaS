@@ -24,7 +24,9 @@
     "test:plans": "node tests/plans-smoke.mjs",
     "plan:activate": "node scripts/activate-plan.mjs",
     "test:activation": "node tests/activation-smoke.mjs",
-    "test:customer-import": "node tests/customer-import-smoke.mjs"
+    "test:customer-import": "node tests/customer-import-smoke.mjs",
+    "test:subscription": "node tests/subscription-smoke.mjs",
+    "test:subscription-ui": "node tests/subscription-browser.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
