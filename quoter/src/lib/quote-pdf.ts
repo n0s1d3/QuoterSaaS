@@ -74,9 +74,6 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     didParseCell: cell => { if (cell.row.index === totals.length - 1) { cell.cell.styles.fontStyle = 'bold'; cell.cell.styles.fillColor = accent; cell.cell.styles.textColor = primary } },
   })
   if(quote.paymentTerms)autoTable(doc,{...common,startY:lastY()+8,theme:'plain',head:[['CONDICIONES DE PAGO']],body:[[quote.paymentTerms]],headStyles:{textColor:primary}})
-  if (quote.notes) autoTable(doc, {
-    ...common, startY: lastY() + 8, theme: 'plain', head: [['NOTAS Y CONDICIONES']], body: [[quote.notes]], headStyles: { textColor: primary },
-  })
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page++) {
     doc.setPage(page); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(110, 120, 114)
