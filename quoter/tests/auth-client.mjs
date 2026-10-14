@@ -7,7 +7,7 @@ export async function testAccount() {
  if(!options.preview)throw new Error('Tests require EMAIL_MODE=preview before creating any test account')
  const testHeaders=process.env.QUOTER_TEST_IP?{'CF-Connecting-IP':process.env.QUOTER_TEST_IP}:{}
  const email=`test-${randomUUID()}@example.com`,password=`${randomUUID()}A!`
- const response=await fetch(base+'/api/auth/register',{method:'POST',headers:{'content-type':'application/json',...testHeaders},body:JSON.stringify({email,password,businessName:'Test business'})})
+ const response=await fetch(base+'/api/auth/register',{method:'POST',headers:{'content-type':'application/json',...testHeaders},body:JSON.stringify({email,password,confirmPassword:password,businessName:'Test business'})})
  assert.equal(response.status,201,await response.clone().text())
  let cookie=response.headers.get('set-cookie').split(';')[0]
  const registered=await response.json()

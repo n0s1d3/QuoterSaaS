@@ -12,6 +12,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message))
  await page.goto(base)
  await page.getByRole('heading',{name:'Bienvenido',exact:true}).waitFor()
+ await page.getByRole('button',{name:'Crear cuenta para mi negocio',exact:true}).click();await page.getByLabel('Nombre del negocio').fill('Confirmación UI');await page.getByLabel('Correo',{exact:true}).fill('confirmation-ui@example.com');await page.getByLabel('Contraseña',{exact:true}).fill('Password-confirm-A!');await page.getByLabel('Confirmar contraseña',{exact:true}).fill('Different-confirm-A!');await page.getByRole('button',{name:'Crear cuenta',exact:true}).click();await page.getByRole('alert').getByText('Las contraseñas no coinciden.',{exact:true}).waitFor();await page.getByRole('button',{name:'Volver a iniciar sesión',exact:true}).click();
  await page.getByLabel('Correo',{exact:true}).fill(user.email);await page.getByLabel('Contraseña',{exact:true}).fill(user.password)
  await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await page.getByRole('heading',{name:'Resumen',exact:true}).waitFor()
  await page.locator('.mini-quote').first().waitFor()

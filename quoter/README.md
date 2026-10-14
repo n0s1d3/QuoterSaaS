@@ -288,3 +288,5 @@ npx wrangler dev --config dist/quoter/wrangler.json --persist-to /tmp/quoter-adm
 # In another terminal; EMAIL_MODE=preview is required for local email fixtures.
 QUOTER_ADMIN_ISOLATED=1 QUOTER_IMPORT_STATE=/tmp/quoter-admin-tests QUOTER_TEST_URL=http://127.0.0.1:5184 QUOTER_BROWSER_PATH=/usr/bin/chromium npm run test:admin
 ```
+
+Registration requires `confirmPassword` to match `password` exactly, both in the UI and POST `/api/auth/register`; login does not require confirmation. The verified, enabled designated master receives permanent validity for its original business when it still owns it. This is a dynamic privilege, not a distant expiration date or imported billing field: changing the master removes it, and membership in other businesses does not extend their plans. Business suspension still applies, and the assigned capacity limits remain. The master starts at `/admin` after login or opening `/`; its ordinary business dashboard remains available at `/overview`.

@@ -2,8 +2,8 @@ import { requirePlatformAdmin,confirmAdmin,adminGate } from '../auth/platform-ad
 import type { Account } from '../auth/session'
 import { body,HttpError,text } from '../http.ts'
 import { businessSubscription } from '../auth/subscription.ts'
-const state="CASE WHEN o.suspended_at IS NOT NULL THEN 'suspended' WHEN COALESCE(o.paid_until,o.trial_expires_at,0)<=unixepoch() THEN 'expired' WHEN o.paid_until IS NOT NULL THEN 'active' ELSE 'trial' END"
-const businessFields=`o.id,o.name,o.currency,o.created_at AS createdAt,o.plan_id AS planId,p.name AS planName,o.trial_expires_at AS trialExpiresAt,o.paid_until AS paidUntil,o.suspended_at AS suspendedAt,${state} AS status`
+const state="CASE WHEN o.suspended_at IS NOT NULL THEN 'suspended' WHEN EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) THEN 'permanent' WHEN COALESCE(o.paid_until,o.trial_expires_at,0)<=unixepoch() THEN 'expired' WHEN o.paid_until IS NOT NULL THEN 'active' ELSE 'trial' END"
+const businessFields=`o.id,o.name,o.currency,EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) AS permanent,o.created_at AS createdAt,o.plan_id AS planId,p.name AS planName,o.trial_expires_at AS trialExpiresAt,o.paid_until AS paidUntil,o.suspended_at AS suspendedAt,${state} AS status`
 function search(value:string){return '%'+value.replaceAll('\\','\\\\').replaceAll('%','\\%').replaceAll('_','\\_')+'%'}
 export async function platformAdmin(request:Request,db:D1Database,user:Account,path:string){
  const master=await requirePlatformAdmin(db,user)

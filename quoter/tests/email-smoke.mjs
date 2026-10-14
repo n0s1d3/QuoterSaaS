@@ -6,7 +6,7 @@ import { base,testAccount } from './auth-client.mjs'
 const tokenOf=url=>new URLSearchParams(new URL(url).hash.slice(1)).get('token')
 async function raw(path,data,cookie){return fetch(base+'/api'+path,{method:'POST',headers:{'content-type':'application/json',...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(data)})}
 const email='email-'+randomUUID()+'@example.com',password=randomUUID()+'Aa!'
-const registration=await raw('/auth/register',{email,password,businessName:'Email test'})
+const registration=await raw('/auth/register',{email,password,confirmPassword:password,businessName:'Email test'})
 assert.equal(registration.status,201);const cookie=registration.headers.get('set-cookie').split(';')[0],registered=await registration.json()
 assert.ok(registered.previewUrl,'Copy .dev.vars.example to .dev.vars and restart Vite for local preview')
 assert.equal(registered.emailVerified,false)

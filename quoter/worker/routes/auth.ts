@@ -15,6 +15,7 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
  }
  if(!['/api/auth/login','/api/auth/register'].includes(path))throw new HttpError(404,'Route not found')
  const data=await body(request)
+ if(path.endsWith('register')&&(typeof data.confirmPassword!=='string'||data.confirmPassword!==data.password))throw new HttpError(400,'Las contraseñas no coinciden.')
  const email=text(data.email,'Correo',true,254)!.toLowerCase()
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HttpError(400,'Correo inválido')
  if(typeof data.password!=='string'||data.password.length>128||data.password.length<1)throw new HttpError(400,'Contraseña inválida')

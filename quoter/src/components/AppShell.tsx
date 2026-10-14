@@ -19,9 +19,9 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
   const role = user.role === 'owner' ? 'Propietario' : user.role === 'editor' ? 'Editor' : 'Solo lectura'
   const initials = user.email.slice(0, 2).toUpperCase()
   const links: {url:string;label:string;icon:AppIconName}[] = [
-    {url:'/',label:'Resumen',icon:'dashboard'}, {url:'/quotes',label:'Cotizaciones',icon:'quotes'}, {url:'/catalog',label:'Catálogo',icon:'catalog'},
-    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}, {url:'/data',label:'Datos y recuperación',icon:'catalog' as const},{url:'/plan',label:'Plan y uso',icon:'business' as const}] : []),
     ...(user.isPlatformAdmin?[{url:'/admin',label:'Administración',icon:'business' as const}]:[]),
+    {url:user.isPlatformAdmin?'/overview':'/',label:'Resumen',icon:'dashboard'}, {url:'/quotes',label:'Cotizaciones',icon:'quotes'}, {url:'/catalog',label:'Catálogo',icon:'catalog'},
+    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}, {url:'/data',label:'Datos y recuperación',icon:'catalog' as const},{url:'/plan',label:'Plan y uso',icon:'business' as const}] : []),
   ]
   useEffect(() => { const media = window.matchMedia('(max-width: 700px)'); const change = () => {setMobile(media.matches);setMenuOpen(false)}; media.addEventListener('change',change); return () => media.removeEventListener('change',change) }, [])
   useEffect(() => { if(!menuOpen || !mobile) return; const trigger = menuButton.current; const overflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; sidebar.current?.querySelector<HTMLButtonElement>('.mobile-nav-close')?.focus(); return () => {document.body.style.overflow = overflow;trigger?.focus()} }, [menuOpen,mobile])
@@ -46,7 +46,7 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
   function toggleMenu() { if(mobile) setMenuOpen(!menuOpen); else setCollapsed(!collapsed) }
   return <div ref={shell} className={`app app-shell${menuOpen ? ' nav-open' : ''}${collapsed ? ' nav-collapsed' : ''}`}>
     {menuOpen && <button type="button" className="nav-backdrop" aria-label="Cerrar menú" onClick={() => setMenuOpen(false)}/>}
-    <aside ref={sidebar} id="app-navigation" aria-label="Menú principal" inert={mobile && !menuOpen}><a className="brand" href="/" onClick={e => {e.preventDefault();go('/')}}><span>Q</span><b>Quoter</b></a><button type="button" className="mobile-nav-close icon-button" aria-label="Cerrar menú lateral" onClick={() => setMenuOpen(false)}><AppIcon name="close"/></button>
+    <aside ref={sidebar} id="app-navigation" aria-label="Menú principal" inert={mobile && !menuOpen}><a className="brand" href="/" onClick={e => {e.preventDefault();go(user.isPlatformAdmin?'/admin':'/')}}><span>Q</span><b>Quoter</b></a><button type="button" className="mobile-nav-close icon-button" aria-label="Cerrar menú lateral" onClick={() => setMenuOpen(false)}><AppIcon name="close"/></button>
       <div className="workspace"><p className="sidebar-caption">ESPACIO DE TRABAJO</p><strong>{user.organizationName}</strong><small>{role}</small></div>
       <label className="business-switch">Negocio<select aria-label="Negocio" value={user.organizationId} onChange={e => {setMenuOpen(false);void switchBusiness(e.target.value)}}>{businesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
       <p className="sidebar-caption nav-caption">PRINCIPAL</p><nav>{links.map(link => <a key={link.url} href={link.url} title={link.label} className={(link.url === '/' ? path === '/' : path.startsWith(link.url)) ? 'active' : ''} aria-current={(link.url === '/' ? path === '/' : path.startsWith(link.url)) ? 'page' : undefined} onClick={e => {e.preventDefault();go(link.url)}}><AppIcon name={link.icon}/><span>{link.label}</span></a>)}</nav>
