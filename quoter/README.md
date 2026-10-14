@@ -212,3 +212,21 @@ npm run test:ui
 ```
 
 `test:data` checks business isolation, owner-only data operations, backup validation, spreadsheet safety, ID remapping, one-use concurrent restore, audit events, trash preservation and server pagination/dashboard totals. `test:ui` checks real login/logout, search, pagination, state changes, PDF, history, trash recovery, backup download/review/import and layouts at 320/390/768/1280/1920 px. Both are tracked in the repository. Set `QUOTER_TEST_URL` when Vite uses another local port. `QUOTER_BROWSER_PATH` can point to an already installed Chromium instead of downloading Playwright's browser. Optional `QUOTER_TEST_IP` isolates synthetic local fixture rate-limit buckets during repeated runs; it does not disable application limits.
+
+## Business plans and capacity
+
+Apply `0010_business_plans.sql`. Existing and new businesses default to Gratis; existing records and team access are preserved, even when already over a limit. Plans are provisional capacity limits, without prices or monthly resets:
+
+| Plan | Quotes outside trash | Active catalog | Members + pending seats |
+| --- | ---: | ---: | ---: |
+| Gratis | 25 | 100 | 3 |
+| Pro | 500 | 1000 | 10 |
+| Negocio | 5000 | 10000 | 30 |
+
+All quote states and expired quotes outside trash count. Archived catalog and trash do not count; the owner counts as a team member, and unique unexpired invitations reserve seats until accepted, revoked or expired. Reinviting the same email does not consume another seat. The owner-only **Plan y uso** page (`/plan`, GET `/api/plans`) displays usage, limits and warnings from 80% capacity. Mutation/route changes refresh notices; quota failures explain which resource reached its limit. Business switching keeps usage isolated.
+
+SQLite triggers enforce limits inside write transactions, covering creation, duplication, trash recovery, catalog reactivation, team invitations/acceptance and bulk backup restores. Failed writes roll back their sequence allocation, token consumption and related changes. Backup restores release archived/trash capacity before additions, and cannot import or modify the business plan. Existing data can still be read/edited when over quota; new resource additions are blocked until capacity is freed or the plan changes. A downgrade does not delete records or team memberships.
+
+`PATCH /api/plans` is a simulation for owners only when `EMAIL_MODE=preview` and the request origin is localhost/127.0.0.1/::1. It records an audit event, applies real local capacity limits, and does not activate a subscription or charge money. Public deployments reject this endpoint even if preview mode was mistakenly enabled; their plan changes require trusted administrative provisioning until a billing integration is implemented. No checkout, subscription billing, prices or payment provider are implemented.
+
+`npm run test:plans` covers concurrent quote quotas/rollback, duplication, editing at capacity, trash recovery, downgrade preservation, catalog/reactivation, backup enforcement, reserved seats/resends/acceptance, role restrictions and business isolation. Unit tests check warning thresholds and reject plan simulation outside local preview. The permanent browser suite also verifies local plan switching; additional mobile/desktop checks exercised usage warnings and 320/390/768/1280/1920 px layouts.

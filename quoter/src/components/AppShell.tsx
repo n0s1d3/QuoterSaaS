@@ -1,3 +1,4 @@
+import PlanNotice from './PlanNotice'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Account } from '../pages/Access'
 import AppIcon, { type AppIconName } from './AppIcon'
@@ -19,12 +20,12 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
   const initials = user.email.slice(0, 2).toUpperCase()
   const links: {url:string;label:string;icon:AppIconName}[] = [
     {url:'/',label:'Resumen',icon:'dashboard'}, {url:'/quotes',label:'Cotizaciones',icon:'quotes'}, {url:'/catalog',label:'Catálogo',icon:'catalog'},
-    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}, {url:'/data',label:'Datos y recuperación',icon:'catalog' as const}] : []),
+    ...(user.role === 'owner' ? [{url:'/team',label:'Equipo',icon:'team' as const}, {url:'/settings',label:'Mi negocio',icon:'business' as const}, {url:'/data',label:'Datos y recuperación',icon:'catalog' as const},{url:'/plan',label:'Plan y uso',icon:'business' as const}] : []),
   ]
   useEffect(() => { const media = window.matchMedia('(max-width: 700px)'); const change = () => {setMobile(media.matches);setMenuOpen(false)}; media.addEventListener('change',change); return () => media.removeEventListener('change',change) }, [])
   useEffect(() => { if(!menuOpen || !mobile) return; const trigger = menuButton.current; const overflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; sidebar.current?.querySelector<HTMLButtonElement>('.mobile-nav-close')?.focus(); return () => {document.body.style.overflow = overflow;trigger?.focus()} }, [menuOpen,mobile])
   useEffect(() => {
-    const outside = (event:PointerEvent) => {
+    const outside = (event:MouseEvent) => {
       if (!(event.target instanceof Node)) return
       closeDisclosures(shell.current, event.target)
       if (!sidebar.current?.contains(event.target) && !menuButton.current?.contains(event.target)) { setMenuOpen(false); setCollapsed(true) }
@@ -36,9 +37,9 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
       focused?.querySelector<HTMLElement>('summary')?.focus()
       setMenuOpen(false); setCollapsed(true)
     }
-    document.addEventListener('pointerdown', outside)
+    document.addEventListener('click', outside)
     document.addEventListener('keydown', escape)
-    return () => {document.removeEventListener('pointerdown', outside);document.removeEventListener('keydown', escape)}
+    return () => {document.removeEventListener('click', outside);document.removeEventListener('keydown', escape)}
   }, [])
   function go(url:string) { setMenuOpen(false); closeDisclosures(shell.current); navigate(url) }
   function toggleMenu() { if(mobile) setMenuOpen(!menuOpen); else setCollapsed(!collapsed) }
@@ -53,6 +54,6 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
     <div className="app-workspace" inert={mobile && menuOpen}><header className="topbar"><button ref={menuButton} type="button" className="icon-button menu-toggle" aria-label="Alternar menú lateral" aria-controls="app-navigation" aria-expanded={mobile ? menuOpen : !collapsed} onClick={toggleMenu}><AppIcon name="menu"/></button>
       <form className="header-search" role="search" onSubmit={e => {e.preventDefault();go(`/quotes?search=${encodeURIComponent(search.trim())}`)}}><AppIcon name="search"/><input aria-label="Buscar cotizaciones" type="search" placeholder="Buscar cliente o cotización…" maxLength={200} value={search} onChange={e => setSearch(e.target.value)}/><button type="submit">Buscar</button></form>
       <details className="user-menu"><summary aria-label="Menú de usuario"><span className="user-avatar">{initials}</span><span className="user-menu-label">{user.email.split('@')[0]}<small>{role}</small></span><AppIcon name="chevron"/></summary><div className="user-menu-popover"><strong>Tu cuenta</strong><p>{user.email}</p><small>{user.organizationName} · {role}</small><button className="secondary" type="button" onClick={logout}><AppIcon name="logout"/>Cerrar sesión</button></div></details>
-    </header>{error && <p className="error shell-error" role="alert">{error}</p>}{children}</div>
+    </header>{user.role==='owner'&&<PlanNotice path={path} navigate={navigate}/>} {error && <p className="error shell-error" role="alert">{error}</p>}{children}</div>
   </div>
 }

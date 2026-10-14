@@ -1,3 +1,4 @@
+import { plans } from './routes/plans'
 import { dashboard } from './routes/dashboard'
 import { dataHistory } from './routes/data-history'
 import { backups } from './routes/backups'
@@ -38,6 +39,7 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       if(path==='/api/invitations/accept')return await acceptInvitation(request,env.DB,user)
       if(path.startsWith('/api/businesses'))return await businesses(request,env.DB,user,path)
       if(expectedBusiness&&expectedBusiness!==user.organizationId)throw new HttpError(409,'El negocio activo cambió. Recarga antes de continuar')
+      if(path==='/api/plans')return await plans(request,env.DB,user,env)
       if(path==='/api/diagnostics')return await diagnostics(request,env.DB,user)
       if(path==='/api/history'||path.startsWith('/api/trash')||/^\/api\/quotes\/[^/]+\/history$/.test(path))return await dataHistory(request,env.DB,user,path)
       if(path.startsWith('/api/backups/'))return await backups(request,env.DB,user,path)
@@ -52,6 +54,9 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       return await quotes(request, env.DB, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'),user)
     } catch (error) {
       if (error instanceof HttpError) return Response.json({ error: error.message }, { status: error.status })
+      const message=String(error)
+      const resource=message.includes('QUOTER_LIMIT_QUOTES')?'quotes':message.includes('QUOTER_LIMIT_CATALOG')?'catalog':message.includes('QUOTER_LIMIT_MEMBERS')?'members':null
+      if(resource){const label=resource==='quotes'?'cotizaciones activas':resource==='catalog'?'partidas activas del catálogo':'integrantes e invitaciones pendientes';return Response.json({error:`Alcanzaste el límite de ${label} de tu plan. El propietario puede consultar los cupos en Plan y uso.`,code:'PLAN_LIMIT',resource},{status:409})}
       console.error('API failure', error)
       return Response.json({ error: 'No se pudo completar la solicitud' }, { status: 500 })
     }
