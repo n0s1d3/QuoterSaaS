@@ -16,11 +16,11 @@ CREATE TABLE admin_mfa_recovery (
  PRIMARY KEY(user_id,code_hash)
 );
 CREATE TRIGGER admin_mfa_write_guard BEFORE INSERT ON request_write_guards WHEN NEW.scope=3 BEGIN
- SELECT CASE WHEN NOT EXISTS(
+ SELECT RAISE(ABORT,'QUOTER_MFA_REQUIRED') WHERE NOT EXISTS(
   SELECT 1 FROM sessions s JOIN admin_mfa f ON f.user_id=s.user_id
   WHERE s.token_hash=NEW.token_hash AND s.user_id=NEW.user_id AND f.enabled_at IS NOT NULL
    AND s.mfa_factor_version=f.version AND s.mfa_verified_until>unixepoch()
- ) THEN RAISE(ABORT,'QUOTER_MFA_REQUIRED') END;
+ );
 END;
 CREATE TRIGGER admin_mfa_reset AFTER DELETE ON admin_mfa WHEN OLD.enabled_at IS NOT NULL BEGIN
  DELETE FROM sessions WHERE user_id=OLD.user_id;

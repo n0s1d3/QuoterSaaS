@@ -37,3 +37,9 @@ Las pruebas que envíen correo real deben realizarse con destinatarios propios a
 Usar la URL gratuita workers.dev para la app. Para probar Resend sin dominio propio, configurar MAIL_FROM como `Quoter <onboarding@resend.dev>`. Este remitente de prueba solo permite enviar a la dirección asociada a la cuenta Resend; comprobar cuál es antes de iniciar la prueba. No utilizar una dirección gmail.com como MAIL_FROM: el propietario de Quoter no puede verificar el dominio gmail.com en Resend. Gmail puede mantenerse como correo de cuenta/contacto.
 
 Esta combinación sirve para probar la cuenta propia, la verificación y recuperación. No habilita correos de acceso a clientes con direcciones distintas: para ese lanzamiento será necesario un dominio de envío verificado o cambiar de proveedor con un mecanismo autorizado para el remitente elegido. No publicar como lista para clientes una instalación que no puede entregar sus verificaciones.
+
+## Migraciones 0016/0017 pendientes por incomplete input
+
+Se reescribieron los SELECT de rechazo de los triggers sin CASE/END internos, manteniendo la misma validación de sesiones, roles y MFA. La migración 0016 admite una tabla ya creada durante un intento parcial. Se verificó la instalación completa en D1 local y el rechazo/aceptación por sesión, rol y segundo factor en SQLite. La ejecución remota debe confirmarse con la cuenta conectada.
+
+Actualizar el código y repetir `npx wrangler d1 migrations apply quoter-db --remote`. No recrear la base ni borrar tablas: Wrangler conserva el registro de migraciones completadas. Si vuelve a fallar, revisar la salida antes de ejecutar sentencias manuales, especialmente ALTER TABLE de la 0017.
