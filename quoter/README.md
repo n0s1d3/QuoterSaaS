@@ -294,3 +294,7 @@ Registration requires `confirmPassword` to match `password` exactly, both in the
 ## Security review
 
 See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) for the October 2026 findings, patches, validation and remaining risks. Apply all migrations, including `0016_atomic_request_authorization.sql`, before running the updated Worker. The review covers SQL binding, tenant isolation, password hashes, session revocation, email-token consumption, CSRF, browser headers and request-size limits. `npm run test:security` performs adversarial checks with local fixture accounts; set `QUOTER_TEST_URL` and the matching `QUOTER_IMPORT_STATE` directory. With `QUOTER_BROWSER_PATH`, use a compiled-assets server to validate CSP and PDF downloads.
+
+## Admin second factor and launch progress
+
+Apply migration `0017_admin_mfa.sql`, then run `npm run mfa:setup` and restart the local server. The designated verified master must enroll an authenticator before using Administration. See [ADMIN_MFA.md](ADMIN_MFA.md) for enrollment, secret handling, one-use recovery, operator reset and isolated tests. [ROADMAP.md](ROADMAP.md) records the estimated 83% launch readiness and remaining production gates. No remote deployment or real email delivery was performed in this stage.

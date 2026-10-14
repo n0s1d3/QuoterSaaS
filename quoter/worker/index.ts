@@ -1,3 +1,4 @@
+import { adminMfa,requireMfa } from './routes/admin-mfa'
 import { requestDatabase } from './auth/request-authorization'
 import { platformAdmin } from './routes/platform-admin'
 import { businessSubscription,requireSubscription,expiredMessage,suspendedMessage } from './auth/subscription'
@@ -30,7 +31,7 @@ export default {
   },
 } satisfies ExportedHandler<Env>
 
-async function handle(request: Request, env: Env & EmailEnvironment, context: ExecutionContext) {
+async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRYPTION_KEY?:string}, context: ExecutionContext) {
     const path = new URL(request.url).pathname.replace(/\/$/, '')
     try {
       if (!path.startsWith('/api/')) return new Response(null, { status: 404 })
@@ -42,7 +43,8 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       const expectedUser=request.headers.get('X-Quoter-User'),expectedBusiness=request.headers.get('X-Quoter-Business')
       if(expectedUser&&expectedUser!==user.id)throw new HttpError(401,'La cuenta activa cambió. Inicia sesión nuevamente')
       const db=await requestDatabase(env.DB,request,user,path)
-      if(path.startsWith('/api/admin/'))return await platformAdmin(request,db,user,path)
+      if(path==='/api/security/admin-mfa')return await adminMfa(request,db,user,env.MFA_ENCRYPTION_KEY)
+      if(path.startsWith('/api/admin/')){await requireMfa(db,user,request);return await platformAdmin(request,db,user,path)}
       if(path==='/api/invitations/preview')return await previewInvitation(request,db,user)
       if(path==='/api/invitations/accept')return await acceptInvitation(request,db,user)
       if(path.startsWith('/api/businesses'))return await businesses(request,db,user,path)
@@ -67,6 +69,7 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       const message=String(error)
       if(message.includes('QUOTER_BUSINESS_SUSPENDED'))return Response.json({error:suspendedMessage,code:'BUSINESS_SUSPENDED'},{status:403})
       if(message.includes('QUOTER_SUBSCRIPTION_EXPIRED'))return Response.json({error:expiredMessage,code:'SUBSCRIPTION_EXPIRED'},{status:403})
+      if(message.includes('QUOTER_MFA_REQUIRED'))return Response.json({error:'Verifica el segundo factor para entrar en Administración'},{status:403})
       if(message.includes('QUOTER_SESSION_REVOKED'))return Response.json({error:'Tu sesión fue revocada. Inicia sesión nuevamente'},{status:401})
       if(message.includes('QUOTER_ACCESS_CHANGED'))return Response.json({error:'Tus permisos cambiaron. Recarga antes de continuar',code:'ACCESS_CHANGED'},{status:403})
       const resource=message.includes('QUOTER_LIMIT_QUOTES')?'quotes':message.includes('QUOTER_LIMIT_CATALOG')?'catalog':message.includes('QUOTER_LIMIT_MEMBERS')?'members':null

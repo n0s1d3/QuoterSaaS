@@ -1,7 +1,7 @@
 import { cookieToken,digest,type Account } from './session.ts'
 /** Revalidate the live session and privileges in the same transaction as database writes. */
 export async function requestDatabase(db:D1Database,request:Request,user:Account,path:string){
- const scope=path.startsWith('/api/admin/')?3:path.startsWith('/api/backups/')||path==='/api/history'||path.startsWith('/api/trash')||path.startsWith('/api/team')||path==='/api/plans'||path==='/api/branding'&&request.method!=='GET'||request.method==='DELETE'?2:request.method==='GET'||path.startsWith('/api/invitations/')||path.startsWith('/api/businesses')||path==='/api/diagnostics'?0:1
+ const scope=path.startsWith('/api/admin/')?3:path.startsWith('/api/backups/')||path==='/api/history'||path.startsWith('/api/trash')||path.startsWith('/api/team')||path==='/api/plans'||path==='/api/branding'&&request.method!=='GET'||request.method==='DELETE'?2:request.method==='GET'||path==='/api/security/admin-mfa'||path.startsWith('/api/invitations/')||path.startsWith('/api/businesses')||path==='/api/diagnostics'?0:1
  const tokenHash=await digest(cookieToken(request)!)
  const originals=new WeakMap<object,D1PreparedStatement>()
  const batch=async <T>(statements:D1PreparedStatement[])=>{

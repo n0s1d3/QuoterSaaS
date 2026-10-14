@@ -29,7 +29,10 @@
     "test:subscription-ui": "node tests/subscription-browser.mjs",
     "admin:master": "node scripts/admin-master.mjs",
     "test:admin": "node tests/platform-admin-smoke.mjs",
-    "test:security": "node tests/security-smoke.mjs"
+    "test:security": "node tests/security-smoke.mjs",
+    "test:mfa": "node tests/mfa-smoke.mjs",
+    "admin:reset-mfa": "node scripts/reset-admin-mfa.mjs",
+    "mfa:setup": "node scripts/configure-local-mfa.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

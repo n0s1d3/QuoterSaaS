@@ -41,7 +41,7 @@ La restauración valida y proyecta campos, descarta datos de autenticación y ca
 
 ## Riesgos pendientes y siguiente orden recomendado
 
-1. **Cuenta maestra: MFA o passkey.** Hoy las acciones sensibles requieren confirmar la contraseña, pero una contraseña robada no constituye una segunda barrera. Conviene exigir un segundo factor y disponer de recuperación segura antes de publicar.
+1. **Cuenta maestra: seguimiento resuelto en código.** Se añadió MFA TOTP obligatorio para Administración, secreto cifrado AES-GCM, autorización de una hora ligada a la sesión, códigos de recuperación de un solo uso y restablecimiento exclusivo por operador con revocación de sesiones. Véase [ADMIN_MFA.md](ADMIN_MFA.md). Queda pendiente inscribir el autenticador real del propietario y configurar la clave del servidor publicado. TOTP no es resistente a phishing como una passkey.
 2. **Abuso de registro y disponibilidad.** Límites por IP/cuenta y cuotas comerciales no detienen bots distribuidos. Clientes, elementos archivados y papelera pueden crecer sin consumir esas cuotas. Añadir Turnstile, límites operativos y presupuestos de almacenamiento; acordar retención antes de eliminar datos. No se realizó una prueba de saturación del servicio.
 3. **Fortaleza del hash.** Implementar la actualización versionada descrita arriba y medir CPU/latencia en el entorno final.
 4. **Enumeración y bloqueo dirigido.** El registro revela si un correo ya existe. El límite de intentos por correo puede usarse para bloquear temporalmente a una persona. Revisar respuestas y combinar señales de abuso/captcha sin retirar la protección contra fuerza bruta.

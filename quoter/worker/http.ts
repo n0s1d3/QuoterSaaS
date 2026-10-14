@@ -14,7 +14,7 @@ export async function boundedText(request:Request,maxBytes:number){
  }catch(error){if(error instanceof HttpError)throw error;throw new HttpError(400,'El cuerpo de la solicitud no es válido')}finally{reader.releaseLock()}
 }
 export async function body(request: Request): Promise<Record<string, unknown>> {
- const raw=await boundedText(request,new URL(request.url).pathname.startsWith('/api/auth/')?16384:1048576)
+ const raw=await boundedText(request,(/^\/api\/(auth|security)\//.test(new URL(request.url).pathname))?16384:1048576)
  let data: unknown
  try { data = JSON.parse(raw) } catch { throw new HttpError(400, 'JSON inválido') }
  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new HttpError(400, 'Se esperaba un objeto JSON')

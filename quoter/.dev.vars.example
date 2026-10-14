@@ -4,3 +4,6 @@ EMAIL_MODE=preview
 # RESEND_API_KEY=your-secret-in-environment-settings
 # MAIL_FROM=Quoter <accounts@your-verified-domain.com>
 # APP_URL=https://your-application-domain.com
+
+# Admin MFA: run npm run mfa:setup to generate a private local 32-byte encryption key.
+# In production use the MFA_ENCRYPTION_KEY secret binding; never expose it in VITE_ variables.
