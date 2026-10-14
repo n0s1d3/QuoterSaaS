@@ -1,3 +1,4 @@
+import { backupIdentity } from '../db/backup-identity'
 import { backupLimit, quotesCsv, validateBackup } from '../../src/lib/backup'
 import { digest, randomToken, type Account } from '../auth/session'
 import { limit } from '../auth/rate-limit'
@@ -29,35 +30,39 @@ export async function backups(request:Request,db:D1Database,user:Account,path:st
  let envelope:Record<string,unknown>,backup
  try{envelope=JSON.parse(raw);backup=validateBackup(envelope.backup)}catch(e){throw new HttpError(400,e instanceof Error?e.message:'Respaldo inválido')}
  if(backup.customers.length+backup.catalog.length+backup.quotes.length+backup.items.length>2000)throw new HttpError(400,'La restauración admite hasta 2000 registros por archivo')
- const hash=await digest(JSON.stringify(backup))
+ const hash=await digest(JSON.stringify({mode:'overwrite-v2',backup}))
+ const identity=await backupIdentity(db,org,backup)
  if(path.endsWith('/preview')){
   const token=randomToken()
   await db.prepare('DELETE FROM backup_restores WHERE completed_at IS NULL AND expires_at<=?').bind(Math.floor(Date.now()/1000)).run()
   await db.prepare('INSERT INTO backup_restores(id,organization_id,user_id,token_hash,content_hash,expires_at) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),org,user.id,await digest(token),hash,Math.floor(Date.now()/1000)+900).run()
-  return Response.json({token,businessName:backup.business.name,exportedAt:backup.exportedAt,customers:backup.customers.length,catalog:backup.catalog.length,quotes:backup.quotes.length,items:backup.items.length,trashed:backup.quotes.filter(q=>q.deleted_at).length})
+  return Response.json({token,businessName:backup.business.name,exportedAt:backup.exportedAt,customers:backup.customers.length,catalog:backup.catalog.length,quotes:backup.quotes.length,items:backup.items.length,trashed:backup.quotes.filter(q=>q.deleted_at).length,changes:identity.counts})
  }
  if(envelope.confirm!==true||typeof envelope.token!=='string')throw new HttpError(400,'Revisa y confirma la restauración primero')
  const preview=await db.prepare('SELECT id FROM backup_restores WHERE organization_id=? AND user_id=? AND token_hash=? AND content_hash=? AND completed_at IS NULL AND expires_at>?').bind(org,user.id,await digest(envelope.token),hash,Math.floor(Date.now()/1000)).first<{id:string}>()
  if(!preview)throw new HttpError(400,'La revisión venció, cambió el archivo o ya se utilizó. Revisa nuevamente.')
  const operation=crypto.randomUUID(),gate='EXISTS (SELECT 1 FROM backup_restores WHERE id=? AND consumption_id=?)',gateValues=[preview.id,operation]
  const statements=[db.prepare('UPDATE backup_restores SET completed_at=CURRENT_TIMESTAMP,consumption_id=? WHERE id=? AND completed_at IS NULL AND expires_at>?').bind(operation,preview.id,Math.floor(Date.now()/1000))]
- const maps={customers:new Map<string,string>(),catalog:new Map<string,string>(),quotes:new Map<string,string>()}
- for(const key of ['customers','catalog','quotes'] as const)for(const row of backup[key])maps[key].set(row.id as string,crypto.randomUUID())
+ const {maps,existing}=identity
+ const newQuotes=backup.quotes.filter(row=>!existing.quotes.has(maps.quotes.get(row.id as string)!))
+ const newPositions=new Map(newQuotes.map((row,index)=>[row.id as string,index+1]))
  // JSON row batches keep the number of D1 queries low and bind all imported data.
  const bulk=(table:string,columns:string[],rows:Record<string,unknown>[],quoteNumbers=false)=>{
   let chunk:Record<string,unknown>[]=[];let bytes=0
-  const flush=()=>{if(!chunk.length)return;const expressions=columns.map(key=>`json_extract(e.value,'$.${key}')`);if(quoteNumbers)expressions.push(`(SELECT printf('Q-%04d',s.value-${backup.quotes.length}+json_extract(e.value,'$.__index')) FROM quote_sequences s WHERE s.organization_id=json_extract(e.value,'$.organization_id'))`);statements.push(db.prepare(`INSERT INTO ${table} (${[...columns,...(quoteNumbers?['quote_number']:[])].join(',')}) SELECT ${expressions.join(',')} FROM json_each(?) e WHERE ${gate}`).bind(JSON.stringify(chunk),...gateValues));chunk=[];bytes=0}
+  const flush=()=>{if(!chunk.length)return;const expressions=columns.map(key=>`json_extract(e.value,'$.${key}')`);if(quoteNumbers)expressions.push(`COALESCE((SELECT q.quote_number FROM quotes q WHERE q.id=json_extract(e.value,'$.id') AND q.organization_id=json_extract(e.value,'$.organization_id')),(SELECT printf('Q-%04d',s.value-${newQuotes.length}+json_extract(e.value,'$.__index')) FROM quote_sequences s WHERE s.organization_id=json_extract(e.value,'$.organization_id')))`);const update=table==='customers'||table==='catalog_items'||table==='quotes';const fields=columns.filter(key=>!['id','organization_id'].includes(key));let conflict=update?` ON CONFLICT(id) DO UPDATE SET ${fields.map(key=>`${key}=excluded.${key}`).join(',')} WHERE ${table}.organization_id=excluded.organization_id`:'';if(table==='quotes')conflict=conflict.replace(' WHERE ', ',revision=quotes.revision+1,updated_at=CURRENT_TIMESTAMP WHERE ');statements.push(db.prepare(`INSERT INTO ${table} (${[...columns,...(quoteNumbers?['quote_number']:[])].join(',')}) SELECT ${expressions.join(',')} FROM json_each(?) e WHERE ${gate}${conflict}`).bind(JSON.stringify(chunk),...gateValues));chunk=[];bytes=0}
+
   for(const row of rows){const length=new TextEncoder().encode(JSON.stringify(row)).length;if(chunk.length>=100||bytes+length>800000)flush();chunk.push(row);bytes+=length}flush()
  }
  bulk('customers',['id','organization_id','name','company','phone','email','tax_id','address'],backup.customers.map(row=>({...row,id:maps.customers.get(row.id as string),organization_id:org})))
  bulk('catalog_items',['id','organization_id','name','description','unit_price','unit','category','duration','valid_until','reviewed_at','stale_after_days','active'],backup.catalog.map(row=>({...row,id:maps.catalog.get(row.id as string),organization_id:org})))
- if(backup.quotes.length)statements.push(db.prepare(`INSERT INTO quote_sequences(organization_id,value) SELECT ?,? WHERE ${gate} ON CONFLICT(organization_id) DO UPDATE SET value=value+excluded.value`).bind(org,backup.quotes.length,...gateValues))
- bulk('quotes',['id','organization_id','customer_id','status','issue_date','expiry_date','subtotal','discount','tax','total','notes','payment_terms','surcharge_type','surcharge_value','surcharge','branding_snapshot','branding_captured_at','deleted_at'],backup.quotes.map((row,index)=>({...row,id:maps.quotes.get(row.id as string),organization_id:org,customer_id:maps.customers.get(row.customer_id as string),__index:index+1})),true)
+ if(newQuotes.length)statements.push(db.prepare(`INSERT INTO quote_sequences(organization_id,value) SELECT ?,? WHERE ${gate} ON CONFLICT(organization_id) DO UPDATE SET value=value+excluded.value`).bind(org,newQuotes.length,...gateValues))
+ bulk('quotes',['id','organization_id','customer_id','status','issue_date','expiry_date','subtotal','discount','tax','total','notes','payment_terms','surcharge_type','surcharge_value','surcharge','branding_snapshot','branding_captured_at','deleted_at','write_token'],backup.quotes.map(row=>({...row,id:maps.quotes.get(row.id as string),organization_id:org,customer_id:maps.customers.get(row.customer_id as string),write_token:operation,__index:newPositions.get(row.id as string)||0})),true)
+ statements.push(db.prepare(`DELETE FROM quote_items WHERE quote_id IN (SELECT q.id FROM quotes q WHERE q.organization_id=? AND q.write_token=?) AND ${gate}`).bind(org,operation,...gateValues))
  bulk('quote_items',['id','quote_id','description','quantity','unit_price','tax_rate','line_subtotal','line_tax','line_total','sort_order','catalog_item_id','unit','duration','valid_until'],backup.items.map(row=>({...row,id:crypto.randomUUID(),quote_id:maps.quotes.get(row.quote_id as string),catalog_item_id:row.catalog_item_id?maps.catalog.get(row.catalog_item_id as string):null})))
- bulk('audit_events',['id','organization_id','quote_id','action','actor_user_id','actor_email','detail'],backup.quotes.map(row=>({id:crypto.randomUUID(),organization_id:org,quote_id:maps.quotes.get(row.id as string),action:'quote.imported',actor_user_id:user.id,actor_email:user.email,detail:JSON.stringify({originalNumber:row.quote_number})})))
+ bulk('audit_events',['id','organization_id','quote_id','action','actor_user_id','actor_email','detail'],backup.quotes.map(row=>({id:crypto.randomUUID(),organization_id:org,quote_id:maps.quotes.get(row.id as string),action:existing.quotes.has(maps.quotes.get(row.id as string)!)?'quote.backup.updated':'quote.imported',actor_user_id:user.id,actor_email:user.email,detail:JSON.stringify({originalNumber:row.quote_number})})))
  if(envelope.updateProfile===true)statements.push(db.prepare(`UPDATE organizations SET name=?,logo=?,primary_color=?,accent_color=?,tax_id=?,address=?,phone=?,contact_email=?,payment_terms=? WHERE id=? AND ${gate}`).bind(...['name','logo','primaryColor','accentColor','taxId','address','phone','contactEmail','paymentTerms'].map(k=>backup.business[k]??null),org,...gateValues))
- statements.push(auditStatement(db,user,'backup.restored',null,{customers:backup.customers.length,catalog:backup.catalog.length,quotes:backup.quotes.length,updateProfile:envelope.updateProfile===true},{sql:gate,values:gateValues}))
+ statements.push(auditStatement(db,user,'backup.restored',null,{customers:backup.customers.length,catalog:backup.catalog.length,quotes:backup.quotes.length,updateProfile:envelope.updateProfile===true,changes:identity.counts},{sql:gate,values:gateValues}))
  const result=await db.batch(statements)
  if(!result[0].meta.changes)throw new HttpError(409,'Este respaldo ya fue aplicado o su revisión venció')
- return Response.json({restored:true,quotes:backup.quotes.length})
+ return Response.json({restored:true,quotes:backup.quotes.length,changes:identity.counts})
 }
