@@ -1,4 +1,5 @@
-import { businessSubscription,requireSubscription,expiredMessage } from './auth/subscription'
+import { platformAdmin } from './routes/platform-admin'
+import { businessSubscription,requireSubscription,expiredMessage,suspendedMessage } from './auth/subscription'
 import { plans } from './routes/plans'
 import { dashboard } from './routes/dashboard'
 import { dataHistory } from './routes/data-history'
@@ -36,6 +37,7 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       if (!user.emailVerified) throw new HttpError(403,'Verifica tu correo antes de usar el negocio')
       const expectedUser=request.headers.get('X-Quoter-User'),expectedBusiness=request.headers.get('X-Quoter-Business')
       if(expectedUser&&expectedUser!==user.id)throw new HttpError(401,'La cuenta activa cambió. Inicia sesión nuevamente')
+      if(path.startsWith('/api/admin/'))return await platformAdmin(request,env.DB,user,path)
       if(path==='/api/invitations/preview')return await previewInvitation(request,env.DB,user)
       if(path==='/api/invitations/accept')return await acceptInvitation(request,env.DB,user)
       if(path.startsWith('/api/businesses'))return await businesses(request,env.DB,user,path)
@@ -56,8 +58,9 @@ async function handle(request: Request, env: Env & EmailEnvironment, context: Ex
       if (path === '/api/customers') return await customers(request, env.DB, org)
       return await quotes(request, env.DB, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'),user)
     } catch (error) {
-      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:{}) }, { status: error.status })
+      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:error.message===suspendedMessage?{code:'BUSINESS_SUSPENDED'}:{}) }, { status: error.status })
       const message=String(error)
+      if(message.includes('QUOTER_BUSINESS_SUSPENDED'))return Response.json({error:suspendedMessage,code:'BUSINESS_SUSPENDED'},{status:403})
       if(message.includes('QUOTER_SUBSCRIPTION_EXPIRED'))return Response.json({error:expiredMessage,code:'SUBSCRIPTION_EXPIRED'},{status:403})
       const resource=message.includes('QUOTER_LIMIT_QUOTES')?'quotes':message.includes('QUOTER_LIMIT_CATALOG')?'catalog':message.includes('QUOTER_LIMIT_MEMBERS')?'members':null
       if(resource){const label=resource==='quotes'?'cotizaciones activas':resource==='catalog'?'partidas activas del catálogo':'integrantes e invitaciones pendientes';return Response.json({error:`Alcanzaste el límite de ${label} de tu plan. El propietario puede consultar los cupos en Plan y uso.`,code:'PLAN_LIMIT',resource},{status:409})}

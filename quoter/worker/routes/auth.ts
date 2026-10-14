@@ -35,9 +35,10 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
    db.prepare('INSERT INTO memberships (user_id,organization_id,role) VALUES (?,?,?)').bind(userId,orgId,'owner'),
   ])}catch(error){if(await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first())throw new HttpError(409,'Este correo ya tiene una cuenta');throw error}
  }else{
-  const user=await db.prepare('SELECT id,password_hash AS hash,password_salt AS salt FROM users WHERE email=?').bind(email).first<{id:string;hash:string;salt:string}>()
+  const user=await db.prepare('SELECT id,password_hash AS hash,password_salt AS salt,suspended_at AS suspendedAt FROM users WHERE email=?').bind(email).first<{id:string;hash:string;salt:string;suspendedAt:string|null}>()
   const calculated=await passwordHash(data.password,user?.salt||'0000000000000000000000000000000000000000000000000000000000000000')
   if(!user||!equalHashes(calculated,user.hash))throw new HttpError(401,'Correo o contraseña incorrectos')
+  if(user.suspendedAt)throw new HttpError(403,'Tu cuenta fue desactivada. Contacta a la administración para recuperar el acceso.')
   userId=user.id; expectedHash=user.hash
  }
  if(path.endsWith('register')) {
@@ -45,6 +46,6 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
   catch {delivery={emailDelivery:'unavailable',notice:'Cuenta creada. No se pudo enviar la verificación; vuelve a solicitarla cuando el correo esté configurado.'}}
  }
  const cookie=await newSession(request,db,userId,expectedHash)
- const user=await db.prepare('SELECT u.id,u.email,(u.email_verified_at IS NOT NULL) AS emailVerified,u.organization_id AS organizationId,o.name AS organizationName FROM users u JOIN organizations o ON o.id=u.organization_id WHERE u.id=?').bind(userId).first<Record<string,unknown>>()
- return Response.json({...user,role:'owner',emailVerified:!!user?.emailVerified,...delivery},{status:path.endsWith('register')?201:200,headers:{'Set-Cookie':cookie}})
+ const user=await db.prepare('SELECT u.id,u.email,(u.email_verified_at IS NOT NULL) AS emailVerified,EXISTS(SELECT 1 FROM platform_admin p WHERE p.email=u.email AND u.email_verified_at IS NOT NULL) AS isPlatformAdmin,u.organization_id AS organizationId,o.name AS organizationName FROM users u JOIN organizations o ON o.id=u.organization_id WHERE u.id=?').bind(userId).first<Record<string,unknown>>()
+ return Response.json({...user,role:'owner',emailVerified:!!user?.emailVerified,isPlatformAdmin:!!user?.isPlatformAdmin,...delivery},{status:path.endsWith('register')?201:200,headers:{'Set-Cookie':cookie}})
 }
