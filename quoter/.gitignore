@@ -29,3 +29,8 @@ dist-ssr
 !.dev.vars.example
 .env*
 !.env.example
+
+# Encrypted infrastructure snapshots and incomplete outputs
+.backups/
+*.qdb
+*.qdb.partial

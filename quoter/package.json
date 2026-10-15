@@ -35,7 +35,12 @@
     "mfa:setup": "node scripts/configure-local-mfa.mjs",
     "test:hardening": "node tests/hardening-smoke.mjs",
     "password:setup": "node scripts/configure-password-pepper.mjs",
-    "password:provision": "node scripts/provision-password-pepper.mjs"
+    "password:provision": "node scripts/provision-password-pepper.mjs",
+    "backup:key": "node scripts/db-recovery.mjs key",
+    "backup:db": "node scripts/db-recovery.mjs backup",
+    "backup:drill": "node scripts/db-recovery.mjs drill",
+    "check:production": "node scripts/check-production.mjs",
+    "test:recovery": "node tests/recovery-smoke.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

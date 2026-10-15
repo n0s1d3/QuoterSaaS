@@ -297,7 +297,7 @@ See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) for the October 2026 findings, patc
 
 ## Admin second factor and launch progress
 
-Apply migration `0017_admin_mfa.sql`, then run `npm run mfa:setup` and restart the local server. The designated verified master must enroll an authenticator before using Administration. See [ADMIN_MFA.md](ADMIN_MFA.md) for enrollment, secret handling, one-use recovery, operator reset and isolated tests. [ROADMAP.md](ROADMAP.md) records the estimated 83% launch readiness and remaining production gates. No remote deployment or real email delivery was performed in this stage.
+Apply migration `0017_admin_mfa.sql`, then run `npm run mfa:setup` and restart the local server. The designated verified master must enroll an authenticator before using Administration. See [ADMIN_MFA.md](ADMIN_MFA.md) for enrollment, secret handling, one-use recovery, operator reset and isolated tests. [ROADMAP.md](ROADMAP.md) records the estimated 93% launch readiness and remaining production gates. The owner has confirmed online access and account email testing. See [OPERATIONS.md](OPERATIONS.md) for encrypted D1 backups and isolated recovery drills, and [ACCEPTANCE.md](ACCEPTANCE.md) for the public acceptance checklist.
 
 ## Password, logo and signup hardening
 

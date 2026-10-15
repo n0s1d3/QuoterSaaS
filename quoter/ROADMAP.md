@@ -1,6 +1,6 @@
 # Estado y camino a la primera publicación
 
-Actualizado el 14 de octubre de 2026. Avance estimado: **87 %** hacia una primera versión online, revisada, funcional y utilizable por clientes. Es una estimación de preparación, no una cobertura de pruebas ni una garantía de que queda un 17 % exacto del tiempo. El segundo factor llevó la estimación al 83 %. El refuerzo del hash, los controles de logos y la integración antiabuso la llevan aproximadamente al 87 %. Todavía deben validarse estos controles y servicios en producción.
+Actualizado el 15 de octubre de 2026. Avance estimado: **93 %** hacia una versión online, revisada y lista para clientes. Es una estimación de preparación, no cobertura de pruebas ni porcentaje del tiempo restante. El propietario confirmó despliegue, acceso online y pruebas básicas satisfactorias. Cloudflare D1, secretos, Turnstile y correo de la cuenta propia ya se configuraron; falta completar la aceptación pública y la preparación operativa/comercial.
 
 ## Disponible y validado localmente
 
@@ -13,21 +13,18 @@ Actualizado el 14 de octubre de 2026. Avance estimado: **87 %** hacia una primer
 - Tres planes, cuotas, prueba de siete días, meses de vigencia y renovación P2P manual por referencia única.
 - Revisión de seguridad, límites de solicitudes, sesiones/roles comprobados durante escrituras, encabezados de navegador y segundo factor obligatorio para el panel maestro.
 - Hashes versionados con PBKDF2 nativo de 100.000 iteraciones y pepper independiente, con compatibilidad de formatos previos según runtime; validación de archivos de logo y expansión PNG limitada. El uso de 600.000 iteraciones en una sola llamada falló durante el registro publicado; véase PASSWORD_SECURITY.md.
-- Integración Turnstile para registro/recuperación y presupuesto diario de registros; el servicio real aún necesita claves y hostname.
+- Integración Turnstile para registro/recuperación y presupuesto diario de registros; claves y hostname configurados por el propietario.
 
 ## Falta para declarar 100 %
 
-| Área | Trabajo pendiente | Qué demuestra que está lista |
+| Área | Trabajo pendiente | Evidencia necesaria |
 | --- | --- | --- |
-| Seguridad | Configurar Turnstile real, medir coste del hash en Workers publicado y verificar el conjunto con HTTPS. Los controles ya están implementados y probados localmente. | Pruebas de regresión y rendimiento en el runtime elegido; solicitudes maliciosas rechazadas sin impedir los flujos normales. |
-| Infraestructura | Elegir dominio, configurar HTTPS, D1 remota, secretos y despliegue del Worker/assets. | La URL pública funciona sin servidores de desarrollo ni credenciales expuestas. |
-| Correo real | Configurar Resend, remitente verificado y APP_URL. | Una cuenta de prueba recibe verificación y recuperación reales y completa ambos flujos desde la URL pública. |
-| Operación comercial | Definir precios e instrucciones P2P, responsables y procedimiento para confirmar pagos/renovar planes. | Un cliente entiende cómo pagar y se verifica la activación de un mes, sin duplicarla al repetir una referencia. |
-| Operación técnica | Respaldos D1, recuperación probada, registros/alertas, custodia de secretos y documentación de privacidad/soporte. | Se puede restaurar el servicio y diagnosticar fallas respetando los datos de los negocios. |
-| Validación final | Prueba integral publicada en móvil/escritorio y con negocios separados; piloto con clientes. | Registro, correo, cotización, PDF, pagos manuales, límites y vencimientos funcionan en el entorno público. |
+| Aceptación publicada | Completar la matriz de ACCEPTANCE.md con cuentas controladas | MFA, recuperación, aislamiento, PDF, cuotas y renovaciones verificados en HTTPS |
+| Correo a clientes | Dominio de envío verificado y remitente autorizado | Verificación/recuperación entregadas a destinatarios del piloto; Resend de prueba solo cubre la cuenta propia |
+| Operación | Respaldo real cifrado, ensayo, copia externa y monitor con alertas | Procedimiento de OPERATIONS.md ejecutado con producción; custodia separada de secretos |
+| Comercial | Precios e instrucciones P2P, soporte y privacidad | Pago y renovación entendibles, referencia repetida sin doble activación |
+| Piloto | Usuarios iniciales y revisión de incidencias | Flujos completos sin fallos pendientes que impidan trabajar |
 
-Orden recomendado: configurar los servicios reales y preparar procedimientos; configurar dominio/correo cuando se decida; desplegar y realizar el piloto. La publicación se mantiene pendiente por decisión del propietario.
+La recuperación D1 ya tiene una herramienta cifrada y un ensayo aislado reproducible con datos ficticios. La comprobación pública es de solo lectura. Estas herramientas no implican que los respaldos diarios, el monitoreo externo o el ensayo de producción ya estén operando.
 
-La cuenta maestra todavía debe inscribir su propio autenticador; el desarrollo no sustituye esa acción personal. Los tests usan cuentas aisladas. No se han configurado servicios remotos ni enviado mensajes en esta etapa.
-
-Los enlaces públicos, WhatsApp y conversión a facturas siguen al final de la lista. No forman parte del criterio del 100 % para este primer lanzamiento de cotizaciones con PDF y ventas P2P manuales. Si se incorporan al alcance inicial, la estimación debe recalcularse. El cobro automático también se mantiene fuera del alcance inicial.
+Ver [OPERATIONS.md](OPERATIONS.md) y [ACCEPTANCE.md](ACCEPTANCE.md). Los enlaces públicos, WhatsApp, conversión a facturas y cobro automático siguen al final de la lista, fuera del alcance de este primer lanzamiento.

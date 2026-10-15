@@ -1,3 +1,4 @@
+import { health } from './routes/health'
 import { errorDiagnostic } from './error-diagnostics'
 import { adminMfa,requireMfa } from './routes/admin-mfa'
 import { requestDatabase } from './auth/request-authorization'
@@ -38,6 +39,7 @@ async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRY
       if (!path.startsWith('/api/')) return new Response(null, { status: 404 })
       guardTransport(request)
       guardMutation(request)
+      if(path==='/api/health')return await health(request,env.DB,env)
       if (path.startsWith('/api/auth/')) return await auth(request, env.DB, path, env, context)
       const user = await account(request, env.DB)
       if (!user.emailVerified) throw new HttpError(403,'Verifica tu correo antes de usar el negocio')

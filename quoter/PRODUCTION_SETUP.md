@@ -1,6 +1,6 @@
 # Preparación de Cloudflare y Resend
 
-Estado: cuentas creadas según el propietario; autenticación, recursos remotos, dominio, secretos y correo real todavía necesitan configuración y validación. Este documento no significa que se haya desplegado la aplicación.
+Estado al 15 de octubre de 2026: el propietario confirmó despliegue y acceso online con Cloudflare, Turnstile y correo para su cuenta propia. Las instrucciones siguientes sirven para configurar/revisar la instalación. El dominio de envío a clientes y la aceptación completa siguen pendientes. Ver OPERATIONS.md y ACCEPTANCE.md.
 
 ## Cloudflare
 
