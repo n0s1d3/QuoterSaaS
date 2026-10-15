@@ -1,3 +1,5 @@
+> Actualización de runtime: la implementación actual usa PBKDF2 de 100.000 iteraciones con pepper independiente. Las referencias a 600.000 iteraciones de este documento describen la revisión previa que pasó localmente pero falló al registrar en producción. Véase [PASSWORD_SECURITY.md](PASSWORD_SECURITY.md) para configuración y límites actuales.
+
 # Refuerzo de contraseñas, logos y registro
 
 14 de octubre de 2026. Implementado y probado localmente; no implica que Cloudflare, Turnstile o Resend ya estén conectados a cuentas reales.

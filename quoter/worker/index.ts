@@ -44,8 +44,8 @@ async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRY
       const expectedUser=request.headers.get('X-Quoter-User'),expectedBusiness=request.headers.get('X-Quoter-Business')
       if(expectedUser&&expectedUser!==user.id)throw new HttpError(401,'La cuenta activa cambió. Inicia sesión nuevamente')
       const db=await requestDatabase(env.DB,request,user,path)
-      if(path==='/api/security/admin-mfa')return await adminMfa(request,db,user,env.MFA_ENCRYPTION_KEY)
-      if(path.startsWith('/api/admin/')){await requireMfa(db,user,request);return await platformAdmin(request,db,user,path)}
+      if(path==='/api/security/admin-mfa')return await adminMfa(request,db,user,env.MFA_ENCRYPTION_KEY,env)
+      if(path.startsWith('/api/admin/')){await requireMfa(db,user,request);return await platformAdmin(request,db,user,path,env)}
       if(path==='/api/invitations/preview')return await previewInvitation(request,db,user)
       if(path==='/api/invitations/accept')return await acceptInvitation(request,db,user)
       if(path.startsWith('/api/businesses'))return await businesses(request,db,user,path)

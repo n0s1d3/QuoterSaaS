@@ -1,5 +1,5 @@
 import { challenge,challengeOptions,signupDailyLimit } from '../auth/turnstile'
-import { newPasswordHash,verifyPassword,legacyPasswordHash } from '../auth/passwords'
+import { newPasswordHash,verifyPassword,needsPasswordUpgrade } from '../auth/passwords'
 import { limit } from '../auth/rate-limit'
 import { issueToken } from '../auth/email-tokens'
 import { sendAccountEmail } from '../auth/mail'
@@ -34,7 +34,7 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
   const existing=await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first()
   if(existing)throw new HttpError(409,'Este correo ya tiene una cuenta')
   await limit(db,`signup:day:${Math.floor(Date.now()/86400000)}`,signupDailyLimit(env),86400-Math.floor(Date.now()/1000)%86400,'Se alcanzó el límite diario de registros. Intenta más tarde.')
-  userId=crypto.randomUUID();const orgId=crypto.randomUUID(),salt=randomToken(),hash=await newPasswordHash(data.password,salt)
+  userId=crypto.randomUUID();const orgId=crypto.randomUUID(),salt=randomToken(),hash=await newPasswordHash(data.password,salt,env)
   try {await db.batch([
    db.prepare('INSERT INTO organizations (id,name,slug) VALUES (?,?,?)').bind(orgId,name,orgId),
    db.prepare('INSERT INTO users (id,organization_id,email,password_hash,password_salt) VALUES (?,?,?,?,?)').bind(userId,orgId,email,hash,salt),
@@ -42,12 +42,12 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
   ])}catch(error){if(await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first())throw new HttpError(409,'Este correo ya tiene una cuenta');throw error}
  }else{
   const user=await db.prepare('SELECT id,password_hash AS hash,password_salt AS salt,suspended_at AS suspendedAt FROM users WHERE email=?').bind(email).first<{id:string;hash:string;salt:string;suspendedAt:string|null}>()
-  const valid=await verifyPassword(data.password,user?.salt||'0'.repeat(64),user?.hash||'pbkdf2-sha256$600000$'+'0'.repeat(64))
+  const valid=await verifyPassword(data.password,user?.salt||'0'.repeat(64),user?.hash||'pbkdf2-sha256-peppered$100000$v1$'+'0'.repeat(64),env)
   if(!user||!valid)throw new HttpError(401,'Correo o contraseña incorrectos')
   if(user.suspendedAt)throw new HttpError(403,'Tu cuenta fue desactivada. Contacta a la administración para recuperar el acceso.')
   userId=user.id; expectedHash=user.hash
-  if(legacyPasswordHash(user.hash)){
-   const salt=randomToken(),upgraded=await newPasswordHash(data.password,salt)
+  if(needsPasswordUpgrade(user.hash)){
+   const salt=randomToken(),upgraded=await newPasswordHash(data.password,salt,env)
    const result=await db.prepare('UPDATE users SET password_hash=?,password_salt=? WHERE id=? AND password_hash=? AND password_salt=? AND suspended_at IS NULL').bind(upgraded,salt,user.id,user.hash,user.salt).run()
    if(!result.meta.changes)throw new HttpError(401,'La cuenta cambió. Vuelve a iniciar sesión')
    expectedHash=upgraded

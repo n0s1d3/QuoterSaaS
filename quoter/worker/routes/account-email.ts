@@ -12,7 +12,7 @@ export async function emailRoutes(request:Request,db:D1Database,path:string,env:
  await limit(db,`email:${path}:${request.headers.get('CF-Connecting-IP')||'local'}`,50)
  const data=await body(request)
  if(path==='/api/auth/reset-password'||path==='/api/auth/verify-email') {
-  await consumeToken(db,data.token,path.endsWith('reset-password')?'reset':'verify',data.password)
+  await consumeToken(db,data.token,path.endsWith('reset-password')?'reset':'verify',data.password,env)
   return Response.json({message:path.endsWith('reset-password')?'Contraseña actualizada. Inicia sesión con tu nueva contraseña.':'Correo verificado. Inicia sesión para continuar.'},{headers:{'Set-Cookie':sessionCookie(request,'',0)}})
  }
  if(path==='/api/auth/resend-verification') {

@@ -77,3 +77,5 @@ Después de confirmar el correo, el usuario ahora debe iniciar sesión de nuevo 
 
 
 Seguimiento de esta revisión: véase [SECURITY_HARDENING.md](SECURITY_HARDENING.md) para las mejoras posteriores y sus pruebas.
+
+Seguimiento de compatibilidad en producción: el registro falló en la criptografía con el formato de 600.000 iteraciones; la nueva versión utiliza 100.000 iteraciones y un pepper independiente. Esto no equivale al coste recomendado de 600.000; las condiciones y medidas restantes se explican en [PASSWORD_SECURITY.md](PASSWORD_SECURITY.md). Requiere PASSWORD_PEPPER estable en el servidor.

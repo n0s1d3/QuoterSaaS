@@ -1,6 +1,6 @@
 # Estado y camino a la primera publicación
 
-Actualizado el 14 de octubre de 2026. Avance estimado: **87 %** hacia una primera versión online, revisada, funcional y utilizable por clientes. Es una estimación de preparación, no una cobertura de pruebas ni una garantía de que queda un 17 % exacto del tiempo. El segundo factor llevó la estimación al 83 %. El hash versionado de 600.000 iteraciones, los controles de logos y la integración antiabuso la llevan aproximadamente al 87 %. Todavía deben validarse estos controles y servicios en producción.
+Actualizado el 14 de octubre de 2026. Avance estimado: **87 %** hacia una primera versión online, revisada, funcional y utilizable por clientes. Es una estimación de preparación, no una cobertura de pruebas ni una garantía de que queda un 17 % exacto del tiempo. El segundo factor llevó la estimación al 83 %. El refuerzo del hash, los controles de logos y la integración antiabuso la llevan aproximadamente al 87 %. Todavía deben validarse estos controles y servicios en producción.
 
 ## Disponible y validado localmente
 
@@ -12,7 +12,7 @@ Actualizado el 14 de octubre de 2026. Avance estimado: **87 %** hacia una primer
 - Respaldos y restauración sin duplicación de cotizaciones/clientes, validación e historial.
 - Tres planes, cuotas, prueba de siete días, meses de vigencia y renovación P2P manual por referencia única.
 - Revisión de seguridad, límites de solicitudes, sesiones/roles comprobados durante escrituras, encabezados de navegador y segundo factor obligatorio para el panel maestro.
-- Hashes versionados de 600.000 iteraciones con actualización de cuentas antiguas, validación de archivos de logo y expansión PNG limitada.
+- Hashes versionados con PBKDF2 nativo de 100.000 iteraciones y pepper independiente, con compatibilidad de formatos previos según runtime; validación de archivos de logo y expansión PNG limitada. El uso de 600.000 iteraciones en una sola llamada falló durante el registro publicado; véase PASSWORD_SECURITY.md.
 - Integración Turnstile para registro/recuperación y presupuesto diario de registros; el servicio real aún necesita claves y hostname.
 
 ## Falta para declarar 100 %

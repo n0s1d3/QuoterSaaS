@@ -1,3 +1,4 @@
+import type { PasswordEnvironment } from '../auth/passwords.ts'
 import { requirePlatformAdmin,confirmAdmin,adminGate } from '../auth/platform-admin.ts'
 import type { Account } from '../auth/session'
 import { body,HttpError,text } from '../http.ts'
@@ -5,7 +6,7 @@ import { businessSubscription } from '../auth/subscription.ts'
 const state="CASE WHEN o.suspended_at IS NOT NULL THEN 'suspended' WHEN EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) THEN 'permanent' WHEN COALESCE(o.paid_until,o.trial_expires_at,0)<=unixepoch() THEN 'expired' WHEN o.paid_until IS NOT NULL THEN 'active' ELSE 'trial' END"
 const businessFields=`o.id,o.name,o.currency,EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) AS permanent,o.created_at AS createdAt,o.plan_id AS planId,p.name AS planName,o.trial_expires_at AS trialExpiresAt,o.paid_until AS paidUntil,o.suspended_at AS suspendedAt,${state} AS status`
 function search(value:string){return '%'+value.replaceAll('\\','\\\\').replaceAll('%','\\%').replaceAll('_','\\_')+'%'}
-export async function platformAdmin(request:Request,db:D1Database,user:Account,path:string){
+export async function platformAdmin(request:Request,db:D1Database,user:Account,path:string,env:PasswordEnvironment={}){
  const master=await requirePlatformAdmin(db,user)
  const url=new URL(request.url),page=Number(url.searchParams.get('page')||1),query=url.searchParams.get('search')||''
  if(!Number.isInteger(page)||page<1||page>100000||query.length>200)throw new HttpError(400,'Filtro inválido')
@@ -35,7 +36,7 @@ export async function platformAdmin(request:Request,db:D1Database,user:Account,p
   throw new HttpError(404,'Ruta administrativa no encontrada')
  }
  if(!['POST','PATCH'].includes(request.method))throw new HttpError(405,'Operación no permitida')
- const data=await body(request);await confirmAdmin(db,user,data.currentPassword,master)
+ const data=await body(request);await confirmAdmin(db,user,data.currentPassword,master,env)
  const operation=crypto.randomUUID(),gateValues=[user.id,master.hash]
  const audit=(action:string,targetType:string,targetId:string,detail:Record<string,unknown>,extra='1',extraValues:unknown[]=[])=>db.prepare(`INSERT INTO platform_audit(id,actor_id,action,target_type,target_id,detail) SELECT ?,?,?,?,?,? WHERE ${adminGate} AND ${extra}`).bind(operation,user.id,action,targetType,targetId,JSON.stringify(detail),...gateValues,...extraValues)
  const account=/^\/api\/admin\/accounts\/([^/]+)$/.exec(path)

@@ -1,3 +1,4 @@
+import type { PasswordEnvironment } from '../auth/passwords.ts'
 import { requirePlatformAdmin,confirmAdmin } from '../auth/platform-admin.ts'
 import { cookieToken,digest,randomToken,type Account } from '../auth/session.ts'
 import { base32,seal,unseal,validStep } from '../auth/totp.ts'
@@ -9,7 +10,7 @@ export async function requireMfa(db:D1Database,user:Account,request:Request){
  const passed=await db.prepare('SELECT 1 FROM sessions s JOIN admin_mfa f ON f.user_id=s.user_id WHERE s.token_hash=? AND s.user_id=? AND f.enabled_at IS NOT NULL AND s.mfa_factor_version=f.version AND s.mfa_verified_until>unixepoch()').bind(await digest(cookieToken(request)!),user.id).first()
  if(!passed)throw new HttpError(403,'Verifica el segundo factor para entrar en Administración')
 }
-export async function adminMfa(request:Request,db:D1Database,user:Account,key:string|undefined){
+export async function adminMfa(request:Request,db:D1Database,user:Account,key:string|undefined,env:PasswordEnvironment={}){
  const master=await requirePlatformAdmin(db,user),factor=await db.prepare(factorSql).bind(user.id).first<Factor>(),sessionHash=await digest(cookieToken(request)!),now=Math.floor(Date.now()/1000)
  if(request.method==='GET'){let verified=false;try{await requireMfa(db,user,request);verified=true}catch{};return Response.json({enabled:!!factor?.enabledAt,verified,configured:!!key&&/^[a-f0-9]{64}$/i.test(key)})}
  if(request.method!=='POST')throw new HttpError(405,'Operación no permitida')
@@ -17,7 +18,7 @@ export async function adminMfa(request:Request,db:D1Database,user:Account,key:st
  if(!key||!/^[a-f0-9]{64}$/i.test(key))throw new HttpError(503,'Configura MFA_ENCRYPTION_KEY en el servidor antes de activar el segundo factor')
  if(data.action==='setup'){
   if(factor?.enabledAt)throw new HttpError(409,'El segundo factor ya está activado')
-  await confirmAdmin(db,user,data.currentPassword,master)
+  await confirmAdmin(db,user,data.currentPassword,master,env)
   const secret=base32(crypto.getRandomValues(new Uint8Array(20))),sealed=await seal(secret,user.id,key),version=crypto.randomUUID()
   const result=await db.prepare('INSERT INTO admin_mfa(user_id,version,sealed_secret,pending_until) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM users WHERE id=? AND password_hash=?) ON CONFLICT(user_id) DO UPDATE SET version=excluded.version,sealed_secret=excluded.sealed_secret,pending_until=excluded.pending_until WHERE admin_mfa.enabled_at IS NULL').bind(user.id,version,sealed,now+1200,user.id,master.hash).run()
   if(!result.meta.changes)throw new HttpError(409,'La configuración cambió. Vuelve a intentarlo')
@@ -29,7 +30,7 @@ export async function adminMfa(request:Request,db:D1Database,user:Account,key:st
  const grant=(condition:string,values:unknown[])=>db.prepare(`UPDATE sessions SET mfa_verified_until=MIN(expires_at,?),mfa_factor_version=? WHERE token_hash=? AND user_id=? AND ${condition}`).bind(now+3600,factor.version,sessionHash,user.id,...values)
  if(data.action==='confirm'){
   if(factor.enabledAt||!factor.pendingUntil||factor.pendingUntil<=now)throw new HttpError(400,'La configuración venció o ya fue confirmada')
-  await confirmAdmin(db,user,data.currentPassword,master)
+  await confirmAdmin(db,user,data.currentPassword,master,env)
   const step=await validStep(await unseal(factor.sealed,user.id,key),data.code,factor.lastStep)
   if(step===null)throw new HttpError(403,'Código incorrecto o ya utilizado')
   const codes=Array.from({length:8},()=>randomToken().slice(0,32)),hashes=await Promise.all(codes.map(digest))

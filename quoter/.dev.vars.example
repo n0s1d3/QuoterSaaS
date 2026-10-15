@@ -12,3 +12,6 @@ EMAIL_MODE=preview
 # TURNSTILE_SITE_KEY=public-widget-key
 # TURNSTILE_SECRET_KEY=private-secret-in-worker-settings
 # SIGNUP_DAILY_LIMIT=250
+
+# Run npm run password:setup for a private local PASSWORD_PEPPER.
+# Production requires its own PASSWORD_PEPPER Worker secret; preserve it across deployments.

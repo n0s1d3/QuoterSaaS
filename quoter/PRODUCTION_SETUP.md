@@ -57,3 +57,7 @@ Los errores inesperados ahora registran categorías seguras (esquema D1, binding
 Se corrigió un error de compatibilidad de la llamada Siteverify: Workers rechaza redirect="error" al construir Request. Se reprodujo en workerd con la fecha de compatibilidad de la app; redirect="manual" está admitido. La llamada ahora usa manual y rechaza respuestas no exitosas, incluidas redirecciones, sin reenviar secretos a otro origen. Se mantienen hostname/acción y el límite de tiempo.
 
 Actualizar con git pull y volver a ejecutar npm run deploy. Si la verificación sigue fallando, npx wrangler tail muestra Turnstile verification unavailable con etapa request/http/json, estado HTTP cuando existe y tipo de error permitido. No registra claves, tokens, cuerpos ni mensajes completos del proveedor. Las pruebas locales y de contrato no sustituyen la confirmación del registro real con el widget configurado.
+
+## Registro con error crypto_runtime
+
+La versión anterior exigía PBKDF2 de 600.000 iteraciones en una llamada. La revisión documentada en PASSWORD_SECURITY.md usa 100.000 iteraciones nativas y HMAC con un pepper privado independiente para las nuevas credenciales. Requiere configurar PASSWORD_PEPPER una sola vez como secreto del Worker antes de desplegar. No sustituye MFA_ENCRYPTION_KEY ni necesita nuevas migraciones SQL. La diferencia de soporte local/publicado fue contemplada con una prueba que limita cada derivación a 100.000 iteraciones. Confirmar el registro real tras configurar el secreto; no se afirma que la prueba local certifique producción.
