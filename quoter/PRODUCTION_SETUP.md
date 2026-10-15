@@ -43,3 +43,11 @@ Esta combinación sirve para probar la cuenta propia, la verificación y recuper
 Se reescribieron los SELECT de rechazo de los triggers sin CASE/END internos, manteniendo la misma validación de sesiones, roles y MFA. La migración 0016 admite una tabla ya creada durante un intento parcial. Se verificó la instalación completa en D1 local y el rechazo/aceptación por sesión, rol y segundo factor en SQLite. La ejecución remota debe confirmarse con la cuenta conectada.
 
 Actualizar el código y repetir `npx wrangler d1 migrations apply quoter-db --remote`. No recrear la base ni borrar tablas: Wrangler conserva el registro de migraciones completadas. Si vuelve a fallar, revisar la salida antes de ejecutar sentencias manuales, especialmente ALTER TABLE de la 0017.
+
+## Mantener la base local al configurar el ID remoto
+
+El ID D1 selecciona también el espacio SQLite simulado por el entorno local. Cambiar el ID provisional por el remoto sin fijar el de preview puede abrir una nueva base local vacía; las migraciones remotas no migran esa SQLite. Se reprodujo con requests de autenticación: ID anterior devuelve 401 para una sesión sintética inválida; ID remoto sin preview devuelve 500 por tablas ausentes; ID remoto con preview anterior vuelve a 401.
+
+Para una instalación local que comenzó con el ID provisional de este repositorio, conservar en el binding DB `preview_database_id: "00000000-0000-0000-0000-000000000000"`, mientras `database_id` mantiene el ID real de producción. No añadir otro binding ni borrar .wrangler. Aplicar después `npm run db:migrate` sin --remote para actualizar la base local y reiniciar Vite. Si una instalación comenzó con otro ID de preview, conservar ese ID en lugar del provisional.
+
+Los errores inesperados ahora registran categorías seguras (esquema D1, binding, criptografía o fallo D1) y, solo cuando está permitido, el nombre de tabla/columna. No se registran SQL, mensajes completos ni datos de usuarios. La ausencia de MFA_ENCRYPTION_KEY no impide iniciar sesión; bloquea la configuración/apertura de Administración. Localmente se configura con `npm run mfa:setup`; el secreto del Worker publicado es independiente.

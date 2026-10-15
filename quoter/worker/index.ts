@@ -1,3 +1,4 @@
+import { errorDiagnostic } from './error-diagnostics'
 import { adminMfa,requireMfa } from './routes/admin-mfa'
 import { requestDatabase } from './auth/request-authorization'
 import { platformAdmin } from './routes/platform-admin'
@@ -74,7 +75,7 @@ async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRY
       if(message.includes('QUOTER_ACCESS_CHANGED'))return Response.json({error:'Tus permisos cambiaron. Recarga antes de continuar',code:'ACCESS_CHANGED'},{status:403})
       const resource=message.includes('QUOTER_LIMIT_QUOTES')?'quotes':message.includes('QUOTER_LIMIT_CATALOG')?'catalog':message.includes('QUOTER_LIMIT_MEMBERS')?'members':null
       if(resource){const label=resource==='quotes'?'cotizaciones activas':resource==='catalog'?'partidas activas del catálogo':'integrantes e invitaciones pendientes';return Response.json({error:`Alcanzaste el límite de ${label} de tu plan. El propietario puede consultar los cupos en Plan y uso.`,code:'PLAN_LIMIT',resource},{status:409})}
-      console.error('API failure',{category:'unexpected',errorType:error instanceof Error&&['Error','TypeError','RangeError','SyntaxError'].includes(error.name)?error.name:'Error',requestId:crypto.randomUUID()})
+      console.error('API failure',{...errorDiagnostic(error),errorType:error instanceof Error&&['Error','TypeError','RangeError','SyntaxError'].includes(error.name)?error.name:'Error',requestId:crypto.randomUUID()})
       return Response.json({ error: 'No se pudo completar la solicitud' }, { status: 500 })
     }
 }
