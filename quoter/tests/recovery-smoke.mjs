@@ -16,6 +16,9 @@ try{
  command([wrangler,'d1','export','quoter-db','--local','--output',sql])
  const key=randomBytes(32);writeFileSync(keyFile,key.toString('hex'),{mode:0o600});await encryptSnapshot(sql,encrypted,key);assert.ok(!readFileSync(encrypted).includes(Buffer.from('PRIVATE_RECOVERY_CLIENT')))
  const output=command(['scripts/db-recovery.mjs','drill','--file',encrypted,'--key-file',keyFile]);assert.ok(output.includes('Ensayo aprobado'))
+ // Real Wrangler --json writes its error to stdout, not stderr.
+ const badSql=join(temp,'invalid.sql'),badSnapshot=join(temp,'invalid.qdb');writeFileSync(badSql,'INVALID_PRIVATE_FIXTURE_SQL;');await encryptSnapshot(badSql,badSnapshot,key)
+ const badImport=spawnSync(process.execPath,['scripts/db-recovery.mjs','drill','--file',badSnapshot,'--key-file',keyFile],{encoding:'utf8',env});assert.notEqual(badImport.status,0);assert.ok(badImport.stderr.includes('etapa=import, categoria=sql_syntax'),badImport.stderr);assert.ok(!badImport.stderr.includes('INVALID_PRIVATE_FIXTURE_SQL'))
  const decoded=join(temp,'decoded.sql');await decryptSnapshot(encrypted,decoded,key)
  const db=new DatabaseSync(':memory:');try{db.exec(readFileSync(decoded,'utf8'));assert.equal(db.prepare("SELECT notes,total FROM quotes WHERE id='recover-quote'").get().total,12345);assert.equal(db.prepare("SELECT notes FROM quotes WHERE id='recover-quote'").get().notes,'PRIVATE_RECOVERY_NOTE');assert.equal(db.prepare('SELECT COUNT(*) AS count FROM users').get().count,1);assert.equal(db.prepare('SELECT COUNT(*) AS count FROM admin_mfa').get().count,1);assert.equal(db.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,1)}finally{db.close()}
  const rejected=spawnSync(process.execPath,['scripts/db-recovery.mjs','drill','--file',encrypted,'--key-file',keyFile,'--remote'],{encoding:'utf8',env});assert.notEqual(rejected.status,0)
@@ -37,7 +40,7 @@ try{
  else console.log(JSON.stringify([{results:[{quick_check:'ok'}]},{results:[]},{results:[{applied:1}]},{results:[{guards:3}]}]));
  `)
  const large=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',keyFile],{cwd:sandbox,encoding:'utf8',env});assert.equal(large.status,0,large.stderr);assert.ok(large.stdout.includes('Ensayo aprobado'));assert.ok(!large.stdout.includes('PRIVATE_PROVIDER_LOG'))
- writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"console.error('PRIVATE_CUSTOMER PRIVATE_TOKEN INSERT INTO private: FOREIGN KEY constraint failed');process.exitCode=1")
+ writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"console.log(JSON.stringify({error:{text:'PRIVATE_CUSTOMER PRIVATE_TOKEN INSERT INTO private: FOREIGN KEY constraint failed'}}));process.exitCode=1")
  const failure=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',keyFile],{cwd:sandbox,encoding:'utf8',env});assert.notEqual(failure.status,0);assert.ok(failure.stderr.includes('etapa=import, categoria=foreign_key'));assert.ok(!failure.stderr.includes('PRIVATE_CUSTOMER'));assert.ok(!failure.stderr.includes('PRIVATE_TOKEN'))
  writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"require('node:fs').writeFileSync('EXECUTED','bad')")
  const wrong=join(temp,'wrong-key');writeFileSync(wrong,randomBytes(32).toString('hex'));const invalid=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',wrong],{cwd:sandbox,encoding:'utf8',env});assert.notEqual(invalid.status,0);assert.ok(!invalid.stdout.includes('Ensayo aprobado'));assert.ok(!existsSync(join(sandbox,'EXECUTED')))

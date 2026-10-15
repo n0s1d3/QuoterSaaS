@@ -1,4 +1,4 @@
-import { mkdtempSync,mkdirSync,rmSync,renameSync,statSync,writeFileSync } from 'node:fs'
+import { mkdtempSync,mkdirSync,rmSync,renameSync,statSync,writeFileSync,openSync,closeSync,readSync,fstatSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { resolve,join } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -14,12 +14,22 @@ if(operation==='backup'&&(!options.remote||options['--file']))throw new Error('E
 if(operation==='drill'&&(options.remote||!options['--file']||options['--output-dir']))throw new Error('El ensayo requiere --file y nunca acepta --remote ni un destino persistente')
 const key=backupKey(keyFile),temp=mkdtempSync(join(tmpdir(),'quoter-recovery-')),sql=join(temp,'snapshot.sql'),wrangler=resolve('node_modules/wrangler/bin/wrangler.js')
 function command(values,{stage,capture=false,config}={}){
- const result=spawnSync(process.execPath,[wrangler,...values,...(config?['--config',config]:[])],{
+ const outputFile=join(temp,`${stage}-output.json`),fd=capture?undefined:openSync(outputFile,'wx',0o600)
+ let result
+ try{result=spawnSync(process.execPath,[wrangler,...values,...(config?['--config',config]:[])],{
   cwd:config?temp:process.cwd(),encoding:'utf8',windowsHide:true,maxBuffer:1024*1024,
-  // Import produces a result per SQL statement. Do not buffer that unbounded output.
-  stdio:['ignore',capture?'pipe':'ignore','pipe'],
+  // Wrangler --json sends failures to stdout too. Spool import output privately,
+  // avoiding a per-statement in-memory limit while retaining error classification.
+  stdio:['ignore',capture?'pipe':fd,'pipe'],
   env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG_PATH:join(temp,'wrangler.log'),WRANGLER_LOG_SANITIZE:'true'}
- })
+ })}finally{if(fd!==undefined)closeSync(fd)}
+ if((result.error||result.status!==0)&&!capture){
+  const input=openSync(outputFile,'r');try{
+   const size=fstatSync(input).size,head=Buffer.alloc(Math.min(size,65536)),tail=Buffer.alloc(Math.min(Math.max(0,size-head.length),65536))
+   readSync(input,head,0,head.length,0);if(tail.length)readSync(input,tail,0,tail.length,size-tail.length)
+   result.stdout=Buffer.concat([head,tail]).toString('utf8')
+  }finally{closeSync(input)}
+ }
  if(result.error||result.status!==0)throw new Error(`Falló D1: etapa=${stage}, categoria=${d1Diagnostic(result)}, salida=${Number.isInteger(result.status)?result.status:'sin_codigo'}. No se muestran SQL ni datos privados.`)
  return result.stdout
 }
