@@ -6,6 +6,7 @@ import { join,resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { randomBytes } from 'node:crypto'
 import { encryptSnapshot,decryptSnapshot } from '../scripts/lib/recovery.mjs'
+import { recoveryRuntime,restoreParameterized } from '../scripts/lib/restore-parameterized.mjs'
 const temp=mkdtempSync(join(tmpdir(),'quoter-recovery-smoke-')),sql=join(temp,'source.sql'),encrypted=join(temp,'source.qdb'),keyFile=join(temp,'key'),wrangler=resolve('node_modules/wrangler/bin/wrangler.js'),env={...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG_PATH:join(temp,'wrangler.log')}
 const config=join(temp,'wrangler.json');writeFileSync(config,JSON.stringify({name:'recovery-fixture',compatibility_date:'2026-10-01',d1_databases:[{binding:'DB',database_name:'quoter-db',database_id:'00000000-0000-0000-0000-000000000000',migrations_dir:resolve('migrations')}]}))
 function command(values){if(values[0]===wrangler)values.push('--config',config);const result=spawnSync(process.execPath,values,{encoding:'utf8',env,maxBuffer:1024*1024});assert.equal(result.status,0,'Isolated D1 recovery operation failed: '+result.stderr.slice(0,1000));return result.stdout}
@@ -13,9 +14,23 @@ try{
  command([wrangler,'d1','migrations','apply','quoter-db','--local'])
  const fixture="INSERT INTO organizations(id,name,slug) VALUES('recover-org','Recovery fixture','recover-org'); INSERT INTO users(id,organization_id,email,password_hash,password_salt,email_verified_at) VALUES('recover-user','recover-org','recover@example.com','test-digest','test-salt',CURRENT_TIMESTAMP); INSERT INTO memberships(user_id,organization_id,role) VALUES('recover-user','recover-org','owner'); INSERT INTO customers(id,organization_id,name) VALUES('recover-client','recover-org','PRIVATE_RECOVERY_CLIENT'); INSERT INTO quotes(id,organization_id,customer_id,quote_number,issue_date,subtotal,total,notes) VALUES('recover-quote','recover-org','recover-client','Q-0001','2026-10-14',12345,12345,'PRIVATE_RECOVERY_NOTE'); INSERT INTO quote_items(id,quote_id,description,quantity,unit_price,line_subtotal,line_total) VALUES('recover-item','recover-quote','Private fixture service',1,12345,12345,12345); INSERT INTO sessions(token_hash,user_id,organization_id,expires_at) VALUES('fixture-session','recover-user','recover-org',unixepoch()+1000); INSERT INTO admin_mfa(user_id,version,sealed_secret,enabled_at) VALUES('recover-user','fixture-version','ENCRYPTED_FACTOR_FIXTURE',CURRENT_TIMESTAMP);"
  command([wrangler,'d1','execute','quoter-db','--local','--command',fixture,'--json'])
+ // Reproduce D1's SQL-text limit with a large logo and frozen quote branding.
+ const logo='data:image/png;base64,'+'ABCD'.repeat(75000),brand=JSON.stringify({name:"Marca 'de prueba'; áéí",logo,primaryColor:'#4b1390',accentColor:'#ffffff'})
+ const sourceRuntime=recoveryRuntime(join(temp,'.wrangler/state'));try{
+  const sourceD1=await sourceRuntime.getD1Database('DB');assert.equal((await sourceD1.prepare('SELECT count(*) AS n FROM organizations').first()).n,1)
+  await sourceD1.prepare("UPDATE organizations SET logo=? WHERE id='recover-org'").bind(logo).run()
+  await sourceD1.prepare("UPDATE quotes SET branding_snapshot=? WHERE id='recover-quote'").bind(brand).run()
+ }finally{await sourceRuntime.dispose()}
  command([wrangler,'d1','export','quoter-db','--local','--output',sql])
  const key=randomBytes(32);writeFileSync(keyFile,key.toString('hex'),{mode:0o600});await encryptSnapshot(sql,encrypted,key);assert.ok(!readFileSync(encrypted).includes(Buffer.from('PRIVATE_RECOVERY_CLIENT')))
- const output=command(['scripts/db-recovery.mjs','drill','--file',encrypted,'--key-file',keyFile]);assert.ok(output.includes('Ensayo aprobado'))
+ const output=command(['scripts/db-recovery.mjs','drill','--file',encrypted,'--key-file',keyFile]);assert.ok(output.includes('Ensayo aprobado'));assert.ok(output.includes('valores parametrizados'))
+ const parameterState=join(temp,'parameter-proof');await restoreParameterized(sql,parameterState)
+ const restoredRuntime=recoveryRuntime(parameterState);try{
+  const restored=await restoredRuntime.getD1Database('DB');assert.equal((await restored.prepare("SELECT logo FROM organizations WHERE id='recover-org'").first()).logo,logo);assert.equal((await restored.prepare("SELECT branding_snapshot FROM quotes WHERE id='recover-quote'").first()).branding_snapshot,brand)
+  await assert.rejects(()=>restored.prepare("INSERT INTO request_write_guards VALUES('bad','missing','missing','missing',0)").run(),/QUOTER_SESSION_REVOKED/)
+ }finally{await restoredRuntime.dispose()}
+ const invalidReferences=join(temp,'invalid-references.sql');writeFileSync(invalidReferences,"CREATE TABLE parent(id TEXT PRIMARY KEY); CREATE TABLE child(id TEXT REFERENCES parent(id)); INSERT INTO child VALUES('PRIVATE_DANGLING_REFERENCE');")
+ await assert.rejects(()=>restoreParameterized(invalidReferences,join(temp,'rejected-reference-state')),error=>error.message.includes('categoria=foreign_key')&&!error.message.includes('PRIVATE_DANGLING_REFERENCE'))
  // Real Wrangler --json writes its error to stdout, not stderr.
  const badSql=join(temp,'invalid.sql'),badSnapshot=join(temp,'invalid.qdb');writeFileSync(badSql,'INVALID_PRIVATE_FIXTURE_SQL;');await encryptSnapshot(badSql,badSnapshot,key)
  const badImport=spawnSync(process.execPath,['scripts/db-recovery.mjs','drill','--file',badSnapshot,'--key-file',keyFile],{encoding:'utf8',env});assert.notEqual(badImport.status,0);assert.ok(badImport.stderr.includes('etapa=import, categoria=sql_syntax'),badImport.stderr);assert.ok(!badImport.stderr.includes('INVALID_PRIVATE_FIXTURE_SQL'))
@@ -45,5 +60,5 @@ try{
  writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"require('node:fs').writeFileSync('EXECUTED','bad')")
  const wrong=join(temp,'wrong-key');writeFileSync(wrong,randomBytes(32).toString('hex'));const invalid=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',wrong],{cwd:sandbox,encoding:'utf8',env});assert.notEqual(invalid.status,0);assert.ok(!invalid.stdout.includes('Ensayo aprobado'));assert.ok(!existsSync(join(sandbox,'EXECUTED')))
  assert.ok(!readFileSync(encrypted).includes(Buffer.from('test-digest')))
- console.log('Recovery passed: actual D1 export/import, integrity/FK/guards, preserved credentials/MFA/quotes, remote and wrong-key rejection, isolated config, large-output import and private diagnostics. All fixtures removed.')
+ console.log('Recovery passed: actual D1 export/import, SQL-limit fallback, complete 300 KB logo/branding, integrity/FK/guards, preserved credentials/MFA/quotes, remote/wrong-key rejection, isolated config, large-output import and private diagnostics. All fixtures removed.')
 }finally{rmSync(temp,{recursive:true,force:true})}

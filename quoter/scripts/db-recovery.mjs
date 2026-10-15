@@ -30,7 +30,7 @@ function command(values,{stage,capture=false,config}={}){
    result.stdout=Buffer.concat([head,tail]).toString('utf8')
   }finally{closeSync(input)}
  }
- if(result.error||result.status!==0)throw new Error(`Falló D1: etapa=${stage}, categoria=${d1Diagnostic(result)}, salida=${Number.isInteger(result.status)?result.status:'sin_codigo'}. No se muestran SQL ni datos privados.`)
+ if(result.error||result.status!==0){const category=d1Diagnostic(result),error=new Error(`Falló D1: etapa=${stage}, categoria=${category}, salida=${Number.isInteger(result.status)?result.status:'sin_codigo'}. No se muestran SQL ni datos privados.`);error.category=category;throw error}
  return result.stdout
 }
 let partial
@@ -42,9 +42,16 @@ try{
  }else{
   await decryptSnapshot(resolve(options['--file']),sql,key)
   // Never restore to the real database. The destination is always a new local temporary state.
-  const state=join(temp,'isolated-state'),config=join(temp,'wrangler.json')
+  let state=join(temp,'isolated-state');const config=join(temp,'wrangler.json')
   writeFileSync(config,JSON.stringify({name:'quoter-recovery',compatibility_date:'2026-10-01',d1_databases:[{binding:'DB',database_name:'quoter-db',database_id:'00000000-0000-0000-0000-000000000000'}]}),{mode:0o600})
-  command(['d1','execute','quoter-db','--local','--persist-to',state,'--file',sql,'--json'],{stage:'import',config})
+  try{command(['d1','execute','quoter-db','--local','--persist-to',state,'--file',sql,'--json'],{stage:'import',config})}
+  catch(error){
+   if(error.category!=='sql_limit')throw error
+   console.log('El SQL excede el límite de D1; reintentando con valores parametrizados en otra base temporal.')
+   state=join(temp,'parameter-state')
+   const {restoreParameterized}=await import('./lib/restore-parameterized.mjs')
+   await restoreParameterized(sql,state)
+  }
   const output=command(['d1','execute','quoter-db','--local','--persist-to',state,'--command',"PRAGMA quick_check; PRAGMA foreign_key_check; SELECT COUNT(*) AS applied FROM d1_migrations WHERE name='0017_admin_mfa.sql'; SELECT COUNT(*) AS guards FROM sqlite_schema WHERE type='trigger' AND name IN('request_authorization','admin_mfa_write_guard','admin_mfa_reset');",'--json'],{stage:'verify',capture:true,config})
   const results=JSON.parse(output);if(results.length!==4||results[0].results.length!==1||results[0].results[0].quick_check!=='ok'||results[1].results.length||results[2].results[0]?.applied!==1||results[3].results[0]?.guards!==3)throw new Error('La restauración no superó integridad, referencias o esquema requerido')
   console.log('Ensayo aprobado: descifrado autenticado, importación D1 local, integridad, referencias y esquema de seguridad. No se modificó producción. El estado temporal se elimina.')
