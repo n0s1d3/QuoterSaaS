@@ -51,3 +51,9 @@ El ID D1 selecciona también el espacio SQLite simulado por el entorno local. Ca
 Para una instalación local que comenzó con el ID provisional de este repositorio, conservar en el binding DB `preview_database_id: "00000000-0000-0000-0000-000000000000"`, mientras `database_id` mantiene el ID real de producción. No añadir otro binding ni borrar .wrangler. Aplicar después `npm run db:migrate` sin --remote para actualizar la base local y reiniciar Vite. Si una instalación comenzó con otro ID de preview, conservar ese ID en lugar del provisional.
 
 Los errores inesperados ahora registran categorías seguras (esquema D1, binding, criptografía o fallo D1) y, solo cuando está permitido, el nombre de tabla/columna. No se registran SQL, mensajes completos ni datos de usuarios. La ausencia de MFA_ENCRYPTION_KEY no impide iniciar sesión; bloquea la configuración/apertura de Administración. Localmente se configura con `npm run mfa:setup`; el secreto del Worker publicado es independiente.
+
+## Widget exitoso pero Siteverify no disponible
+
+Se corrigió un error de compatibilidad de la llamada Siteverify: Workers rechaza redirect="error" al construir Request. Se reprodujo en workerd con la fecha de compatibilidad de la app; redirect="manual" está admitido. La llamada ahora usa manual y rechaza respuestas no exitosas, incluidas redirecciones, sin reenviar secretos a otro origen. Se mantienen hostname/acción y el límite de tiempo.
+
+Actualizar con git pull y volver a ejecutar npm run deploy. Si la verificación sigue fallando, npx wrangler tail muestra Turnstile verification unavailable con etapa request/http/json, estado HTTP cuando existe y tipo de error permitido. No registra claves, tokens, cuerpos ni mensajes completos del proveedor. Las pruebas locales y de contrato no sustituyen la confirmación del registro real con el widget configurado.
