@@ -8,6 +8,23 @@ import { randomBytes } from 'node:crypto'
 import { backupKey,encryptSnapshot,decryptSnapshot } from '../scripts/lib/recovery.mjs'
 // @ts-ignore Node runs the JS operator modules directly.
 import { checkProduction } from '../scripts/check-production.mjs'
+// @ts-ignore Node runs the JS operator modules directly.
+import { d1Diagnostic } from '../scripts/lib/d1-diagnostic.mjs'
+test('D1 failures expose only fixed categories, never SQL or provider details',()=>{
+ for(const [result,category] of [
+  [{error:{code:'ENOBUFS'}},'output_limit'],
+  [{error:{code:'ENOENT'}},'runtime_missing'],
+  [{error:{code:'EPERM'}},'local_permissions'],
+  [{stderr:'PRIVATE_SQL: FOREIGN KEY constraint failed'},'foreign_key'],
+  [{stderr:'PRIVATE_SQL: incomplete input'},'sql_syntax'],
+  [{stderr:'PRIVATE_SQL: no such table: secret'},'schema_missing'],
+  [{stderr:'PRIVATE_SQL: table secret already exists'},'schema_conflict'],
+  [{stderr:'PRIVATE_SQL: Miniflare runtime failed'},'local_runtime'],
+  [{stderr:'PRIVATE_SQL: SQLITE_FULL'},'storage_full'],
+  [{stderr:'PRIVATE_SQL: configuration file not found'},'configuration'],
+  [{stderr:'PRIVATE_SQL: unknown'},'unclassified']
+ ] as const){assert.equal(d1Diagnostic(result),category);assert.ok(!d1Diagnostic(result).includes('PRIVATE_SQL'))}
+})
 test('encrypted snapshots preserve data, reuse private key and reject corruption/wrong keys',async()=>{
  const folder=mkdtempSync(join(tmpdir(),'quoter-recovery-unit-'));try{const keyFile=join(folder,'key'),key=backupKey(keyFile,{create:true});assert.deepEqual(key,backupKey(keyFile,{create:true}));const sql=join(folder,'source.sql'),snapshot=join(folder,'backup.qdb');writeFileSync(sql,'CREATE TABLE private(value TEXT); INSERT INTO private VALUES (\'PRIVATE_CUSTOMER\');');await encryptSnapshot(sql,snapshot,key);assert.ok(!readFileSync(snapshot).includes(Buffer.from('PRIVATE_CUSTOMER')));const restored=join(folder,'restored.sql');await decryptSnapshot(snapshot,restored,key);assert.deepEqual(readFileSync(sql),readFileSync(restored));await assert.rejects(()=>decryptSnapshot(snapshot,join(folder,'wrong.sql'),randomBytes(32)));const changed=readFileSync(snapshot);changed[changed.length-1]^=1;writeFileSync(join(folder,'tampered.qdb'),changed);await assert.rejects(()=>decryptSnapshot(join(folder,'tampered.qdb'),join(folder,'tampered.sql'),key));writeFileSync(join(folder,'truncated.qdb'),changed.subarray(0,8));await assert.rejects(()=>decryptSnapshot(join(folder,'truncated.qdb'),join(folder,'truncated.sql'),key));await assert.rejects(()=>encryptSnapshot(sql,snapshot,key))}finally{rmSync(folder,{recursive:true,force:true})}
 })

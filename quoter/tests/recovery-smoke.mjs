@@ -24,8 +24,23 @@ try{
  const remoteOutput=join(temp,'operator-backups'),argumentFile=join(temp,'export-args.json')
  writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"const fs=require('node:fs'),a=process.argv.slice(2);fs.writeFileSync(process.env.FIXTURE_ARGS,JSON.stringify(a));fs.copyFileSync(process.env.FIXTURE_SQL,a[a.indexOf('--output')+1]);console.log('PRIVATE_PROVIDER_LOG')")
  const backup=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'backup','--remote','--key-file',keyFile,'--output-dir',remoteOutput],{cwd:sandbox,encoding:'utf8',env:{...env,FIXTURE_SQL:sql,FIXTURE_ARGS:argumentFile}});assert.equal(backup.status,0);assert.ok(!backup.stdout.includes('PRIVATE_PROVIDER_LOG'));assert.ok(!backup.stdout.includes('PRIVATE_RECOVERY_CLIENT'));const exportedArgs=JSON.parse(readFileSync(argumentFile,'utf8'));assert.deepEqual(exportedArgs.slice(0,5),['d1','export','quoter-db','--remote','--skip-confirmation']);const files=readdirSync(remoteOutput);assert.equal(files.length,1);assert.ok(files[0].endsWith('.qdb'));const operatorDecoded=join(temp,'operator.sql');await decryptSnapshot(join(remoteOutput,files[0]),operatorDecoded,key);assert.deepEqual(readFileSync(operatorDecoded),readFileSync(sql))
+ // A large import's per-statement JSON must not hit spawnSync's output cap.
+ // A broken deployment config must not be loaded by an isolated drill.
+ writeFileSync(join(sandbox,'wrangler.json'),'INVALID_PRODUCTION_CONFIG')
+ writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),`
+ const fs=require('node:fs'),assert=require('node:assert/strict'),a=process.argv.slice(2),path=require('node:path');
+ assert.ok(a.includes('--local'));assert.ok(!a.includes('--remote'));
+ const config=JSON.parse(fs.readFileSync(a[a.indexOf('--config')+1],'utf8'));
+ assert.equal(config.d1_databases[0].database_id,'00000000-0000-0000-0000-000000000000');assert.equal(config.assets,undefined);assert.equal(config.vars,undefined);
+ assert.equal(process.cwd(),path.dirname(a[a.indexOf('--config')+1]));
+ if(a.includes('--file'))process.stdout.write('PRIVATE_PROVIDER_LOG'.repeat(150000));
+ else console.log(JSON.stringify([{results:[{quick_check:'ok'}]},{results:[]},{results:[{applied:1}]},{results:[{guards:3}]}]));
+ `)
+ const large=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',keyFile],{cwd:sandbox,encoding:'utf8',env});assert.equal(large.status,0,large.stderr);assert.ok(large.stdout.includes('Ensayo aprobado'));assert.ok(!large.stdout.includes('PRIVATE_PROVIDER_LOG'))
+ writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"console.error('PRIVATE_CUSTOMER PRIVATE_TOKEN INSERT INTO private: FOREIGN KEY constraint failed');process.exitCode=1")
+ const failure=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',keyFile],{cwd:sandbox,encoding:'utf8',env});assert.notEqual(failure.status,0);assert.ok(failure.stderr.includes('etapa=import, categoria=foreign_key'));assert.ok(!failure.stderr.includes('PRIVATE_CUSTOMER'));assert.ok(!failure.stderr.includes('PRIVATE_TOKEN'))
  writeFileSync(join(sandbox,'node_modules/wrangler/bin/wrangler.js'),"require('node:fs').writeFileSync('EXECUTED','bad')")
  const wrong=join(temp,'wrong-key');writeFileSync(wrong,randomBytes(32).toString('hex'));const invalid=spawnSync(process.execPath,[resolve('scripts/db-recovery.mjs'),'drill','--file',encrypted,'--key-file',wrong],{cwd:sandbox,encoding:'utf8',env});assert.notEqual(invalid.status,0);assert.ok(!invalid.stdout.includes('Ensayo aprobado'));assert.ok(!existsSync(join(sandbox,'EXECUTED')))
  assert.ok(!readFileSync(encrypted).includes(Buffer.from('test-digest')))
- console.log('Recovery passed: actual D1 export, encrypted SQL, isolated D1 import, integrity/FK/guards, preserved credentials/MFA/quotes, remote restore rejection and wrong-key rejection. All fixtures removed.')
+ console.log('Recovery passed: actual D1 export/import, integrity/FK/guards, preserved credentials/MFA/quotes, remote and wrong-key rejection, isolated config, large-output import and private diagnostics. All fixtures removed.')
 }finally{rmSync(temp,{recursive:true,force:true})}
