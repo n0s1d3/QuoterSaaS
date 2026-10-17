@@ -2,9 +2,10 @@ import { createCipheriv,createDecipheriv,randomBytes } from 'node:crypto'
 import { createReadStream,createWriteStream,appendFileSync,closeSync,openSync,readSync,readFileSync,writeFileSync,existsSync,statSync } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
+import { privateFile } from './private-file.mjs'
 export const maxSnapshotBytes=128*1024*1024
 const magic=Buffer.from('QUOTER-D1-AESGCM-v1\n'),headerBytes=magic.length+12,tagBytes=16
-export function backupKey(path,{create=false}={}){if(create&&!existsSync(path))writeFileSync(path,randomBytes(32).toString('hex')+'\n',{flag:'wx',mode:0o600});const text=readFileSync(path,'utf8').trim();if(!/^[a-f0-9]{64}$/i.test(text))throw new Error('La clave privada de respaldo no es válida');return Buffer.from(text,'hex')}
+export function backupKey(path,{create=false}={}){if(create&&!existsSync(path))writeFileSync(path,randomBytes(32).toString('hex')+'\n',{flag:'wx',mode:0o600});privateFile(path);const text=readFileSync(path,'utf8').trim();if(!/^[a-f0-9]{64}$/i.test(text))throw new Error('La clave privada de respaldo no es válida');return Buffer.from(text,'hex')}
 function bounded(){let bytes=0;return new Transform({transform(chunk,_encoding,done){bytes+=chunk.length;done(bytes>maxSnapshotBytes?new Error('El respaldo supera 128 MiB; usa el procedimiento D1 para bases mayores'):null,chunk)}})}
 export async function encryptSnapshot(source,destination,key){
  if(!statSync(source).size)throw new Error('La exportación SQL está vacía')

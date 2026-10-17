@@ -53,7 +53,8 @@ export async function quotes(request: Request, db: D1Database, org: string, id?:
         FROM quote_items i LEFT JOIN catalog_items catalog ON catalog.id=i.catalog_item_id AND catalog.organization_id=q.organization_id
         WHERE i.quote_id=q.id
       )) AS categoriesJson
-      FROM quotes q JOIN customers c ON c.id = q.customer_id WHERE q.organization_id = ? AND q.deleted_at IS NULL ORDER BY q.created_at DESC, q.quote_number DESC`).bind(org).all<{categoriesJson:string}>()).results
+      FROM quotes q JOIN customers c ON c.id = q.customer_id WHERE q.organization_id = ? AND q.deleted_at IS NULL ORDER BY q.created_at DESC, q.quote_number DESC LIMIT 501`).bind(org).all<{categoriesJson:string}>()).results
+    if(rows.length>500)throw new HttpError(413,'Hay demasiadas cotizaciones. Usa búsqueda y paginación para consultarlas.')
     return Response.json(rows.map(({categoriesJson,...row}) => ({...row,categories:JSON.parse(categoriesJson)})))
   }
   if (request.method === 'POST') return Response.json(await createQuote(db, org, await body(request),undefined,actor), { status: 201 })

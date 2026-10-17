@@ -1,8 +1,15 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { dashboardMetrics } from '../src/lib/dashboard.ts'
+import { dashboardMetrics,dashboardReminders } from '../src/lib/dashboard.ts'
 import type { QuoteSummary } from '../src/lib/types.ts'
 const quote: QuoteSummary = { id: 'q', quoteNumber: 'Q-0001', customerName: 'Cliente', status: 'draft', issueDate: '2026-10-01', subtotal: 100, total: 100, tax: 0, discount: 0 }
+test('compact reminders always include upcoming deadlines alongside expired quotes',()=>{
+  const expired=Array.from({length:4},(_,i)=>({...quote,id:'expired-'+i,expiryDate:'2026-10-01'})),upcoming=Array.from({length:4},(_,i)=>({...quote,id:'upcoming-'+i,expiryDate:'2026-10-20'}))
+  assert.deepEqual(dashboardReminders({expired,upcoming:upcoming.slice(0,1)}).map(r=>r.quote.id),['expired-0','upcoming-0','expired-1','expired-2'])
+  assert.deepEqual(dashboardReminders({expired,upcoming}).map(r=>r.quote.id),['expired-0','upcoming-0','expired-1','upcoming-1'])
+  assert.equal(dashboardReminders({expired:[],upcoming}).length,4)
+  assert.equal(dashboardReminders({expired,upcoming:[]}).length,4)
+})
 test('dashboard uses accepted totals and excludes rejected or expired potential amounts', () => {
   const result = dashboardMetrics([
     { ...quote, status: 'accepted', total: 1200, expiryDate: '2026-01-01' },

@@ -12,8 +12,8 @@ export async function health(request:Request,db:D1Database|undefined,env:EmailEn
    mailReady(request,env);if(new URL(env.APP_URL!).origin!==new URL(request.url).origin)throw new Error('configuration')
   }
   signupDailyLimit(env)
-  const state=await db.prepare("SELECT EXISTS(SELECT 1 FROM d1_migrations WHERE name='0017_admin_mfa.sql') AS migrated,(SELECT COUNT(*) FROM sqlite_schema WHERE type='trigger' AND name IN('request_authorization','admin_mfa_write_guard','admin_mfa_reset')) AS guards").first<{migrated:number;guards:number}>()
-  if(!state?.migrated||state.guards!==3)throw new Error('schema')
+  const state=await db.prepare("SELECT EXISTS(SELECT 1 FROM d1_migrations WHERE name='0020_plan_schedule.sql') AS migrated,(SELECT COUNT(*) FROM sqlite_schema WHERE type='trigger' AND name IN('request_authorization','admin_mfa_write_guard','admin_mfa_reset','reject_early_paid_downgrade')) AS guards").first<{migrated:number;guards:number}>()
+  if(!state?.migrated||state.guards!==4)throw new Error('schema')
   return Response.json({status:'ok'})
  }catch{return Response.json({status:'unavailable'},{status:503})}
 }

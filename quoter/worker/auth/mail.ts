@@ -15,7 +15,7 @@ export async function sendAccountEmail(request:Request,env:EmailEnvironment,emai
  if(localPreview(request,env))return {emailDelivery:'preview',previewUrl:url}
  const subject=purpose==='invite'?'Invitación a un equipo de Quoter':purpose==='verify'?'Verifica tu correo en Quoter':'Restablece tu contraseña en Quoter'
  const text=purpose==='invite'?`Te invitaron a un negocio en Quoter. Inicia sesión con este correo, verifica tu cuenta y acepta la invitación:\n${url}\n\nVence en 3 días. Si no esperabas esta invitación, ignora el mensaje.`:purpose==='verify'?`Confirma tu correo abriendo este enlace y pulsando Verificar correo:\n${url}\n\nVence en 24 horas. Si no creaste esta cuenta, ignora el mensaje.`:`Abre este enlace para elegir una nueva contraseña:\n${url}\n\nVence en 30 minutos y solo se puede usar una vez. Si no lo solicitaste, ignora este mensaje.`
- const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({from:env.MAIL_FROM,to:[email],subject,text}),signal:AbortSignal.timeout(10000)})
+ const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({from:env.MAIL_FROM,to:[email],subject,text}),redirect:'manual',signal:AbortSignal.timeout(10000)})
  if(!response.ok){console.error('Account email delivery rejected',{purpose,status:response.status});throw new HttpError(503,'No se pudo enviar el correo. Intenta nuevamente más tarde')}
  return {emailDelivery:'sent'}
 }

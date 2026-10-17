@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { randomUUID,createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { base,testAccount } from './auth-client.mjs'
+import { base,testAccount,assertLocalPreview } from './auth-client.mjs'
+await assertLocalPreview()
 const tokenOf=url=>new URLSearchParams(new URL(url).hash.slice(1)).get('token')
 async function raw(path,data,cookie){return fetch(base+'/api'+path,{method:'POST',headers:{'content-type':'application/json',...(process.env.QUOTER_TEST_IP?{'CF-Connecting-IP':process.env.QUOTER_TEST_IP}:{}),...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(data)})}
 const email='email-'+randomUUID()+'@example.com',password=randomUUID()+'Aa!'

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "npm run build && vite preview",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm test && npm run lint && npm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
     "db:migrate": "wrangler d1 migrations apply quoter-db --local",
     "db:seed": "wrangler d1 execute quoter-db --local --file seed.sql",
@@ -40,25 +40,35 @@
     "backup:db": "node scripts/db-recovery.mjs backup",
     "backup:drill": "node scripts/db-recovery.mjs drill",
     "check:production": "node scripts/check-production.mjs",
-    "test:recovery": "node tests/recovery-smoke.mjs"
+    "test:recovery": "node tests/recovery-smoke.mjs",
+    "verify": "npm test && npm run lint && npm run test:integration && npm run test:recovery",
+    "test:integration": "npm run build && node scripts/test-isolated.mjs",
+    "test:backup-roundtrip": "node tests/backup-roundtrip-smoke.mjs",
+    "test:request-context": "npm run build && node tests/request-context-smoke.mjs",
+    "recovery:plan": "node scripts/recover-service.mjs plan",
+    "recovery:apply": "node scripts/recover-service.mjs apply",
+    "test:editor-ui": "node tests/editor-browser.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "jspdf-autotable": "^5.0.9",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.63.1",
+    "@cloudflare/vite-plugin": "1.64.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
-    "miniflare": "5.20261006.1-alpha",
-    "oxlint": "^1.81.0",
-    "playwright": "^1.62.1",
+    "miniflare": "5.20261012.1-beta",
+    "oxlint": "1.88.0",
+    "playwright": "1.64.1",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
-    "wrangler": "^4.149.0"
+    "wrangler": "4.151.1"
+  },
+  "engines": {
+    "node": ">=24.14.0 <25"
   }
 }

@@ -28,3 +28,16 @@ test('PDF excludes internal notes, preserves payment terms and does not mutate n
  const withoutTerms=createQuotePdf({...input,paymentTerms:null,notes:internal.repeat(500)},brand)
  assert.ok(!withoutTerms.output().includes(internal));assert.equal(withoutTerms.getNumberOfPages(),1)
 })
+
+
+test('Accepted multiline letterheads stay bounded and paginate complete business details',()=>{
+ const address=Array.from({length:100},(_,index)=>`L${String(index+1).padStart(3,'0')}`).join('\n')
+ const input={...quote,notes:'PRIVATE_NOTES_NEVER_PRINT',paymentTerms:'Public payment terms remain visible'}
+ const doc=createQuotePdf(input,{...brand,name:'Business name '.repeat(15).trim(),address})
+ const output=doc.output()
+ assert.ok(doc.getNumberOfPages()>1);assert.ok(doc.getNumberOfPages()<12)
+ assert.ok(output.includes('L100'))
+ assert.ok(output.includes('Public payment terms remain visible'))
+ assert.ok(!output.includes('PRIVATE_NOTES_NEVER_PRINT'))
+ for(let page=1;page<=doc.getNumberOfPages();page++)assert.ok(doc.internal.pages[page].join('\n').includes('COTIZACI'))
+})

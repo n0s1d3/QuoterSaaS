@@ -3,8 +3,10 @@ import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { base,testAccount } from './auth-client.mjs'
+import { localStateArgs } from './local-state.mjs'
+const local=localStateArgs()
 const owner=await testAccount(),other=await testAccount(),org=owner.user.organizationId
-const execute=sql=>{const r=spawnSync(process.execPath,[resolve('node_modules/wrangler/bin/wrangler.js'),'d1','execute','quoter-db','--local','--command',sql,'--json'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr+r.stdout);return JSON.parse(r.stdout).flatMap(entry=>entry.results||[])}
+const execute=sql=>{const r=spawnSync(process.execPath,[resolve('node_modules/wrangler/bin/wrangler.js'),'d1','execute','quoter-db',...local,'--command',sql,'--json'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr+r.stdout);return JSON.parse(r.stdout).flatMap(entry=>entry.results||[])}
 async function call(user,path,data,method='POST',status=200){const r=await user.request(base+'/api'+path,data===undefined?{}:{method,body:JSON.stringify(data)});assert.equal(r.status,status,await r.clone().text());return r.json()}
 const initial=await call(owner,'/subscription');assert.equal(initial.status,'trial');assert.equal(initial.daysRemaining,7);assert.ok(initial.trialExpiresAt>Math.floor(Date.now()/1000)+604700)
 const customer=await call(owner,'/customers',{name:'Cliente con vigencia'},'POST',201),item=await call(owner,'/catalog',{name:'Servicio',unit:'hora',category:'Servicio',unitPrice:100,staleAfterDays:90},'POST',201)
@@ -16,7 +18,7 @@ for(const [path,data,method] of [['/customers',{name:'No permitido'},'POST'],['/
 for(const path of ['/quotes','/quotes/'+quote.id,'/customers','/catalog','/branding','/team','/plans','/trash','/history','/backups/export','/dashboard'])await call(owner,path)
 assert.equal((await call(owner,'/quotes/'+quote.id)).status,'draft');assert.equal((await call(other,'/subscription')).status,'trial')
 // Database enforcement still rejects writes when called directly, without the HTTP guard.
-const blocked=spawnSync(process.execPath,[resolve('node_modules/wrangler/bin/wrangler.js'),'d1','execute','quoter-db','--local','--command',`UPDATE quotes SET notes='blocked' WHERE id='${quote.id}'`,'--json'],{encoding:'utf8'});assert.notEqual(blocked.status,0);assert.ok((blocked.stderr+blocked.stdout).includes('QUOTER_SUBSCRIPTION_EXPIRED'))
+const blocked=spawnSync(process.execPath,[resolve('node_modules/wrangler/bin/wrangler.js'),'d1','execute','quoter-db',...local,'--command',`UPDATE quotes SET notes='blocked' WHERE id='${quote.id}'`,'--json'],{encoding:'utf8'});assert.notEqual(blocked.status,0);assert.ok((blocked.stderr+blocked.stdout).includes('QUOTER_SUBSCRIPTION_EXPIRED'))
 const activate=(reference)=>{const r=spawnSync(process.execPath,['scripts/activate-plan.mjs','--business',org,'--plan','2','--reference',reference,'--operator','operator@example.com'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr+r.stdout)}
 const first='subscription-'+randomUUID();activate(first);let active=await call(owner,'/subscription');assert.equal(active.status,'active');assert.ok(active.paidUntil>Math.floor(Date.now()/1000)+27*86400);const until=active.paidUntil
 activate(first);assert.equal((await call(owner,'/subscription')).paidUntil,until)

@@ -1,4 +1,4 @@
-import { HttpError } from '../http.ts'
+import { HttpError,body } from '../http.ts'
 const encoder = new TextEncoder()
 function hex(bytes: ArrayBuffer | Uint8Array) { return Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), byte=>byte.toString(16).padStart(2,'0')).join('') }
 export function randomToken() { return hex(crypto.getRandomValues(new Uint8Array(32))) }
@@ -22,7 +22,7 @@ export async function account(request: Request,db:D1Database) {
 export async function newSession(request:Request,db:D1Database,userId:string,expectedHash?:string) {
  const token=randomToken(),expires=Math.floor(Date.now()/1000)+604800
  const existing=cookieToken(request)
- const statements=[db.prepare('DELETE FROM sessions WHERE expires_at<=?').bind(Math.floor(Date.now()/1000)),db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at,organization_id) SELECT ?,id,?,organization_id FROM users WHERE id=? AND suspended_at IS NULL AND (? IS NULL OR password_hash=?)').bind(await digest(token),expires,userId,expectedHash||null,expectedHash||null)]
+ const statements=[db.prepare('DELETE FROM sessions WHERE token_hash IN (SELECT token_hash FROM sessions WHERE expires_at<=? ORDER BY expires_at LIMIT 100)').bind(Math.floor(Date.now()/1000)),db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at,organization_id) SELECT ?,id,?,organization_id FROM users WHERE id=? AND suspended_at IS NULL AND (? IS NULL OR password_hash=?)').bind(await digest(token),expires,userId,expectedHash||null,expectedHash||null)]
  if(existing)statements.unshift(db.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await digest(existing)))
  const result=await db.batch(statements)
  if(!result[result.length-1].meta.changes)throw new HttpError(401,'Correo o contraseña incorrectos')
@@ -34,4 +34,13 @@ export function guardMutation(request:Request) {
  const origin=request.headers.get('Origin')
  if(origin&&origin!==new URL(request.url).origin)throw new HttpError(403,'Origen de solicitud no permitido')
  if(!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json'))throw new HttpError(415,'Usa application/json')
+}
+/** Operator maintenance preserves sign-in/recovery and MFA access, but freezes business writes. */
+export const maintenanceMessage='La aplicación está en mantenimiento. Puedes consultar tus datos; intenta guardar más tarde.'
+export async function guardMaintenance(request:Request,enabled:string|undefined){
+ if(enabled!=='true'||['GET','HEAD','OPTIONS'].includes(request.method))return
+ const path=new URL(request.url).pathname.replace(/\/$/,'')
+ if(request.method==='POST'&&['/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification'].includes(path))return
+ if(request.method==='POST'&&path==='/api/security/admin-mfa'&&(await body(request.clone())).action==='verify')return
+ throw new HttpError(503,maintenanceMessage)
 }

@@ -8,13 +8,17 @@ The pepper protects against offline verification of guesses from a database-only
 
 ## Configuration
 
-Production: provision an independent key with the authenticated local Wrangler:
+Production already configured: `npm run password:provision` inspects remote secret **names only** and checks the existing local private file. It never uploads a key. A clone without the original private file fails before generating anything when the remote secret exists. Cloudflare does not reveal secret values: presence is not proof that a restored local copy matches production.
+
+Only the **first initialization of an absent remote secret** uses:
 
 ```powershell
-npm run password:provision
+npm run password:provision -- --initialize
 ```
 
-The helper creates `.env.password-pepper.production.local` once, validates and reuses it on future runs, and passes the value to Wrangler via stdin using the literal secret name PASSWORD_PEPPER. It does not print the key. The private file is ignored by Git and must be backed up securely. Do not use it to overwrite an independently configured production pepper: recover the existing matching key first. Do not enter the value as the name. Do not reuse or replace MFA_ENCRYPTION_KEY, Turnstile or Resend secrets.
+The helper first lists secret names. If PASSWORD_PEPPER is already present it refuses replacement, including with `--initialize`. If absent, explicit initialization creates `.env.password-pepper.production.local` once or reuses its validated existing value, then passes that value through stdin under the literal name PASSWORD_PEPPER. Provider output and values are not printed. Run initialization exclusively as a single infrastructure operator; Cloudflare's secret API does not provide an atomic create-if-absent operation, so simultaneous independent initializers are not supported. Do not delete the remote secret to bypass this safeguard.
+
+The file is ignored by Git and must be backed up securely. Setup tightens an existing regular file to POSIX 0600 and rejects symlinks; on Windows configure and inspect NTFS ACLs as described in OPERATIONS.md. Do not reuse MFA_ENCRYPTION_KEY, Turnstile or Resend secrets. If the original pepper is missing, recover it from custody or perform a coordinated account recovery; this command deliberately has no rotation/overwrite switch.
 
 Local: run `npm run password:setup`, which appends a random key to ignored .dev.vars without displaying or replacing an existing key. Restart Vite. Local and production keys can be different because their user databases are independent.
 

@@ -42,6 +42,7 @@ await call(master,'/admin/businesses/'+org,{enabled:false,currentPassword:master
 const reference='admin-payment-'+randomUUID(),payment={planId:'pro',reference,currentPassword:master.password},activated=await call(master,'/admin/businesses/'+org+'/activate',payment)
 assert.equal(activated.subscription.status,'suspended');const until=activated.subscription.paidUntil;assert.ok(until>Math.floor(Date.now()/1000)+27*86400)
 assert.equal((await call(master,'/admin/businesses/'+org+'/activate',payment)).reused,true);assert.equal((await call(owner,'/subscription')).paidUntil,until)
+await call(master,'/admin/businesses/'+org+'/activate',{...payment,planId:'gratis',reference:reference+'-early-downgrade'},'POST',409);assert.equal((await call(owner,'/plans')).plan.id,'pro');assert.equal((await call(owner,'/subscription')).paidUntil,until)
 await call(master,'/admin/businesses/'+outsider.user.organizationId+'/activate',payment,'POST',409)
 await call(master,'/admin/businesses/'+org,{enabled:true,currentPassword:master.password},'PATCH');assert.equal((await call(owner,'/subscription')).status,'active');await call(owner,'/quotes/'+q.id,{status:'accepted'},'PATCH')
 // Administration remains accessible if the master's own business is expired or suspended.

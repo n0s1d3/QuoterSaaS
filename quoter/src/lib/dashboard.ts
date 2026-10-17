@@ -1,4 +1,9 @@
 import type { QuoteSummary } from './types.ts'
+export function dashboardReminders(metrics:{expired:QuoteSummary[];upcoming:QuoteSummary[]}){
+  const expiredSlots=Math.min(metrics.expired.length,metrics.upcoming.length?Math.max(2,4-metrics.upcoming.length):4)
+  const expired=metrics.expired.slice(0,expiredSlots).map(quote=>({quote,label:'Vencida'})),upcoming=metrics.upcoming.slice(0,4-expiredSlots).map(quote=>({quote,label:`Vence ${quote.expiryDate}`}))
+  return Array.from({length:Math.max(expired.length,upcoming.length)},(_,i)=>[expired[i],upcoming[i]].filter(Boolean)).flat()
+}
 export function dashboardMetrics(quotes: QuoteSummary[], date: string) {
   const pending = quotes.filter(q => ['draft', 'sent'].includes(q.status))
   const expired = pending.filter(q => !!q.expiryDate && q.expiryDate < date)

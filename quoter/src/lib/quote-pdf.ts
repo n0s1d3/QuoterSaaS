@@ -16,11 +16,14 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   const primary = rgb(brand.primaryColor)
   const accent = rgb(brand.accentColor)
   doc.setFont('helvetica', 'bold'); doc.setFontSize(18)
-  const nameLines: string[] = doc.splitTextToSize(brand.name, brand.logo ? 108 : 145)
+  const allNameLines: string[] = doc.splitTextToSize(brand.name.replace(/\s+/g, ' ').trim(), brand.logo ? 108 : 145)
+  const nameLines = allNameLines.slice(0, 2)
   doc.setFont('helvetica','normal');doc.setFontSize(9)
-  const contactLines:string[]=doc.splitTextToSize([brand.taxId?`NIT: ${brand.taxId}`:null,brand.address,brand.phone,brand.contactEmail].filter(Boolean).join('\n'),brand.logo?108:145)
+  const allContactLines:string[]=doc.splitTextToSize([brand.taxId?`NIT: ${brand.taxId}`:null,brand.address,brand.phone,brand.contactEmail].filter(Boolean).join('\n'),brand.logo?108:145)
+  const contactLines = allContactLines.slice(0, 5)
+  const continuedDetails = [...allNameLines.slice(2), ...allContactLines.slice(5)].join('\n')
   const contactStart=18+(nameLines.length-1)*7+6
-  const headerBottom = Math.max(50,contactStart+contactLines.length*4.5+8)
+  const headerBottom = Math.min(70, Math.max(50,contactStart+contactLines.length*4.5+8))
   let logo: { width: number; height: number } | undefined
   if (brand.logo) {
     // Invalid images cause a visible download error rather than a silently missing logo.
@@ -51,10 +54,17 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     styles: { font: 'helvetica', fontSize: 10, cellPadding: 3, textColor: [36, 52, 46] as [number, number, number], overflow: 'linebreak' as const },
     willDrawPage: header,
   }
+  // The repeated letterhead always fits above the table. Long accepted business
+  // details remain in a paginated body block instead of consuming every page.
+  let contentStart = headerBottom
+  if (continuedDetails) {
+    autoTable(doc, { ...common, startY: contentStart, theme: 'plain', head: [['DATOS DE LA EMPRESA (CONTINUACIÓN)']], body: [[continuedDetails]], headStyles: { textColor: primary, fontStyle: 'bold' } })
+    contentStart = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6
+  }
   const customer = quote.customer
   const customerText = [customer.name, customer.company, customer.phone, customer.email, customer.address, customer.taxId ? `NIT: ${customer.taxId}` : null].filter(Boolean).join('\n')
   autoTable(doc, {
-    ...common, startY: headerBottom, theme: 'plain',
+    ...common, startY: contentStart, theme: 'plain',
     head: [['CLIENTE', 'FECHAS']],
     body: [[customerText, `Emisión: ${quote.issueDate}\nVálida hasta: ${quote.expiryDate || 'Sin vencimiento'}\nMoneda: GTQ`]],
     columnStyles: { 0: { cellWidth: 118 } },

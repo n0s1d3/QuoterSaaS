@@ -1,3 +1,5 @@
+> Documento histórico. El hash vigente usa PBKDF2 nativo de 100.000 iteraciones con pepper independiente, por compatibilidad de Workers; no el formato de 600.000 descrito en la revisión original. Consultar PASSWORD_SECURITY.md y REMEDIATION.md para el estado actual. Los conteos de pruebas de abajo corresponden a su fecha original.
+
 # Revisión de seguridad de Quoter
 
 Fecha: 14 de octubre de 2026. Alcance: código del cliente React, Worker, rutas de autenticación y administración, migraciones D1, importación/exportación, PDF y dependencias instaladas. Se revisaron controles y se ejecutaron pruebas adversariales locales con cuentas y negocios de prueba. No se auditó un despliegue público, la configuración de una cuenta Cloudflare, la entrega real de Resend ni la resistencia a ataques de carga distribuidos.

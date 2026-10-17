@@ -14,7 +14,7 @@ npm run mfa:setup
 npm run dev
 ```
 
-`mfa:setup` crea una clave de cifrado aleatoria en `.dev.vars`, sin mostrarla y sin reemplazar una existente. Ese archivo está excluido de Git. Se requiere la migración 0017; si el servidor no tiene la clave, Administración permanece bloqueada y muestra que falta configuración. La aplicación normal no necesita esa clave.
+`mfa:setup` crea una clave de cifrado aleatoria en `.dev.vars`, sin mostrarla y sin reemplazar una existente. También endurece archivos regulares existentes a 0600 en POSIX y rechaza enlaces simbólicos. En Windows revisar las ACL NTFS con el procedimiento de OPERATIONS.md; chmod no las configura. Ese archivo está excluido de Git. Se requiere la migración 0017; si el servidor no tiene la clave, Administración permanece bloqueada y muestra que falta configuración. La aplicación normal no necesita esa clave.
 
 Entrar con la cuenta maestra verificada. Elegir Configurar autenticador y confirmar la contraseña actual. En Google Authenticator, Microsoft Authenticator, 1Password u otra aplicación compatible, agregar una cuenta manualmente con la clave mostrada y tipo basado en tiempo. También puede abrirse el enlace `otpauth://` desde un dispositivo con un autenticador instalado. Introducir el código de seis dígitos y guardar los ocho códigos de recuperación antes de continuar. No se genera un QR en esta versión; la configuración manual es equivalente.
 
@@ -44,6 +44,6 @@ Agregar `--remote` únicamente cuando se quiera modificar la D1 publicada. El re
 
 ## Pruebas
 
-44 pruebas unitarias incluyen vectores RFC 6238, códigos vencidos/reutilizados y cifrado ligado a la cuenta. `test:mfa` comprueba inscripción obligatoria, contraseña de configuración, recuperación concurrente de un solo uso, aislamiento entre sesiones, vencimiento, privacidad de respaldos, restablecimiento por operador y acceso desde móvil. `test:admin` conserva las pruebas de privacidad, activación de planes y permisos, ahora con MFA.
+Las pruebas unitarias incluyen vectores RFC 6238, códigos vencidos/reutilizados y cifrado ligado a la cuenta. `test:mfa` comprueba inscripción obligatoria, contraseña de configuración, recuperación concurrente de un solo uso, aislamiento entre sesiones, vencimiento, privacidad de respaldos, restablecimiento por operador y acceso desde móvil. `test:admin` conserva las pruebas de privacidad, activación de planes y permisos, ahora con MFA.
 
 Las pruebas MFA y administrativas cambian la designación de cuenta maestra: usar exclusivamente un estado D1 local aislado, con `QUOTER_ADMIN_ISOLATED=1`, `QUOTER_IMPORT_STATE`, `QUOTER_TEST_URL` y, opcionalmente, `QUOTER_BROWSER_PATH`. No usar una base con clientes o una cuenta maestra real.

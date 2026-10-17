@@ -1,3 +1,5 @@
+> Estado vigente: el propietario confirmó entrega a su propia cuenta y acceso online. Para entregar a clientes sigue siendo necesario un dominio de envío verificado. En local, crear `.dev.vars` solo si falta, ejecutar `npm run password:setup` y `npm run mfa:setup`, migrar D1 y usar preview. Las afirmaciones de ausencia de entrega que siguen son historia de la preparación inicial. La integración rechaza redirects y conserva el timeout.
+
 # Account emails with Resend
 
 Real delivery is prepared but requires a verified sender, a public HTTPS app URL and an API key. These were not supplied during implementation; no live email delivery was tested.

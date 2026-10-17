@@ -4,7 +4,7 @@ import type { Account } from '../auth/session'
 import { body,HttpError,text } from '../http.ts'
 import { businessSubscription } from '../auth/subscription.ts'
 const state="CASE WHEN o.suspended_at IS NOT NULL THEN 'suspended' WHEN EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) THEN 'permanent' WHEN COALESCE(o.paid_until,o.trial_expires_at,0)<=unixepoch() THEN 'expired' WHEN o.paid_until IS NOT NULL THEN 'active' ELSE 'trial' END"
-const businessFields=`o.id,o.name,o.currency,EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) AS permanent,o.created_at AS createdAt,o.plan_id AS planId,p.name AS planName,o.trial_expires_at AS trialExpiresAt,o.paid_until AS paidUntil,o.suspended_at AS suspendedAt,${state} AS status`
+const businessFields=`o.id,o.name,o.currency,unixepoch() AS serverNow,EXISTS(SELECT 1 FROM platform_permanent_businesses WHERE id=o.id) AS permanent,o.created_at AS createdAt,o.plan_id AS planId,p.name AS planName,o.trial_expires_at AS trialExpiresAt,o.paid_until AS paidUntil,o.suspended_at AS suspendedAt,${state} AS status`
 function search(value:string){return '%'+value.replaceAll('\\','\\\\').replaceAll('%','\\%').replaceAll('_','\\_')+'%'}
 export async function platformAdmin(request:Request,db:D1Database,user:Account,path:string,env:PasswordEnvironment={}){
  const master=await requirePlatformAdmin(db,user)
@@ -60,6 +60,8 @@ export async function platformAdmin(request:Request,db:D1Database,user:Account,p
   if(business[2]&&request.method==='POST'){
    const reference=text(data.reference,'Referencia única de pago',true,200)!,planId=text(data.planId,'Plan',true,100)!
    if(!await db.prepare('SELECT id FROM subscription_plans WHERE id=?').bind(planId).first())throw new HttpError(400,'Plan inválido')
+   const earlyDowngrade=await db.prepare(`SELECT o.id FROM organizations o JOIN subscription_plans current_plan ON current_plan.id=o.plan_id JOIN subscription_plans next_plan ON next_plan.id=? WHERE o.id=? AND o.paid_until>unixepoch() AND (next_plan.quote_limit<current_plan.quote_limit OR next_plan.catalog_limit<current_plan.catalog_limit OR next_plan.member_limit<current_plan.member_limit) AND NOT EXISTS(SELECT 1 FROM plan_activations WHERE payment_reference=?)`).bind(planId,id,reference).first()
+   if(earlyDowngrade)throw new HttpError(409,'El plan pagado actual sigue vigente. Para reducir capacidad, espera a su vencimiento; no se registró el pago ni se cambió el plan.')
    const rows=await db.batch<Record<string,unknown>>([db.prepare(`INSERT INTO plan_activations(id,organization_id,plan_id,payment_reference,operator_email) SELECT ?,?,?,?,'Administración de Quoter' WHERE ${adminGate} ON CONFLICT(payment_reference) DO NOTHING`).bind(operation,id,planId,reference,...gateValues),audit('plan.month.activated','business',id,{planId},'EXISTS(SELECT 1 FROM plan_activations WHERE id=?)',[operation])])
    await requirePlatformAdmin(db,user)
    const receipt=await db.prepare('SELECT organization_id AS businessId,plan_id AS planId FROM plan_activations WHERE payment_reference=?').bind(reference).first<{businessId:string;planId:string}>()

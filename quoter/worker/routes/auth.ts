@@ -1,6 +1,6 @@
 import { challenge,challengeOptions,signupDailyLimit } from '../auth/turnstile'
 import { newPasswordHash,verifyPassword,needsPasswordUpgrade } from '../auth/passwords'
-import { limit } from '../auth/rate-limit'
+import { limit,loginLimit } from '../auth/rate-limit'
 import { issueToken } from '../auth/email-tokens'
 import { sendAccountEmail } from '../auth/mail'
 import type { EmailEnvironment } from '../auth/environment'
@@ -22,8 +22,13 @@ export async function auth(request:Request,db:D1Database,path:string,env:EmailEn
  const email=text(data.email,'Correo',true,254)!.toLowerCase()
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HttpError(400,'Correo inválido')
  if(typeof data.password!=='string'||data.password.length>128||data.password.length<1)throw new HttpError(400,'Contraseña inválida')
- await limit(db,`${path}:${request.headers.get('CF-Connecting-IP')||'local'}`,path.endsWith('register')?20:100)
- await limit(db,`${path}:${email}`,10)
+ if(path.endsWith('register')){
+  await limit(db,`${path}:${request.headers.get('CF-Connecting-IP')||'local'}`,20)
+  await limit(db,`${path}:${email}`,10)
+ }else{
+  const proof=await loginLimit(db,request,email,data.turnstileToken,env)
+  if(proof)return proof
+ }
  let userId:string
  let expectedHash:string|undefined
  let delivery:Record<string,string|undefined> = {}

@@ -1,10 +1,10 @@
 import { newPasswordHash,verifyPassword,type PasswordEnvironment } from './passwords.ts'
-import { limit } from './rate-limit'
-import { HttpError } from '../http'
-import { digest,randomToken } from './session'
+import { limit } from './rate-limit.ts'
+import { HttpError } from '../http.ts'
+import { digest,randomToken } from './session.ts'
 export async function issueToken(db:D1Database,userId:string,purpose:'verify'|'reset') {
  const token=randomToken(),now=Math.floor(Date.now()/1000),expiry=now+(purpose==='verify'?86400:1800)
- await db.batch([db.prepare('DELETE FROM account_tokens WHERE expires_at<=? OR used_at IS NOT NULL').bind(now),db.prepare('INSERT INTO account_tokens (token_hash,user_id,purpose,expires_at) VALUES (?,?,?,?)').bind(await digest(token),userId,purpose,expiry)])
+ await db.batch([db.prepare('DELETE FROM account_tokens WHERE token_hash IN (SELECT token_hash FROM account_tokens WHERE expires_at<=? ORDER BY expires_at LIMIT 100)').bind(now),db.prepare('DELETE FROM account_tokens WHERE token_hash IN (SELECT token_hash FROM account_tokens WHERE used_at IS NOT NULL ORDER BY used_at LIMIT 100)'),db.prepare('INSERT INTO account_tokens (token_hash,user_id,purpose,expires_at) VALUES (?,?,?,?)').bind(await digest(token),userId,purpose,expiry)])
  return token
 }
 export async function consumeToken(db:D1Database,token:unknown,purpose:'verify'|'reset',password?:unknown,env:PasswordEnvironment={}) {

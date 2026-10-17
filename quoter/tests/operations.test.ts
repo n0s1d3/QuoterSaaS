@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync,writeFileSync,readFileSync,rmSync } from 'node:fs'
+import { mkdtempSync,writeFileSync,readFileSync,rmSync,chmodSync,statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
@@ -10,6 +10,18 @@ import { backupKey,encryptSnapshot,decryptSnapshot } from '../scripts/lib/recove
 import { checkProduction } from '../scripts/check-production.mjs'
 // @ts-ignore Node runs the JS operator modules directly.
 import { d1Diagnostic } from '../scripts/lib/d1-diagnostic.mjs'
+// @ts-ignore Node runs the JS operator modules directly.
+import { recoveryApi,validateRecoveryIdentity } from '../scripts/lib/recover-service.mjs'
+test('recovery API keeps provider failures private and validates destination identity',async()=>{
+ assert.throws(()=>validateRecoveryIdentity('a'.repeat(32),'quoter-db'))
+ assert.throws(()=>validateRecoveryIdentity('invalid','quoter-recovery-valid'))
+ const api=recoveryApi('a'.repeat(32),'PRIVATE_OPERATOR_TOKEN',async()=>Response.json({success:false,errors:[{message:'PRIVATE_SQL PRIVATE_CUSTOMER PRIVATE_TOKEN'}]}))
+ await assert.rejects(()=>api('',{method:'POST',body:{name:'quoter-recovery-valid'}}),error=>!String(error).includes('PRIVATE_')&&String(error).includes('API D1'))
+})
+test('backup key hardens an already existing private file',()=>{
+ const folder=mkdtempSync(join(tmpdir(),'quoter-key-permissions-'))
+ try{const path=join(folder,'key');writeFileSync(path,'a'.repeat(64));chmodSync(path,0o644);assert.equal(backupKey(path).length,32);if(process.platform!=='win32')assert.equal(statSync(path).mode&0o777,0o600)}finally{rmSync(folder,{recursive:true,force:true})}
+})
 test('D1 failures expose only fixed categories, never SQL or provider details',()=>{
  for(const [result,category] of [
   [{error:{code:'ENOBUFS'}},'output_limit'],

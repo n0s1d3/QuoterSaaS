@@ -2,7 +2,7 @@ import { HttpError } from '../http.ts'
 import { localPreview,type EmailEnvironment } from './environment.ts'
 export interface AbuseEnvironment extends EmailEnvironment {TURNSTILE_SITE_KEY?:string;TURNSTILE_SECRET_KEY?:string;SIGNUP_DAILY_LIMIT?:string}
 export function challengeOptions(request:Request,env:AbuseEnvironment){return {required:!localPreview(request,env),siteKey:localPreview(request,env)?null:env.TURNSTILE_SITE_KEY||null}}
-export async function challenge(request:Request,env:AbuseEnvironment,token:unknown,action:'quoter_register'|'quoter_recovery'){
+export async function challenge(request:Request,env:AbuseEnvironment,token:unknown,action:'quoter_register'|'quoter_recovery'|'quoter_login'){
  if(localPreview(request,env))return
  if(!env.TURNSTILE_SECRET_KEY||!env.TURNSTILE_SITE_KEY)throw new HttpError(503,'El registro y la recuperación no están disponibles en este momento. Intenta más tarde.')
  if(typeof token!=='string'||!token||token.length>2048)throw new HttpError(400,'Completa la verificación de seguridad')

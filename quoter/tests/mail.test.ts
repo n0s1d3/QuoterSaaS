@@ -12,6 +12,7 @@ test('Resend adapter uses fixed configured origin and sends the expected message
  let calls=0
  globalThis.fetch=async(input,init)=>{
   calls++;assert.equal(input,'https://api.resend.com/emails')
+  assert.equal(init?.redirect,'manual')
   const payload=JSON.parse(init?.body as string)
   assert.deepEqual(payload.to,['test@example.com']);assert.equal(payload.from,'Quoter <accounts@example.com>')
   assert.ok(payload.text.includes('https://app.example/account/reset#token=testtoken'))
@@ -19,4 +20,9 @@ test('Resend adapter uses fixed configured origin and sends the expected message
   return new Response('{}',{status:200})
  }
  try {const result=await sendAccountEmail(new Request('https://untrusted.example/api/auth/forgot-password'),{RESEND_API_KEY:'test-only-placeholder',MAIL_FROM:'Quoter <accounts@example.com>',APP_URL:'https://app.example'},'test@example.com','reset','testtoken');assert.equal(result.emailDelivery,'sent');assert.ok(!('previewUrl' in result));assert.equal(calls,1)}finally{globalThis.fetch=original}
+})
+test('Resend redirects are rejected without forwarding credentials or recipient data',async()=>{
+ const original=globalThis.fetch;let calls=0
+ globalThis.fetch=async(_input,init)=>{calls++;assert.equal(init?.redirect,'manual');return new Response(null,{status:307,headers:{Location:'https://untrusted.example'}})}
+ try{await assert.rejects(()=>sendAccountEmail(new Request('https://app.example/'),{RESEND_API_KEY:'test-only',MAIL_FROM:'Quoter <accounts@example.com>',APP_URL:'https://app.example'},'private@example.com','verify','private-token'),error=>(error as {status:number}).status===503);assert.equal(calls,1)}finally{globalThis.fetch=original}
 })

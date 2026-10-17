@@ -1,3 +1,5 @@
+> Estado vigente de reparación: aplicar todas las migraciones pendientes (incluidas 0018–0020) antes del despliegue. La provisión de pepper existente nunca debe reinicializarse; `--initialize` solo sirve cuando no existe el secreto remoto. `npm run verify` prueba todo con datos aislados. Ver REMEDIATION.md para los cambios y OPERATIONS.md para recuperación/monitoreo.
+
 # Preparación de Cloudflare y Resend
 
 Estado al 15 de octubre de 2026: el propietario confirmó despliegue y acceso online con Cloudflare, Turnstile y correo para su cuenta propia. Las instrucciones siguientes sirven para configurar/revisar la instalación. El dominio de envío a clientes y la aceptación completa siguen pendientes. Ver OPERATIONS.md y ACCEPTANCE.md.

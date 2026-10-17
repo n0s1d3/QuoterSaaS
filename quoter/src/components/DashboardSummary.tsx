@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { catalogAlert } from '../lib/catalog'
 import { formatMoney } from '../lib/money'
+import { dashboardReminders } from '../lib/dashboard'
 import type { CatalogItem, DashboardData } from '../lib/types'
 export default function DashboardSummary({ data, date, navigate }: { data: DashboardData; date: string; navigate: (path: string) => void }) {
   const [catalog, setCatalog] = useState<CatalogItem[] | null>(null)
@@ -12,7 +13,7 @@ export default function DashboardSummary({ data, date, navigate }: { data: Dashb
   const maximum = Math.max(1, ...metrics.months.flatMap(month => [month.accepted, month.potential]))
   const maxCategory = Math.max(1, ...metrics.categories.map(category => category.count))
   const stale = catalog?.filter(item => item.active && catalogAlert(item, date)) || []
-  const reminders = [...metrics.expired.map(quote => ({ quote, label: 'Vencida' })), ...metrics.upcoming.map(quote => ({ quote, label: `Vence ${quote.expiryDate}` }))].slice(0, 4)
+  const reminders = dashboardReminders(metrics)
   return <section className="dashboard-summary" aria-label="Resumen del negocio">
     <div className="stats compact-stats">{[['Cotizaciones', data.quoteCount], ['Monto aceptado', formatMoney(metrics.acceptedTotal)], ['Monto potencial', formatMoney(metrics.potentialTotal)], ['Aceptadas', metrics.acceptedCount]].map(([label, value]) => <section className="panel" key={label}><p>{label}</p><strong>{value}</strong></section>)}</div>
     <p className="dashboard-hint">GTQ · Montos cotizados, sin descontar costos. Potencial: borradores y enviadas vigentes.</p>

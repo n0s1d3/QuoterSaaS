@@ -4,8 +4,8 @@ Estado al 15 de octubre de 2026. El propietario confirmó acceso online y prueba
 
 | Prueba | Evidencia / estado |
 | --- | --- |
-| Compilación, tipos, lint y pruebas unitarias | Verificados localmente; repetir con los comandos de OPERATIONS.md |
-| Exportar, cifrar y restaurar D1 | Ensayo local con datos ficticios aprobado; pendiente respaldar y ensayar la D1 real |
+| Compilación, tipos, lint y pruebas unitarias | Verificados localmente; repetir `npm run verify` con el runner aislado |
+| Exportar, cifrar y restaurar D1 | Ensayo local con datos ficticios aprobado; el propietario confirmó respaldo real y ensayo aprobado; pendiente ensayo de reemplazo del servicio publicado |
 | Acceso online y verificación de la cuenta propia | Confirmado por el propietario |
 | HTTPS, encabezados, salud y rechazo anónimo | Ejecutar `npm run check:production -- --url https://quoter.cotizandome.workers.dev` después del nuevo despliegue |
 | Recuperación de contraseña | Probar recepción, uso único y rechazo del enlace usado, con correo propio |

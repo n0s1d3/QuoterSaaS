@@ -19,7 +19,7 @@ await call(owner,'/trash/'+q.id+'/restore',{})
 const restored=await call(owner,'/quotes/'+q.id);assert.equal(restored.quoteNumber,q.quoteNumber);assert.equal(restored.items.length,1);assert.equal(restored.branding.name,'Origen respaldo')
 const backup=await call(owner,'/backups/export');assert.equal(backup.quotes.length,1);assert.ok(!JSON.stringify(backup).includes('password_hash'));assert.ok(!Object.hasOwn(backup,'users'))
 // Reimport into the original business overwrites identities instead of adding copies.
-await call(owner,'/quotes/'+q.id,{customerId:customer.id,issueDate:'2026-10-01',notes:'Cambio posterior al respaldo',items:[{description:'Modificada',quantity:3,unitPrice:100,catalogItemId:item.id}]},'PUT')
+await call(owner,'/quotes/'+q.id,{revision:restored.revision,customerId:customer.id,issueDate:'2026-10-01',notes:'Cambio posterior al respaldo',items:[{description:'Modificada',quantity:3,unitPrice:100,catalogItemId:item.id}]},'PUT')
 for(let attempt=0;attempt<2;attempt++){
  const review=await call(owner,'/backups/preview',{backup});assert.deepEqual(review.changes.quotes,{updated:1,created:0})
  await call(owner,'/backups/restore',{backup,token:review.token,confirm:true})
@@ -28,9 +28,11 @@ for(let attempt=0;attempt<2;attempt++){
 }
 const csv=await(await owner.request(base+'/api/backups/export?format=csv')).text();assert.ok(csv.includes("' =1+1")||csv.includes("'=1+1"))
 const tampered=structuredClone(backup);tampered.quotes[0].total=1;await call(target,'/backups/preview',{backup:tampered},'POST',400)
+backup.customers[0].created_at='2020-01-02 03:04:05';backup.catalog[0].created_at='2020-02-03 04:05:06';backup.quotes[0].created_at='2020-03-04 05:06:07';backup.quotes[0].updated_at='2020-04-05 06:07:08'
 const preview=await call(target,'/backups/preview',{backup});assert.equal(preview.quotes,1)
 await call(owner,'/backups/restore',{backup,token:preview.token,confirm:true},'POST',400)
 const races=await Promise.all([target.request(base+'/api/backups/restore',{method:'POST',body:JSON.stringify({backup,token:preview.token,confirm:true})}),target.request(base+'/api/backups/restore',{method:'POST',body:JSON.stringify({backup,token:preview.token,confirm:true})})]);assert.equal(races.filter(r=>r.status===200).length,1)
+const initialImport=await call(target,'/backups/export');assert.equal(initialImport.customers[0].created_at,'2020-01-02 03:04:05');assert.equal(initialImport.catalog[0].created_at,'2020-02-03 04:05:06');assert.equal(initialImport.quotes[0].created_at,'2020-03-04 05:06:07');assert.equal(initialImport.quotes[0].updated_at,'2020-04-05 06:07:08')
 const repeat=await call(target,'/backups/preview',{backup});assert.deepEqual(repeat.changes.quotes,{updated:1,created:0});await call(target,'/backups/restore',{backup,token:repeat.token,confirm:true});assert.equal((await call(target,'/customers')).length,1);assert.equal((await call(target,'/catalog')).length,1)
 const imported=await call(target,'/quotes');assert.equal(imported.length,1);assert.notEqual(imported[0].id,q.id);const alias=structuredClone(backup);alias.quotes.push({...alias.quotes[0],id:imported[0].id});alias.items.push({...alias.items[0],id:'alias-item',quote_id:imported[0].id});await call(target,'/backups/preview',{backup:alias},'POST',400);assert.equal((await call(target,'/branding')).name,'Test business');assert.equal((await call(target,'/quotes/'+imported[0].id)).branding.name,'Origen respaldo')
 await call(target,'/backups/restore',{backup,token:preview.token,confirm:true},'POST',400)

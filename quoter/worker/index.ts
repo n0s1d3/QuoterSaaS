@@ -16,29 +16,32 @@ import { catalog } from './routes/catalog'
 import { branding } from './routes/branding'
 import { customers } from './routes/customers'
 import { quotes } from './routes/quotes'
-import { account, guardMutation } from './auth/session'
+import { account, guardMutation,guardMaintenance,maintenanceMessage } from './auth/session'
 import { auth } from './routes/auth'
 import { guardTransport,HttpError } from './http'
 export default {
   async fetch(request, env, context) {
-    const response = await handle(request, env, context)
+    const requestId=crypto.randomUUID()
+    const response = await handle(request, env, context,requestId)
     const headers = new Headers(response.headers)
     headers.set("Cache-Control", "no-store")
     headers.set("X-Content-Type-Options", "nosniff")
     headers.set("Referrer-Policy", "no-referrer")
     headers.set("X-Frame-Options","DENY")
     headers.set("Permissions-Policy","camera=(), microphone=(), geolocation=()")
+    headers.set("X-Request-ID",requestId)
     if (response.status === 429&&!headers.has("Retry-After")) headers.set("Retry-After", "900")
     return new Response(response.body, { status: response.status, headers })
   },
 } satisfies ExportedHandler<Env>
 
-async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRYPTION_KEY?:string}, context: ExecutionContext) {
+async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRYPTION_KEY?:string;MAINTENANCE_READ_ONLY?:string}, context: ExecutionContext,requestId:string) {
     const path = new URL(request.url).pathname.replace(/\/$/, '')
     try {
       if (!path.startsWith('/api/')) return new Response(null, { status: 404 })
       guardTransport(request)
       guardMutation(request)
+      await guardMaintenance(request,env.MAINTENANCE_READ_ONLY)
       if(path==='/api/health')return await health(request,env.DB,env)
       if (path.startsWith('/api/auth/')) return await auth(request, env.DB, path, env, context)
       const user = await account(request, env.DB)
@@ -68,16 +71,17 @@ async function handle(request: Request, env: Env & EmailEnvironment & {MFA_ENCRY
       if (path === '/api/customers') return await customers(request, db, org)
       return await quotes(request, db, org, path.startsWith('/api/quotes/') ? decodeURIComponent(path.slice(12).split('/')[0]) : undefined, path.endsWith('/duplicate'),user)
     } catch (error) {
-      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:error.message===suspendedMessage?{code:'BUSINESS_SUSPENDED'}:{}) }, { status: error.status,headers:error.retryAfter?{'Retry-After':String(error.retryAfter)}:undefined })
+      if (error instanceof HttpError) return Response.json({ error: error.message,...(error.message===expiredMessage?{code:'SUBSCRIPTION_EXPIRED'}:error.message===suspendedMessage?{code:'BUSINESS_SUSPENDED'}:error.message===maintenanceMessage?{code:'MAINTENANCE_READ_ONLY'}:{}) }, { status: error.status,headers:error.retryAfter?{'Retry-After':String(error.retryAfter)}:undefined })
       const message=String(error)
       if(message.includes('QUOTER_BUSINESS_SUSPENDED'))return Response.json({error:suspendedMessage,code:'BUSINESS_SUSPENDED'},{status:403})
       if(message.includes('QUOTER_SUBSCRIPTION_EXPIRED'))return Response.json({error:expiredMessage,code:'SUBSCRIPTION_EXPIRED'},{status:403})
       if(message.includes('QUOTER_MFA_REQUIRED'))return Response.json({error:'Verifica el segundo factor para entrar en Administración'},{status:403})
       if(message.includes('QUOTER_SESSION_REVOKED'))return Response.json({error:'Tu sesión fue revocada. Inicia sesión nuevamente'},{status:401})
       if(message.includes('QUOTER_ACCESS_CHANGED'))return Response.json({error:'Tus permisos cambiaron. Recarga antes de continuar',code:'ACCESS_CHANGED'},{status:403})
+      if(message.includes('QUOTER_PLAN_DOWNGRADE_ACTIVE'))return Response.json({error:'El plan pagado actual sigue vigente. Espera a su vencimiento para reducir capacidad; no se registró el pago.',code:'PLAN_DOWNGRADE_ACTIVE'},{status:409})
       const resource=message.includes('QUOTER_LIMIT_QUOTES')?'quotes':message.includes('QUOTER_LIMIT_CATALOG')?'catalog':message.includes('QUOTER_LIMIT_MEMBERS')?'members':null
       if(resource){const label=resource==='quotes'?'cotizaciones activas':resource==='catalog'?'partidas activas del catálogo':'integrantes e invitaciones pendientes';return Response.json({error:`Alcanzaste el límite de ${label} de tu plan. El propietario puede consultar los cupos en Plan y uso.`,code:'PLAN_LIMIT',resource},{status:409})}
-      console.error('API failure',{...errorDiagnostic(error),errorType:error instanceof Error&&['Error','TypeError','RangeError','SyntaxError'].includes(error.name)?error.name:'Error',requestId:crypto.randomUUID()})
-      return Response.json({ error: 'No se pudo completar la solicitud' }, { status: 500 })
+      console.error('API failure',{...errorDiagnostic(error),errorType:error instanceof Error&&['Error','TypeError','RangeError','SyntaxError'].includes(error.name)?error.name:'Error',requestId})
+      return Response.json({ error: 'No se pudo completar la solicitud',requestId }, { status: 500 })
     }
 }

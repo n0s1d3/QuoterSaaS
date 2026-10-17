@@ -37,6 +37,11 @@ assert.equal((await a.request(base+'/api/auth/me')).status,200)
 const rateEmail='rate-'+randomUUID()+'@example.com'
 for(let n=0;n<10;n++)assert.equal((await post(b.request,'/api/auth/login',{email:rateEmail,password:'incorrect password'})).status,401)
 assert.equal((await post(b.request,'/api/auth/login',{email:rateEmail,password:'incorrect password'})).status,429)
+// A targeted account is protected per source; a different source can still sign in.
+const attackedEmail=a.email
+for(let n=0;n<10;n++)assert.equal((await fetch(base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'192.0.2.231'},body:JSON.stringify({email:attackedEmail,password:'wrong-password'})})).status,401)
+assert.equal((await fetch(base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'192.0.2.231'},body:JSON.stringify({email:attackedEmail,password:a.password})})).status,429)
+assert.equal((await fetch(base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'192.0.2.232'},body:JSON.stringify({email:attackedEmail,password:a.password})})).status,200)
 console.log('Auth passed: registration/login/logout, session revocation, cookie flags, validation, CSRF, throttling and cross-business read/write isolation.')
 
 for(const confirmation of [undefined,'Different-password-A!'])assert.equal((await post(a.request,'/api/auth/register',{email:'confirm-'+randomUUID()+'@example.com',password:a.password,confirmPassword:confirmation,businessName:'Confirmation'})).status,400)
