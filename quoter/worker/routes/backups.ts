@@ -5,7 +5,7 @@ import { digest, randomToken, type Account } from '../auth/session'
 import { limit } from '../auth/rate-limit'
 import { auditStatement } from '../db/audit'
 import { boundedText,HttpError } from '../http'
-const profileColumns='name,currency,logo,primary_color AS primaryColor,accent_color AS accentColor,tax_id AS taxId,address,phone,contact_email AS contactEmail,payment_terms AS paymentTerms'
+const profileColumns='quote_template AS quoteTemplate,name,currency,logo,primary_color AS primaryColor,accent_color AS accentColor,tax_id AS taxId,address,phone,contact_email AS contactEmail,payment_terms AS paymentTerms'
 export async function backups(request:Request,db:D1Database,user:Account,path:string) {
  if(user.role!=='owner')throw new HttpError(403,'Solo el propietario puede administrar respaldos')
  const org=user.organizationId
@@ -94,7 +94,7 @@ export async function backups(request:Request,db:D1Database,user:Account,path:st
  statements.push(db.prepare(`DELETE FROM quote_items WHERE quote_id IN (SELECT q.id FROM quotes q WHERE q.organization_id=? AND q.write_token=?) AND ${gate}`).bind(org,operation,...gateValues))
  bulk('quote_items',['id','quote_id','description','quantity','unit_price','tax_rate','line_subtotal','line_tax','line_total','sort_order','catalog_item_id','unit','duration','valid_until'],backup.items.map(row=>({...row,id:crypto.randomUUID(),quote_id:maps.quotes.get(row.quote_id as string),catalog_item_id:row.catalog_item_id?maps.catalog.get(row.catalog_item_id as string):null})))
  bulk('audit_events',['id','organization_id','quote_id','action','actor_user_id','actor_email','detail'],backup.quotes.map(row=>({id:crypto.randomUUID(),organization_id:org,quote_id:maps.quotes.get(row.id as string),action:existing.quotes.has(maps.quotes.get(row.id as string)!)?'quote.backup.updated':'quote.imported',actor_user_id:user.id,actor_email:user.email,detail:JSON.stringify({originalNumber:row.quote_number})})))
- if(envelope.updateProfile===true)statements.push(db.prepare(`UPDATE organizations SET name=?,logo=(SELECT logo FROM backup_restore_images WHERE restore_id=? AND logo_id=?),primary_color=?,accent_color=?,tax_id=?,address=?,phone=?,contact_email=?,payment_terms=? WHERE id=? AND ${gate}`).bind(backup.business.name,preview.id,...['logo','primaryColor','accentColor','taxId','address','phone','contactEmail','paymentTerms'].map(k=>backup.business[k]??null),org,...gateValues))
+ if(envelope.updateProfile===true)statements.push(db.prepare(`UPDATE organizations SET name=?,logo=(SELECT logo FROM backup_restore_images WHERE restore_id=? AND logo_id=?),primary_color=?,accent_color=?,tax_id=?,address=?,phone=?,contact_email=?,payment_terms=?,quote_template=? WHERE id=? AND ${gate}`).bind(backup.business.name,preview.id,...['logo','primaryColor','accentColor','taxId','address','phone','contactEmail','paymentTerms'].map(k=>backup.business[k]??null),backup.business.quoteTemplate??'default',org,...gateValues))
  statements.push(auditStatement(db,user,'backup.restored',null,{customers:backup.customers.length,catalog:backup.catalog.length,quotes:backup.quotes.length,updateProfile:envelope.updateProfile===true,changes:identity.counts,customersMerged:identity.customerDuplicates.size},{sql:gate,values:gateValues}))
  statements.push(db.prepare(`DELETE FROM backup_restore_images WHERE restore_id=? AND ${gate}`).bind(preview.id,...gateValues))
  const result=await db.batch(statements)

@@ -1,3 +1,4 @@
+import { isQuoteTemplate } from '../../src/lib/quote-templates.ts'
 import { auditStatement } from '../db/audit.ts'
 import type { Account } from '../auth/session'
 import { captureBranding } from '../db/branding.ts'
@@ -11,7 +12,9 @@ function date(value: unknown, name: string, required = false) {
   return result
 }
 export async function createQuote(db: D1Database, org: string, data: Record<string, unknown>, existingId?: string, actor?: Account) {
+  if(data.quoteTemplate !== undefined && !isQuoteTemplate(data.quoteTemplate))throw new HttpError(400,'Plantilla inválida')
   const previous = existingId ? await getQuote(db, org, existingId) : null
+  if(existingId && data.quoteTemplate!==undefined && !previous!.branding)throw new HttpError(409,'Actualiza primero la marca de esta cotización')
   if (existingId) {
     if (!Number.isSafeInteger(data.revision) || (data.revision as number) < 0) throw new HttpError(400, 'Se requiere la revisión cargada de la cotización')
     if (data.revision !== previous!.revision) throw new HttpError(409, 'La cotización cambió. Recarga antes de editar; tus cambios no se guardaron.')
@@ -58,9 +61,10 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     db.prepare('INSERT INTO quote_sequences (organization_id, value) VALUES (?, 1) ON CONFLICT(organization_id) DO UPDATE SET value = value + 1').bind(org),
     db.prepare("INSERT INTO quotes (id, organization_id, customer_id, quote_number, issue_date, expiry_date, subtotal, discount, tax, total, notes,write_token) VALUES (?, ?, ?, (SELECT printf('Q-%04d', value) FROM quote_sequences WHERE organization_id = ?), ?, ?, ?, ?, ?, ?, ?, ?)").bind(id, org, customerId, org, issueDate, expiryDate, totals.subtotal, totals.discount, totals.tax, totals.total, notes,operation),
     ]),
-    db.prepare(`UPDATE quotes SET payment_terms=? WHERE ${gate}`).bind(paymentTerms,...gateValues),
-    db.prepare(`UPDATE quotes SET surcharge_type=?,surcharge_value=?,surcharge=? WHERE ${gate}`).bind(additional.type,additional.value,totals.surcharge,...gateValues),
+    db.prepare(`UPDATE quotes SET payment_terms=? WHERE id=? AND organization_id=? AND ${gate}`).bind(paymentTerms,id,org,...gateValues),
+    db.prepare(`UPDATE quotes SET surcharge_type=?,surcharge_value=?,surcharge=? WHERE id=? AND organization_id=? AND ${gate}`).bind(additional.type,additional.value,totals.surcharge,id,org,...gateValues),
     ...(!existingId ? [captureBranding(db, org, id)] : []),
+    ...(data.quoteTemplate !== undefined ? [db.prepare(`UPDATE quotes SET branding_snapshot=json_set(branding_snapshot,'$.quoteTemplate',?) WHERE id=? AND organization_id=? AND ${gate} AND branding_snapshot IS NOT NULL`).bind(data.quoteTemplate,id,org,...gateValues)] : []),
     db.prepare(`INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order, catalog_item_id, unit, duration, valid_until)
       SELECT json_extract(value,'$.id'), ?, json_extract(value,'$.description'), json_extract(value,'$.quantity'), json_extract(value,'$.unitPrice'), json_extract(value,'$.taxRate'), json_extract(value,'$.lineSubtotal'), json_extract(value,'$.lineTax'), json_extract(value,'$.lineTotal'), CAST(key AS INTEGER), json_extract(value,'$.catalogItemId'), json_extract(value,'$.unit'), json_extract(value,'$.duration'), json_extract(value,'$.validUntil')
       FROM json_each(?) WHERE ${gate}`).bind(id,JSON.stringify(totals.items.map(item=>({...item,id:crypto.randomUUID()}))),...gateValues),

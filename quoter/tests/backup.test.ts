@@ -47,3 +47,15 @@ test('historical timestamps accept D1 and ISO instants and reject invalid or non
  assert.equal(validateBackup(source).customers[0].created_at,'2020-01-02 03:04:05')
  for(const created_at of ['2020-02-30 03:04:05','today',42]){const invalid=structuredClone(source);Object.assign(invalid.customers[0],{created_at});assert.throws(()=>validateBackup(invalid),/Fecha|Texto/)}
 })
+
+test('backups preserve default and snapshot templates and reject unknown models',()=>{
+ const source=structuredClone(fixture)
+ Object.assign(source.business,{quoteTemplate:'corporate'})
+ Object.assign(source.quotes[0],{branding_snapshot:JSON.stringify({...fixture.business,quoteTemplate:'sidebar'})})
+ const normalized=validateBackup(source)
+ assert.equal(normalized.business.quoteTemplate,'corporate');assert.equal(JSON.parse(String(normalized.quotes[0].branding_snapshot)).quoteTemplate,'sidebar')
+ assert.deepEqual(validateBackup(normalized),normalized)
+ assert.equal(validateBackup(fixture).business.quoteTemplate,undefined,'legacy backups keep default compatibility')
+ Object.assign(source.business,{quoteTemplate:'unknown'});assert.throws(()=>validateBackup(source),/Plantilla/)
+ Object.assign(source.business,{quoteTemplate:'default'});Object.assign(source.quotes[0],{branding_snapshot:JSON.stringify({...fixture.business,quoteTemplate:'unknown'})});assert.throws(()=>validateBackup(source),/Plantilla/)
+})

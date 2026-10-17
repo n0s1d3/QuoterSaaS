@@ -7,7 +7,7 @@ Actualizado el 17 de octubre de 2026. Avance estimado: **93 %** hacia una versi�
 - Cuentas, confirmación de contraseña, verificación de correo y recuperación de acceso.
 - Negocios separados, roles, invitaciones, acceso de solo lectura por vencimiento y administración maestra con privacidad limitada.
 - Cotizaciones, catálogo, clientes integrados, totales calculados por servidor, estados, edición, duplicación y papelera.
-- PDF con membrete y marca, con notas internas excluidas; cambio de marca por cotización.
+- PDF con cuatro modelos, selector, vista previa y membrete de marca; notas internas excluidas. Modelo predeterminado por negocio y cambio de modelo/marca por cotización.
 - Resumen compacto, gráficos, recordatorios y vistas responsive.
 - Respaldos y restauración sin duplicación de cotizaciones/clientes, validación e historial.
 - Tres planes, cuotas, prueba de siete días, meses de vigencia y renovación P2P manual por referencia única.

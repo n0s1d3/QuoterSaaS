@@ -34,7 +34,7 @@ Para repetir una suite aislada:
 
 ```powershell
 npm run test:integration -- subscription-smoke subscription-browser
-npm run test:integration -- backup-roundtrip-smoke editor-browser
+npm run test:integration -- backup-roundtrip-smoke editor-browser templates-smoke
 ```
 
 Los comandos individuales `test:api`, `test:auth`, etc. siguen disponibles para desarrollo. Requieren un servidor local preview y los que manipulan SQL necesitan `QUOTER_IMPORT_STATE`; se recomienda el runner para que todas las conexiones usen el mismo destino. Las pruebas de cuentas rechazan destinos públicos antes de crear datos.
@@ -42,7 +42,7 @@ Los comandos individuales `test:api`, `test:auth`, etc. siguen disponibles para 
 ## Comportamiento relevante
 
 - Cotizaciones: totales calculados por servidor, revisión obligatoria al editar y respuesta 409 cuando otra edición cambió el documento. El formulario conserva el borrador ante conflicto y permite recargar explícitamente.
-- PDF: membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
+- PDF: cuatro modelos (Clásica, Lateral, Minimalista y Corporativa), vista previa, membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
 - Borradores: advertencia antes de salir, volver, cambiar de negocio o cerrar sesión. No se guardan documentos privados en almacenamiento del navegador.
 - Catálogo y clientes: búsqueda y carga por páginas. El catálogo conserva tarifas archivadas en las cotizaciones existentes.
 - JSON: exportación formato 2 con imágenes compartidas deduplicadas; admite formato 1. La revisión valida logos por lotes y la restauración conserva identidades/fechas originales de registros nuevos. Límites: 8 MiB y 2000 registros por archivo. Las bases mayores requieren respaldo del operador.
@@ -75,3 +75,13 @@ No volver a generar `PASSWORD_PEPPER` ni `MFA_ENCRYPTION_KEY` al actualizar. `np
 - [AUDIT_2026-10-15.md](AUDIT_2026-10-15.md): fotografía histórica previa a estas correcciones; su matriz corresponde al commit auditado, no a los archivos reparados.
 
 Los enlaces públicos de cotizaciones, WhatsApp, facturas y cobro automático siguen fuera del primer lanzamiento. No confundir un respaldo JSON por negocio con una recuperación completa de D1 y sus claves.
+
+## Modelos de cotización
+
+En **Mi negocio**, elige el modelo predeterminado y pulsa **Guardar marca**. La vista previa usa un cliente e importes de demostración sin guardar registros. Las nuevas cotizaciones usan la marca y el modelo actuales; también puedes seleccionar otro modelo en el formulario.
+
+En el detalle de una cotización puedes cambiar solo su modelo y ver o descargar el PDF. Esa acción conserva el logo, los colores, los datos de empresa y los importes guardados. **Actualizar a la marca actual** reemplaza explícitamente la marca completa, incluido el modelo. Duplicar crea una cotización con la marca/modelo actuales del negocio. Las cotizaciones anteriores sin modelo guardado mantienen **Clásica**; la migración no reescribe sus snapshots.
+
+La vista previa muestra el PDF generado y ofrece un enlace para abrirlo si el navegador móvil no integra visor. Los modelos respetan paginación, importes del servidor, condiciones de pago y exclusión de notas internas. Los respaldos JSON v1/v2 conservan la selección cuando existe y siguen aceptando archivos anteriores.
+
+Esta versión requiere `0021_quote_templates.sql`. Actualiza la base local con `npm run db:migrate`; antes de desplegar aplica las pendientes en remoto con `npx wrangler d1 migrations apply quoter-db --remote`. Conserva la configuración real de D1 del equipo de despliegue.

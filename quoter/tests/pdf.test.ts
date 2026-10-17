@@ -1,3 +1,4 @@
+import { deflateSync } from 'node:zlib'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createQuotePdf } from '../src/lib/quote-pdf.ts'
@@ -41,3 +42,23 @@ test('Accepted multiline letterheads stay bounded and paginate complete business
  assert.ok(!output.includes('PRIVATE_NOTES_NEVER_PRINT'))
  for(let page=1;page<=doc.getNumberOfPages();page++)assert.ok(doc.internal.pages[page].join('\n').includes('COTIZACI'))
 })
+
+for(const quoteTemplate of ['default','sidebar','minimal','corporate'] as const){
+ test(`${quoteTemplate}: consistent amounts, privacy, repeated logo and complete pagination`,()=>{
+  const input={...quote,notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment conditions. '.repeat(150),items:Array.from({length:100},(_,i)=>({...quote.items[0],description:`Service ${i+1} description spanning multiple lines and defining the full scope of work.`}))}
+  const original=JSON.stringify(input),events:string[]=[]
+  const templateBrand={...brand,quoteTemplate}
+  const pdf=createQuotePdf(input,{...templateBrand,logo:png()},event=>events.push(event)),output=pdf.output()
+  assert.ok(output.includes('Service 100'));assert.ok(output.includes('Q 690.00'));assert.ok(output.includes('Public payment'));assert.ok(!output.includes(input.notes));assert.equal(JSON.stringify(input),original)
+  assert.ok(pdf.getNumberOfPages()>2);assert.ok(pdf.getNumberOfPages()<60)
+  for(let page=1;page<=pdf.getNumberOfPages();page++)assert.ok(pdf.internal.pages[page].join('\n').includes('(Empresa PDF)'))
+  assert.throws(()=>createQuotePdf(quote,{...templateBrand,logo:'data:image/png;base64,invalid'}))
+  assert.equal(events.filter(event=>event==='pdf.logo.incrustado').length,pdf.getNumberOfPages())
+ })
+}
+
+function png(){
+ function chunk(type:string,data:Buffer){const name=Buffer.from(type),bytes=Buffer.concat([name,data]);let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let bit=0;bit<8;bit++)crc=crc&1?0xedb88320^(crc>>>1):crc>>>1}const head=Buffer.alloc(4),tail=Buffer.alloc(4);head.writeUInt32BE(data.length);tail.writeUInt32BE((crc^0xffffffff)>>>0);return Buffer.concat([head,bytes,tail])}
+ const header=Buffer.alloc(13);header.writeUInt32BE(1);header.writeUInt32BE(1,4);header[8]=8;header[9]=2
+ return 'data:image/png;base64,'+Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,250,160,7]))),chunk('IEND',Buffer.alloc(0))]).toString('base64')
+}

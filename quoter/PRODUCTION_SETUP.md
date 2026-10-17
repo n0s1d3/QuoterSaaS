@@ -1,4 +1,4 @@
-> Estado vigente de reparación: aplicar todas las migraciones pendientes (incluidas 0018–0020) antes del despliegue. La provisión de pepper existente nunca debe reinicializarse; `--initialize` solo sirve cuando no existe el secreto remoto. `npm run verify` prueba todo con datos aislados. Ver REMEDIATION.md para los cambios y OPERATIONS.md para recuperación/monitoreo.
+> Estado vigente de reparación: aplicar todas las migraciones pendientes (incluidas 0018–0021) antes del despliegue. La provisión de pepper existente nunca debe reinicializarse; `--initialize` solo sirve cuando no existe el secreto remoto. `npm run verify` prueba todo con datos aislados. Ver REMEDIATION.md para los cambios y OPERATIONS.md para recuperación/monitoreo.
 
 # Preparación de Cloudflare y Resend
 

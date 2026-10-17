@@ -88,3 +88,9 @@ No ejecutar `password:provision -- --initialize` para actualizar una instalació
 - Habilitar dominio de envío verificado para clientes distintos de la cuenta propia autorizada por Resend; conservar correo de prueba no abre entrega general.
 
 Estas tareas dependen de cuentas, credenciales o configuración fuera del repositorio. Se distinguen de los defectos de código reparados y no se presentan como ya ejecutadas.
+
+## Modelos PDF y aislamiento del guardado (actualización posterior)
+
+Se agregan cuatro modelos y la migración `0021_quote_templates.sql`. La selección predeterminada pertenece al negocio; la selección de cada documento se guarda en su snapshot de marca. Las cotizaciones antiguas conservan Clásica; no se reescriben automáticamente. Respaldos anteriores siguen siendo compatibles.
+
+La prueba de conservación entre documentos detectó que las actualizaciones auxiliares de `payment_terms` y adicionales verificaban un token mediante `EXISTS` sin limitar la fila de destino. Se corrigieron con `id` y `organization_id` explícitos, también en la nueva selección de modelo. La regresión guarda varias cotizaciones de dos negocios y comprueba que solo cambia el documento solicitado. La reparación evita nuevas modificaciones ajenas; no puede reconstruir condiciones o adicionales alterados anteriormente sin una fuente histórica fiable. Si ya había documentos, comparar esos campos con sus copias originales o respaldos; no recalcular masivamente importes históricos.

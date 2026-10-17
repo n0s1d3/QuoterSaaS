@@ -100,3 +100,16 @@ test('100 quote items validate catalog references together and insert once with 
   assert.equal(state.batches.length,batches)
  }finally{state.sqlite.close()}
 })
+
+test('saving terms, surcharge and template only changes the targeted quote, including other businesses',async()=>{
+ const state=fixture();try{
+  state.sqlite.exec("INSERT INTO customers(id,organization_id,name) VALUES('other-customer','other','Other customer')")
+  const one=await createQuote(state.db,'org',{...input,paymentTerms:'Keep original',surchargeType:'fixed',surchargeValue:10,quoteTemplate:'sidebar'})
+  const foreign=await createQuote(state.db,'other',{...input,customerId:'other-customer',items:[{description:'Private service',quantity:1,unitPrice:100}],paymentTerms:'Private terms',surchargeType:'fixed',surchargeValue:20,quoteTemplate:'corporate'})
+  const two=await createQuote(state.db,'org',{...input,paymentTerms:'New terms',surchargeType:'fixed',surchargeValue:30,quoteTemplate:'minimal'})
+  await createQuote(state.db,'org',{...input,revision:two.revision,paymentTerms:'Edited terms',surchargeType:'fixed',surchargeValue:40,quoteTemplate:'default'},two.id)
+  assert.deepEqual(await getQuote(state.db,'org',one.id),one)
+  assert.deepEqual(await getQuote(state.db,'other',foreign.id),foreign)
+  const saved=await getQuote(state.db,'org',two.id);assert.equal(saved.paymentTerms,'Edited terms');assert.equal(saved.surcharge,40);assert.equal(saved.branding.quoteTemplate,'default')
+ }finally{state.sqlite.close()}
+})

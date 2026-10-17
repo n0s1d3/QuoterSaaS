@@ -11,7 +11,7 @@ Estado al 15 de octubre de 2026. El propietario confirmó acceso online y prueba
 | Recuperación de contraseña | Probar recepción, uso único y rechazo del enlace usado, con correo propio |
 | MFA maestro | Probar inscripción, login, código incorrecto y recuperación de un solo uso; guardar códigos fuera de la app |
 | Dos negocios separados | Con cuentas controladas, comprobar que cambiar IDs no permite leer/escribir datos ajenos; no usar datos de clientes reales |
-| Cotización y PDF móvil/escritorio | Crear, editar, duplicar, cambiar estado y descargar; logo visible y notas internas ausentes del PDF |
+| Cotización y PDF móvil/escritorio | Crear, editar, duplicar, cambiar estado y descargar; probar Clásica, Lateral, Minimalista y Corporativa, vista previa, logo visible y notas internas ausentes del PDF |
 | JSON | Reimportar el mismo archivo dos veces: sin duplicar clientes ni cotizaciones; revisar vista previa antes de aplicar |
 | Planes P2P | Renovar con referencia propia, repetirla sin doble activación, verificar cupos y solo lectura al vencer |
 | Operación | Custodia de secretos, copia externa, recuperación real documentada y monitor con alertas pendientes |
