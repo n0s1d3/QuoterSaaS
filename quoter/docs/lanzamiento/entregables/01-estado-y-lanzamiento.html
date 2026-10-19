@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es-GT" xml:lang="es-GT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Estado y plan de salida a producción</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#202534;background:#f5f5f8}body{max-width:1080px;padding:36px;margin:auto}header{border-top:8px solid #e85d04;padding:26px 0 12px}h1{font-size:2.2rem;line-height:1.2;color:#111321;margin:.8em 0}h2{font-size:1.45rem;color:#6a040f;border-bottom:1px solid #dddde6;padding-bottom:8px;margin-top:2em}h3{font-size:1.1rem;color:#943800;margin-top:1.8em}p,li{max-width:95ch}a{color:#943800;overflow-wrap:anywhere}strong{color:#171a28}#TOC{border:1px solid #dedee7;background:white;padding:18px 24px;border-radius:12px;margin:24px 0}#TOC>ul{padding-left:20px}#TOC a{text-decoration:none}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:.9rem;background:white}thead{background:#111321;color:white}th,td{padding:10px 12px;border-bottom:1px solid #d9dbe2;vertical-align:top;min-width:100px}th{text-align:left;font-weight:650}tr:nth-child(even){background:#f0f1f4}pre{background:#111321;color:#f9f4ef;border-radius:8px;padding:16px;overflow:auto;font-size:.85rem;line-height:1.55}code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}blockquote{border-left:4px solid #faa307;padding:4px 16px;background:#fff5e4}.doc-nav{font-size:.85rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.doc-note{background:#fff0d5;border-left:4px solid #e85d04;padding:12px 16px}.doc-footer{margin:40px 0 0;padding-top:20px;border-top:1px solid #d9dbe2;font-size:.8rem;color:#5b6072}ul,ol{padding-left:24px}@media(max-width:700px){body{padding:18px}h1{font-size:1.7rem}h2{font-size:1.2rem}th,td{padding:8px;font-size:.82rem}#TOC{padding:12px 18px}}@media print{:root{background:white;font-size:10.5pt}body{padding:0;max-width:none}header{padding:10px 0}h1{font-size:23pt}h2{font-size:15pt;break-after:avoid}h3{break-after:avoid}p{orphans:3;widows:3}pre,blockquote{break-inside:avoid}table{display:table;width:100%;font-size:8pt;table-layout:auto}thead{display:table-header-group}tr{break-inside:avoid}th,td{min-width:0;padding:6px;overflow-wrap:anywhere}td[style*="text-align: right"]{white-space:nowrap;overflow-wrap:normal}a{color:#444;text-decoration:none}#TOC{break-after:page;font-size:9pt}#TOC ul{margin:3px 0}#TOC>ul{columns:1}.doc-nav,.no-print{display:none}pre{white-space:pre-wrap;color:#222;background:#f2f2f5}h2,h3{scroll-margin-top:10px}}
+  </style>
+</head>
+<body><div class="doc-nav"><a href="index.html">Índice de documentación</a><span>Quoter · Guatemala · 19 oct 2026</span></div>
+<header id="title-block-header">
+<h1 class="title">Estado y plan de salida a producción</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#estado-y-plan-de-salida-a-producción"
+id="toc-estado-y-plan-de-salida-a-producción">Estado y plan de salida a
+producción</a>
+<ul>
+<li><a href="#porcentaje-actual-93-"
+id="toc-porcentaje-actual-93-">Porcentaje actual: 93 %</a></li>
+<li><a href="#condiciones-para-abrir-el-piloto"
+id="toc-condiciones-para-abrir-el-piloto">Condiciones para abrir el
+piloto</a></li>
+<li><a href="#secuencia-de-lanzamiento"
+id="toc-secuencia-de-lanzamiento">Secuencia de lanzamiento</a></li>
+<li><a href="#criterios-de-apertura-general"
+id="toc-criterios-de-apertura-general">Criterios de apertura
+general</a></li>
+<li><a href="#registro-de-salida" id="toc-registro-de-salida">Registro
+de salida</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="estado-y-plan-de-salida-a-producción">Estado y plan de salida a
+producción</h1>
+<p>Fecha: 19 de octubre de 2026, Guatemala. Alcance del 100 %: primera
+versión comercial estable y operable para clientes, con cobro P2P
+manual. WhatsApp integrado, enlaces públicos de cotizaciones, facturas y
+cargos automáticos son fases posteriores.</p>
+<h2 id="porcentaje-actual-93-">Porcentaje actual: 93 %</h2>
+<p>Mantengo la estimación de la hoja de ruta: el producto ya funciona
+online y el propietario confirmó el último despliegue. El trabajo
+pendiente está concentrado en habilitar y demostrar el servicio a
+terceros, operarlo de forma sostenida y validar que alguien lo compra y
+renueva. Elaborar este paquete completa la preparación documental; no
+sustituye su ejecución ni la aprobación de precios/políticas.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Área</th>
+<th>Estado y evidencia</th>
+<th>Qué falta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Producto</td>
+<td>Cuentas, negocios separados, catálogo, cotizaciones, cuatro modelos
+PDF, equipos, planes y recuperación implementados</td>
+<td>Validación final con clientes del segmento elegido</td>
+</tr>
+<tr class="even">
+<td>Calidad</td>
+<td>Verificación anterior: 89 unitarias, tipos/lint/build, 20 suites
+API/navegador y recuperación D1 aprobadas</td>
+<td>Registrar aceptación en la versión publicada y resultados de CI de
+esa versión</td>
+</tr>
+<tr class="odd">
+<td>Seguridad</td>
+<td>Auditoría previa reparada; hashes con salt y pepper, permisos de
+negocio, SQL parametrizado, MFA maestro y controles de archivos</td>
+<td>Mantener actualizaciones y revisar incidencias; ninguna prueba
+acredita invulnerabilidad</td>
+</tr>
+<tr class="even">
+<td>Despliegue</td>
+<td>Cloudflare y acceso online confirmados por el propietario</td>
+<td>Ejecutar y registrar <code>check:production</code> desde su equipo
+tras el último despliegue</td>
+</tr>
+<tr class="odd">
+<td>Correo</td>
+<td>Verificación de la cuenta propia confirmada</td>
+<td>Confirmar dominio/remitente que permita verificar y recuperar
+cuentas de clientes externos</td>
+</tr>
+<tr class="even">
+<td>Operación</td>
+<td>Respaldo real y ensayo local confirmados</td>
+<td>Copia externa cifrada, periodicidad, alertas y ensayo de
+recuperación publicado controlado</td>
+</tr>
+<tr class="odd">
+<td>Comercial</td>
+<td>Plan de distribución, propuesta de precios, procedimientos y
+manuales preparados</td>
+<td>Aprobarlos, definir datos fiscales/canales y publicarlos donde
+corresponda</td>
+</tr>
+<tr class="even">
+<td>Piloto</td>
+<td>No hay resultados documentados con clientes externos</td>
+<td>Completar un ciclo de alta, uso, pago y renovación con pocos
+negocios</td>
+</tr>
+</tbody>
+</table>
+<p>No se revalidó producción desde este entorno el 19 de octubre: la
+solicitud anónima de salud falló por red/resolución. Eso limita esta
+revisión; no demuestra una caída. Las pruebas automatizadas citadas son
+las de la entrega anterior, no una ejecución nueva.</p>
+<h2 id="condiciones-para-abrir-el-piloto">Condiciones para abrir el
+piloto</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Prioridad</th>
+<th>Acción</th>
+<th>Responsable</th>
+<th>Criterio de terminado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Bloqueante</td>
+<td>Verificar un dominio de envío y configurar el remitente</td>
+<td>Operador</td>
+<td>Tres cuentas propias/controladas de destinatarios distintos reciben
+verificación y recuperación; no solo el correo de Resend</td>
+</tr>
+<tr class="even">
+<td>Bloqueante</td>
+<td>Validar la app pública</td>
+<td>Operador</td>
+<td>Matriz de ACCEPTANCE.md con versión, fecha, móvil/escritorio y
+resultado; sin fallos que impidan trabajar</td>
+</tr>
+<tr class="odd">
+<td>Bloqueante</td>
+<td>Preparar respaldo y alerta</td>
+<td>Operador</td>
+<td>Copia cifrada fuera del equipo; restauración local aprobada; alerta
+de salud recibida en una prueba controlada</td>
+</tr>
+<tr class="even">
+<td>Bloqueante</td>
+<td>Aprobar precio, cobro, soporte y condiciones</td>
+<td>Propietario</td>
+<td>Precio final, régimen fiscal revisado, contacto, horario y reglas de
+devolución comunicados antes del pago</td>
+</tr>
+<tr class="odd">
+<td>Antes de tráfico pagado</td>
+<td>Preparar destino de campaña</td>
+<td>Marketing</td>
+<td>Página comercial o mensaje de bienvenida con demo, precio, límites,
+prueba de siete días y contacto real</td>
+</tr>
+<tr class="even">
+<td>Durante piloto</td>
+<td>Enseñar y observar uso</td>
+<td>Propietario / soporte</td>
+<td>5–10 negocios con consentimiento, primera cotización real o de
+prueba y seguimiento</td>
+</tr>
+<tr class="odd">
+<td>Antes de apertura general</td>
+<td>Ensayar continuidad y cerrar incidencias</td>
+<td>Operador</td>
+<td>Procedimiento de reemplazo privado validado; incidencias críticas
+cerradas; conciliación y soporte sostenibles</td>
+</tr>
+</tbody>
+</table>
+<p>Un dominio propio para la app mejora confianza, pero workers.dev
+puede servir para el piloto. <strong>El dominio verificado para envío de
+correos sí es una dependencia para captar destinatarios arbitrarios con
+Resend.</strong> Son decisiones distintas; pueden usar el mismo dominio
+cuando se compre.</p>
+<h2 id="secuencia-de-lanzamiento">Secuencia de lanzamiento</h2>
+<p>Las fechas son objetivos, condicionados a resolver los bloqueos; no
+compromisos de disponibilidad.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Periodo</th>
+<th>Resultado esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>19–25 oct 2026</td>
+<td>Dominio/remitente, precios/políticas aprobados, pruebas públicas,
+manuales, copia externa y monitor</td>
+</tr>
+<tr class="even">
+<td>26 oct–8 nov</td>
+<td>Piloto acompañado de 5–10 negocios; prueba de siete días por
+negocio, feedback y primer pago</td>
+</tr>
+<tr class="odd">
+<td>9–18 nov</td>
+<td>Ajustes de mensajes/onboarding y primer control comercial de 30
+días; ampliar solo si funciona el embudo</td>
+</tr>
+<tr class="even">
+<td>19 nov–18 dic</td>
+<td>Seguir primeras renovaciones, medir soporte, mantener o pausar
+publicidad según CAC y uso</td>
+</tr>
+<tr class="odd">
+<td>19 dic–16 ene 2027</td>
+<td>Escalar el canal ganador con datos de varias cohortes; revisar
+capacidad y costos reales</td>
+</tr>
+</tbody>
+</table>
+<h2 id="criterios-de-apertura-general">Criterios de apertura
+general</h2>
+<ol type="1">
+<li>Todos los bloqueantes anteriores tienen evidencia fechada, no solo
+una casilla marcada.</li>
+<li>Al menos 5 negocios completan registro verificado, marca, catálogo,
+cotización, PDF y respaldo; al menos 3 deciden pagar. Son metas de
+piloto, no resultados actuales.</li>
+<li>Ninguna incidencia crítica de pérdida de datos, acceso ajeno, pago
+aplicado al negocio equivocado o correo inaccesible permanece
+abierta.</li>
+<li>Al menos una renovación manual se verifica end-to-end y se comprueba
+que repetir su referencia no suma meses.</li>
+<li>Soporte puede atender el volumen; hay una persona responsable de
+operación y otra vía de contacto si la app cae.</li>
+<li>La recuperación tiene tiempos observados con volumen representativo.
+RPO 24 h / RTO 2 h siguen siendo objetivos internos hasta medirlos, no
+SLA publicado.</li>
+</ol>
+<p>El porcentaje puede seguir alrededor de 93 % mientras falten estos
+puntos. El piloto permite descubrir problemas; llegar a 100 % significa
+cumplir este alcance de lanzamiento, no dejar de mantener el
+software.</p>
+<h2 id="registro-de-salida">Registro de salida</h2>
+<p>Usar una copia de esta tabla en un registro privado de operación. No
+incluir contenido de cotizaciones ni claves.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Campo</th>
+<th>Qué registrar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Versión</td>
+<td>Commit desplegado, migración aplicada y fecha Guatemala</td>
+</tr>
+<tr class="even">
+<td>Correo</td>
+<td>Dominio/remitente y resultado de entrega; nunca la clave API</td>
+</tr>
+<tr class="odd">
+<td>Aceptación</td>
+<td>Pruebas, responsable, resultado y ticket si falló</td>
+</tr>
+<tr class="even">
+<td>Recuperación</td>
+<td>Fecha del respaldo, identificador privado, ensayo, RPO/RTO
+observado</td>
+</tr>
+<tr class="odd">
+<td>Cobro</td>
+<td>ID de negocio, plan y referencia de recibo conciliada</td>
+</tr>
+<tr class="even">
+<td>Comercial</td>
+<td>Versión de precios/condiciones aceptada y canal de soporte</td>
+</tr>
+<tr class="odd">
+<td>Decisión</td>
+<td>Abrir piloto / mantener piloto / abrir general, con responsable</td>
+</tr>
+</tbody>
+</table>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es-GT" xml:lang="es-GT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Manual del propietario / administrador de un negocio</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#202534;background:#f5f5f8}body{max-width:1080px;padding:36px;margin:auto}header{border-top:8px solid #e85d04;padding:26px 0 12px}h1{font-size:2.2rem;line-height:1.2;color:#111321;margin:.8em 0}h2{font-size:1.45rem;color:#6a040f;border-bottom:1px solid #dddde6;padding-bottom:8px;margin-top:2em}h3{font-size:1.1rem;color:#943800;margin-top:1.8em}p,li{max-width:95ch}a{color:#943800;overflow-wrap:anywhere}strong{color:#171a28}#TOC{border:1px solid #dedee7;background:white;padding:18px 24px;border-radius:12px;margin:24px 0}#TOC>ul{padding-left:20px}#TOC a{text-decoration:none}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:.9rem;background:white}thead{background:#111321;color:white}th,td{padding:10px 12px;border-bottom:1px solid #d9dbe2;vertical-align:top;min-width:100px}th{text-align:left;font-weight:650}tr:nth-child(even){background:#f0f1f4}pre{background:#111321;color:#f9f4ef;border-radius:8px;padding:16px;overflow:auto;font-size:.85rem;line-height:1.55}code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}blockquote{border-left:4px solid #faa307;padding:4px 16px;background:#fff5e4}.doc-nav{font-size:.85rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.doc-note{background:#fff0d5;border-left:4px solid #e85d04;padding:12px 16px}.doc-footer{margin:40px 0 0;padding-top:20px;border-top:1px solid #d9dbe2;font-size:.8rem;color:#5b6072}ul,ol{padding-left:24px}@media(max-width:700px){body{padding:18px}h1{font-size:1.7rem}h2{font-size:1.2rem}th,td{padding:8px;font-size:.82rem}#TOC{padding:12px 18px}}@media print{:root{background:white;font-size:10.5pt}body{padding:0;max-width:none}header{padding:10px 0}h1{font-size:23pt}h2{font-size:15pt;break-after:avoid}h3{break-after:avoid}p{orphans:3;widows:3}pre,blockquote{break-inside:avoid}table{display:table;width:100%;font-size:8pt;table-layout:auto}thead{display:table-header-group}tr{break-inside:avoid}th,td{min-width:0;padding:6px;overflow-wrap:anywhere}td[style*="text-align: right"]{white-space:nowrap;overflow-wrap:normal}a{color:#444;text-decoration:none}#TOC{break-after:page;font-size:9pt}#TOC ul{margin:3px 0}#TOC>ul{columns:1}.doc-nav,.no-print{display:none}pre{white-space:pre-wrap;color:#222;background:#f2f2f5}h2,h3{scroll-margin-top:10px}}
+  </style>
+</head>
+<body><div class="doc-nav"><a href="index.html">Índice de documentación</a><span>Quoter · Guatemala · 19 oct 2026</span></div>
+<header id="title-block-header">
+<h1 class="title">Manual del propietario / administrador de un
+negocio</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#manual-del-propietario--administrador-de-un-negocio"
+id="toc-manual-del-propietario--administrador-de-un-negocio">Manual del
+propietario / administrador de un negocio</a>
+<ul>
+<li><a href="#1-responsabilidad-y-permisos"
+id="toc-1-responsabilidad-y-permisos">1. Responsabilidad y
+permisos</a></li>
+<li><a href="#2-preparar-el-negocio" id="toc-2-preparar-el-negocio">2.
+Preparar el negocio</a></li>
+<li><a href="#3-organizar-tarifas" id="toc-3-organizar-tarifas">3.
+Organizar tarifas</a></li>
+<li><a href="#4-administrar-equipo" id="toc-4-administrar-equipo">4.
+Administrar equipo</a></li>
+<li><a href="#5-plan-y-uso-renovar" id="toc-5-plan-y-uso-renovar">5.
+Plan y uso; renovar</a></li>
+<li><a href="#6-respaldo-json-y-csv" id="toc-6-respaldo-json-y-csv">6.
+Respaldo JSON y CSV</a></li>
+<li><a href="#7-restaurar-con-revisión"
+id="toc-7-restaurar-con-revisión">7. Restaurar con revisión</a></li>
+<li><a href="#8-papelera-y-eliminación-definitiva"
+id="toc-8-papelera-y-eliminación-definitiva">8. Papelera y eliminación
+definitiva</a></li>
+<li><a href="#9-historial-seguridad-y-soporte"
+id="toc-9-historial-seguridad-y-soporte">9. Historial, seguridad y
+soporte</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="manual-del-propietario--administrador-de-un-negocio">Manual del
+propietario / administrador de un negocio</h1>
+<p>Complementa el Manual de usuario. «Administrador de negocio»
+significa aquí <strong>Propietario</strong>; no es la cuenta maestra de
+Quoter. Se administra solo el negocio seleccionado. Versión: 19 de
+octubre de 2026.</p>
+<h2 id="1-responsabilidad-y-permisos">1. Responsabilidad y permisos</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Acción en un negocio vigente</th>
+<th>Propietario</th>
+<th>Editor</th>
+<th>Solo lectura</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Ver resumen, catálogo y cotizaciones; descargar PDF</td>
+<td>Sí</td>
+<td>Sí</td>
+<td>Sí</td>
+</tr>
+<tr class="even">
+<td>Crear/editar clientes desde cotización, catálogo y cotizaciones</td>
+<td>Sí</td>
+<td>Sí</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>Cambiar estado, duplicar, modelo o marca de una cotización</td>
+<td>Sí</td>
+<td>Sí</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Cambiar marca predeterminada del negocio</td>
+<td>Sí</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>Archivar catálogo o enviar cotización a papelera</td>
+<td>Sí</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Administrar equipo, plan y respaldos del negocio</td>
+<td>Sí</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>Recuperar o eliminar definitivamente desde papelera</td>
+<td>Sí</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Abrir Administración de la plataforma o activar pagos</td>
+<td>No, salvo que sea además la cuenta maestra</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>Con plan vencido/suspendido se bloquean cambios. Consulta y PDF se
+conservan; exportar JSON/CSV sigue siendo exclusivo del propietario.
+Tener varios negocios en el selector no permite pasar información de uno
+a otro automáticamente.</p>
+<h2 id="2-preparar-el-negocio">2. Preparar el negocio</h2>
+<p>En <strong>Mi negocio</strong>:</p>
+<ol type="1">
+<li>Confirma nombre, NIT, dirección, teléfono y correo del negocio que
+deseas imprimir.</li>
+<li>Selecciona colores principal/secundario. Revisa contraste y
+legibilidad del PDF.</li>
+<li>Carga el logo: PNG, JPEG o WebP estático de hasta 10 MB de archivo
+de origen. La app optimiza la imagen; el resultado debe cumplir formato,
+dimensiones y tamaño admitidos. Un archivo con extensión cambiada no se
+convierte en imagen válida.</li>
+<li>Si falla la selección, usa <strong>Descartar selección
+fallida</strong> para conservar la anterior; <strong>Quitar
+logo</strong> lo retira de la marca que guardarás.</li>
+<li>Define condiciones de pago predeterminadas. No uses ese campo para
+recordatorios privados.</li>
+<li>Elige modelo: Clásica, Lateral, Minimalista o Corporativa.</li>
+<li>Pulsa <strong>Vista previa del PDF</strong>. Usa cliente/importes de
+demostración y no crea una cotización.</li>
+<li>Pulsa <strong>Guardar marca</strong>. Espera el mensaje de
+confirmación.</li>
+</ol>
+<p>El cambio se aplica a nuevas cotizaciones, incluidas duplicadas. Las
+existentes conservan su snapshot de marca/modelo. Para una anterior,
+abre el detalle: cambia solo el modelo si deseas conservar su marca, o
+usa <strong>Actualizar a la marca actual</strong> para reemplazar todo
+ese conjunto. Cambiar las condiciones predeterminadas tampoco reescribe
+las condiciones de pago de documentos existentes.</p>
+<h2 id="3-organizar-tarifas">3. Organizar tarifas</h2>
+<p>Define tipos y unidades coherentes antes de cargar muchos artículos.
+Ejemplo: «Pintura interior» / Servicio / m² / Q25 / dos días. El tipo y
+la unidad aceptan opciones personalizadas mediante <strong>Otra
+opción…</strong>.</p>
+<p>Revisar precios al menos con la periodicidad que defina el negocio.
+Guardar un cambio renueva la fecha de revisión. Las alertas se basan en
+vigencia o días desde revisión; no consultan precios del mercado. Los
+valores ya guardados en una cotización son independientes del catálogo
+actualizado.</p>
+<p>Archivar libera capacidad activa y conserva referencias históricas.
+La interfaz actual no muestra un administrador de partidas archivadas
+con reactivación; planifica esto antes de archivar una tarifa que
+quieras reutilizar. El JSON conserva también las archivadas.</p>
+<h2 id="4-administrar-equipo">4. Administrar equipo</h2>
+<ol type="1">
+<li>Abre <strong>Equipo</strong> y comprueba cupos en <strong>Plan y
+uso</strong>.</li>
+<li>Escribe el correo del integrante y elige <strong>Editor</strong> o
+<strong>Solo lectura</strong>.</li>
+<li>Pulsa <strong>Enviar invitación</strong>. Tiene vigencia de tres
+días y reserva una plaza mientras está pendiente.</li>
+<li>El destinatario debe tener una cuenta verificada con exactamente ese
+correo; abre la invitación y la acepta.</li>
+<li>Revisa integrantes y permisos. Puede cambiarse entre Editor y Solo
+lectura o pulsarse <strong>Quitar acceso</strong>.</li>
+<li>Revoca invitaciones pendientes que ya no correspondan para liberar
+reserva de plaza.</li>
+</ol>
+<p>El propietario cuenta como un puesto: Plan 1 no permite otro
+integrante; Plan 2 admite dos personas adicionales; Plan 3, cuatro. El
+propietario no puede quitarse ni degradarse mediante esta pantalla. No
+hay transferencia de propiedad de negocio por autoservicio en esta
+versión.</p>
+<p>Quitar acceso revoca la membresía del negocio y sus sesiones
+asociadas; no elimina las cotizaciones realizadas. La cuenta de esa
+persona y sus otros negocios se conservan. No compartan una contraseña
+para eludir plazas: se pierde trazabilidad y control de acceso.</p>
+<h2 id="5-plan-y-uso-renovar">5. Plan y uso; renovar</h2>
+<p>La pantalla muestra ID de negocio, plan actual, vigencia,
+cotizaciones activas, catálogo activo, integrantes e invitaciones
+pendientes. Al acercarse al cupo se indica advertencia; alcanzar el
+máximo impide agregar recursos de ese tipo.</p>
+<p>Todos los documentos fuera de papelera cuentan, incluidos aceptados,
+rechazados y vencidos. Los límites son capacidad acumulada y no se
+reinician cada mes. El catálogo archivado y las cotizaciones en papelera
+no consumen esos cupos, aunque siguen ocupando almacenamiento.</p>
+<p>Para renovar, usa el canal comercial autorizado y comunica ID de
+negocio, plan deseado y referencia de pago. El administrador verifica
+externamente y registra la activación. <strong>No hay cargo automático,
+pasarela de pago ni activación automática por capturas.</strong> Los
+precios comerciales aprobados se comunican por el canal oficial; esta
+pantalla no procesa ni valida un monto bancario.</p>
+<p>Cada registro agrega un mes calendario y preserva tiempo pendiente
+del mismo plan/prueba. Una ampliación cambia capacidad inmediatamente y
+agrega un mes; el sistema no calcula prorrateos. Reducir un plan pagado
+exige esperar a su vencimiento; no hay cambio programado. Si al reducir
+el uso excede cupos, se conservan datos y puede requerirse liberar
+capacidad para crear más.</p>
+<p>Al vencer se puede consultar, descargar PDF y exportar JSON/CSV.
+Restaurar, editar o administrar accesos requiere vigencia. Pagar no
+levanta una suspensión administrativa; solicitar revisión si el plan
+aparece activo pero el negocio sigue suspendido.</p>
+<h2 id="6-respaldo-json-y-csv">6. Respaldo JSON y CSV</h2>
+<p>En <strong>Datos y recuperación → Exportar datos</strong>:</p>
+<ul>
+<li><strong>Descargar respaldo JSON</strong>: perfil, logo, clientes,
+catálogo, cotizaciones, partidas, marcas históricas y papelera. Admite
+exportación v2 e importación de v1/v2.</li>
+<li><strong>Exportar cotizaciones CSV</strong>: tabla para análisis
+externo; incluye notas internas. No sirve para restaurar todo el
+negocio.</li>
+</ul>
+<p>El JSON no contiene contraseñas, sesiones, equipo ni historial. Sí
+contiene información privada de tus clientes y negocio. Guardarlo en una
+ubicación protegida, no en grupos de mensajería ni documentos
+compartidos públicos.</p>
+<p>Límite de esta función: 8 MiB y 2,000 registros sumando tablas, no
+2,000 cotizaciones. Cien cotizaciones con muchas partidas pueden superar
+el límite. Si lo excede, solicitar al operador una alternativa; no
+borrar información al azar para obtener un archivo más pequeño.</p>
+<p>Recomendación de uso: exportar antes de restaurar y después de
+cambios importantes; definir una frecuencia según el negocio. El
+respaldo de la plataforma es otro mecanismo, no reemplaza una copia
+propia accesible.</p>
+<h2 id="7-restaurar-con-revisión">7. Restaurar con revisión</h2>
+<ol type="1">
+<li>Descarga una copia actual antes de sobrescribir.</li>
+<li>En <strong>Restaurar un respaldo</strong>, selecciona el JSON
+confiable del negocio.</li>
+<li>Espera validación, incluida revisión por lotes de logos cuando
+corresponda.</li>
+<li>Revisa nombre/fecha del archivo, cantidades y cuántos registros se
+actualizarán o crearán.</li>
+<li>Decide si marcar <strong>Reemplazar el perfil y la marca actuales
+con los del respaldo</strong>. Sin marcarla, conserva la marca
+predeterminada actual; las copias de marca incluidas en las cotizaciones
+restauradas corresponden al archivo.</li>
+<li>Marca <strong>Revisé el contenido y autorizo sobrescribir los
+registros existentes</strong> y pulsa <strong>Restaurar
+respaldo</strong>.</li>
+<li>Comprueba varias cotizaciones, clientes y un PDF. La revisión vence
+en quince minutos; seleccionar otro archivo reemplaza la revisión
+pendiente.</li>
+</ol>
+<p>Los registros identificados se actualizan; solo se crean los
+faltantes. Reimportar el mismo respaldo no debe duplicarlos. Los que no
+están en el archivo se conservan: restaurar no es «borrar todo y
+reemplazar la cuenta». Las cotizaciones existentes conservan su número;
+las nuevas reciben uno del negocio destino. Las altas conservan fechas
+históricas; sobrescribir registra modificación actual.</p>
+<p>Perfiles de cliente idénticos pueden consolidarse, incluidas fichas
+con solo nombre igual. Clientes con datos distintos se mantienen
+separados. Completa datos para distinguir homónimos y revisa la vista
+previa; no uses una importación de otro negocio como ensayo sobre el
+negocio real.</p>
+<p>El plan, sus pagos, los integrantes y credenciales no se sustituyen
+con este respaldo. Una restauración que agrega recursos respeta los
+límites del plan. Revisa capacidad antes de cargar un archivo
+grande.</p>
+<h2 id="8-papelera-y-eliminación-definitiva">8. Papelera y eliminación
+definitiva</h2>
+<p>La eliminación de una cotización está solo dentro de su detalle.
+Moverla a papelera requiere confirmación; desaparece de las vistas
+activas y puede cambiar el resumen.</p>
+<p>En <strong>Datos y recuperación → Papelera de cotizaciones</strong>
+puedes recuperarla conservando número, estado, partidas y marca, si hay
+capacidad. No hay limpieza automática. <strong>Eliminar
+definitivamente</strong> exige escribir su número y opera sobre su
+revisión guardada; elimina el documento y sus partidas. No se puede
+deshacer desde la app.</p>
+<p>Antes de una eliminación definitiva, confirma que el negocio ya no la
+necesita y considera sus obligaciones de conservación. No usar la purga
+como rutina para pagar menos ni confiar en que soporte pueda recuperar
+un documento individual desde cualquier fecha.</p>
+<h2 id="9-historial-seguridad-y-soporte">9. Historial, seguridad y
+soporte</h2>
+<p>En el detalle puede abrirse <strong>Historial de la
+cotización</strong>. En <strong>Datos y recuperación</strong> el
+propietario consulta cambios del negocio. No es el log técnico del
+servidor ni registra acciones anteriores a su implementación. Los logs
+de diagnóstico de marca/PDF están en el backend, no en las ventanas de
+cotización.</p>
+<p>Para soporte, comparte ID del negocio, número de documento si es
+indispensable, hora, acción y referencia del error. Recorta capturas; no
+envíes el JSON, contenido del cliente o contraseñas por canales
+abiertos. La cuenta maestra gestiona accesos/planes sin entrar a tus
+cotizaciones.</p>
+<p>Lista mensual del propietario: revisar accesos e invitaciones;
+actualizar tarifas; revisar vencimiento; exportar copia; controlar
+documentos en papelera; confirmar que la marca y condiciones siguen
+vigentes. Designa a una persona responsable de renovar: la app no cobra
+ni manda recordatorios comerciales automáticos.</p>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+</html>

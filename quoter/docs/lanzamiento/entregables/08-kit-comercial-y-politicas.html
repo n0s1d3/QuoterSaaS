@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es-GT" xml:lang="es-GT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Kit comercial y borradores de políticas</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#202534;background:#f5f5f8}body{max-width:1080px;padding:36px;margin:auto}header{border-top:8px solid #e85d04;padding:26px 0 12px}h1{font-size:2.2rem;line-height:1.2;color:#111321;margin:.8em 0}h2{font-size:1.45rem;color:#6a040f;border-bottom:1px solid #dddde6;padding-bottom:8px;margin-top:2em}h3{font-size:1.1rem;color:#943800;margin-top:1.8em}p,li{max-width:95ch}a{color:#943800;overflow-wrap:anywhere}strong{color:#171a28}#TOC{border:1px solid #dedee7;background:white;padding:18px 24px;border-radius:12px;margin:24px 0}#TOC>ul{padding-left:20px}#TOC a{text-decoration:none}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:.9rem;background:white}thead{background:#111321;color:white}th,td{padding:10px 12px;border-bottom:1px solid #d9dbe2;vertical-align:top;min-width:100px}th{text-align:left;font-weight:650}tr:nth-child(even){background:#f0f1f4}pre{background:#111321;color:#f9f4ef;border-radius:8px;padding:16px;overflow:auto;font-size:.85rem;line-height:1.55}code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}blockquote{border-left:4px solid #faa307;padding:4px 16px;background:#fff5e4}.doc-nav{font-size:.85rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.doc-note{background:#fff0d5;border-left:4px solid #e85d04;padding:12px 16px}.doc-footer{margin:40px 0 0;padding-top:20px;border-top:1px solid #d9dbe2;font-size:.8rem;color:#5b6072}ul,ol{padding-left:24px}@media(max-width:700px){body{padding:18px}h1{font-size:1.7rem}h2{font-size:1.2rem}th,td{padding:8px;font-size:.82rem}#TOC{padding:12px 18px}}@media print{:root{background:white;font-size:10.5pt}body{padding:0;max-width:none}header{padding:10px 0}h1{font-size:23pt}h2{font-size:15pt;break-after:avoid}h3{break-after:avoid}p{orphans:3;widows:3}pre,blockquote{break-inside:avoid}table{display:table;width:100%;font-size:8pt;table-layout:auto}thead{display:table-header-group}tr{break-inside:avoid}th,td{min-width:0;padding:6px;overflow-wrap:anywhere}td[style*="text-align: right"]{white-space:nowrap;overflow-wrap:normal}a{color:#444;text-decoration:none}#TOC{break-after:page;font-size:9pt}#TOC ul{margin:3px 0}#TOC>ul{columns:1}.doc-nav,.no-print{display:none}pre{white-space:pre-wrap;color:#222;background:#f2f2f5}h2,h3{scroll-margin-top:10px}}
+  </style>
+</head>
+<body><div class="doc-nav"><a href="index.html">Índice de documentación</a><span>Quoter · Guatemala · 19 oct 2026</span></div>
+<header id="title-block-header">
+<h1 class="title">Kit comercial y borradores de políticas</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#kit-comercial-y-borradores-de-políticas"
+id="toc-kit-comercial-y-borradores-de-políticas">Kit comercial y
+borradores de políticas</a>
+<ul>
+<li><a href="#1-datos-pendientes-antes-de-cobrar"
+id="toc-1-datos-pendientes-antes-de-cobrar">1. Datos pendientes antes de
+cobrar</a></li>
+<li><a href="#2-texto-para-una-página-comercial"
+id="toc-2-texto-para-una-página-comercial">2. Texto para una página
+comercial</a></li>
+<li><a href="#3-mensajes-para-ventas-con-permiso"
+id="toc-3-mensajes-para-ventas-con-permiso">3. Mensajes para ventas con
+permiso</a></li>
+<li><a href="#4-borrador-de-condiciones-del-servicio"
+id="toc-4-borrador-de-condiciones-del-servicio">4. Borrador de
+condiciones del servicio</a></li>
+<li><a href="#5-borrador-de-aviso-de-privacidad"
+id="toc-5-borrador-de-aviso-de-privacidad">5. Borrador de aviso de
+privacidad</a></li>
+<li><a href="#6-preparación-para-publicación"
+id="toc-6-preparación-para-publicación">6. Preparación para
+publicación</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="kit-comercial-y-borradores-de-políticas">Kit comercial y
+borradores de políticas</h1>
+<p>Documento de trabajo, 19 de octubre de 2026. <strong>No es una
+política publicada, asesoría legal ni prueba de cumplimiento
+tributario.</strong> Debe revisarlo y aprobarlo el responsable del
+servicio, con apoyo contable/legal cuando corresponda. No se
+implementaron páginas de términos, checkbox de aceptación, comprobantes
+fiscales ni automatizaciones al redactarlo.</p>
+<h2 id="1-datos-pendientes-antes-de-cobrar">1. Datos pendientes antes de
+cobrar</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Dato / decisión</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Nombre comercial definitivo y titular/razón social</td>
+<td>Pendiente de definir/publicar</td>
+</tr>
+<tr class="even">
+<td>NIT, régimen fiscal y medio de emisión del comprobante de
+Quoter</td>
+<td>Revisión contable pendiente</td>
+</tr>
+<tr class="odd">
+<td>Precio final aprobado y tratamiento de impuestos</td>
+<td>Q49/Q89/Q149 propuestos, no aprobados</td>
+</tr>
+<tr class="even">
+<td>Beneficiario, banco/medio y procedimiento de referencia</td>
+<td>Pendiente; compartir solo por canal oficial</td>
+</tr>
+<tr class="odd">
+<td>Contacto y horario de soporte</td>
+<td>Pendiente de designar</td>
+</tr>
+<tr class="even">
+<td>Objetivo de activación y respuesta</td>
+<td>Propuesto un día hábil; pendiente compromiso operativo</td>
+</tr>
+<tr class="odd">
+<td>Privacidad, conservación, baja, devolución e incidentes</td>
+<td>Borradores pendientes de revisión</td>
+</tr>
+<tr class="even">
+<td>Dominio de marca/app y de envío</td>
+<td>No se confirmó uno comprado/verificado para clientes externos</td>
+</tr>
+</tbody>
+</table>
+<p>No llenar estos datos con información inventada. No publicar una
+tabla de precios mientras el importe final y lo que incluye no estén
+claros.</p>
+<h2 id="2-texto-para-una-página-comercial">2. Texto para una página
+comercial</h2>
+<p><strong>Título:</strong> Cotizaciones claras, con la imagen de tu
+negocio.</p>
+<p><strong>Texto:</strong> Guarda tus servicios y precios, prepara
+propuestas desde el celular y descarga un PDF con tu logo y colores.
+Organiza el seguimiento en borradores, enviadas, aceptadas y
+rechazadas.</p>
+<p><strong>Beneficios demostrables:</strong></p>
+<ul>
+<li>Catálogo con tarifas por producto, metro, hora u otra unidad.</li>
+<li>Cuatro modelos PDF y marca guardada por cotización.</li>
+<li>Notas internas separadas de las condiciones que ve el cliente.</li>
+<li>Roles de equipo y datos separados por negocio.</li>
+<li>Siete días de prueba; renovación mensual con pago directo
+verificado.</li>
+</ul>
+<p><strong>Llamada a la acción:</strong> Solicitar demostración / Probar
+siete días, una vez resuelto el correo externo.</p>
+<p><strong>Aclaración junto a planes:</strong> Los cupos son capacidad
+acumulada de cotizaciones activas, catálogo y equipo, incluido el
+propietario. No se reinician cada mes. No hay cargos automáticos. Al
+vencer puedes consultar, descargar PDF y exportar tus datos con permiso
+de propietario.</p>
+<p><strong>Aclaración de alcance:</strong> Quoter crea cotizaciones. No
+emite facturas fiscales, registra cobros de tus clientes ni envía
+propuestas automáticamente por WhatsApp o enlace público en esta
+versión.</p>
+<p>Añadir identificación del prestador, contacto, precios finales y
+enlaces reales a condiciones/privacidad antes de publicar. La app actual
+abre acceso/cuenta: esta propuesta no significa que ya exista la landing
+comercial.</p>
+<h2 id="3-mensajes-para-ventas-con-permiso">3. Mensajes para ventas con
+permiso</h2>
+<h3 id="invitación-a-demostración">Invitación a demostración</h3>
+<p>«Hola, estamos probando una herramienta para preparar cotizaciones
+con precios guardados y tu propio logo. Buscamos negocios de [OFICIO]
+que quieran ver una demo de 10–15 minutos. ¿Te interesa que te comparta
+más información?»</p>
+<p>Usar solo contactos permitidos y reemplazar [OFICIO]. No enviar
+masivamente ni presentar el mensaje como recomendación de un cliente
+inexistente.</p>
+<h3 id="inicio-de-prueba">Inicio de prueba</h3>
+<p>«Tu prueba dura siete días desde el alta del negocio. Te propongo
+configurar el logo, guardar tres servicios y descargar tu primer PDF. No
+pedimos tarjeta ni realizamos cargos automáticos. Al terminar puedes
+renovar el plan; si no, el negocio queda en solo lectura.»</p>
+<h3 id="instrucciones-de-pago">Instrucciones de pago</h3>
+<p>«Para activar [PLAN] por un mes calendario, el importe final aprobado
+es [PRECIO]. Confirma tu ID desde Plan y uso y paga por el medio oficial
+[MEDIO]. Comparte la referencia por [CANAL]. Verificaremos el abono
+antes de registrar el mes; el plazo de atención comunicado es
+[PLAZO/HORARIO]. No necesitamos tu contraseña, códigos de autenticación
+ni datos de tus cotizaciones.»</p>
+<p>Los corchetes son campos pendientes. No utilizar el texto sin
+completarlo con datos aprobados. Una captura no sustituye la
+verificación del abono.</p>
+<h3 id="confirmación-de-activación">Confirmación de activación</h3>
+<p>«Verificamos el pago y registramos [PLAN] para el negocio [ID].
+Revisa en Plan y uso la vigencia hasta [FECHA MOSTRADA]. Referencia de
+atención: [REFERENCIA]. Tu comprobante del servicio se entrega por
+[MEDIO FISCAL APROBADO].»</p>
+<h3 id="vencimiento-sin-presión-de-borrado">Vencimiento sin presión de
+borrado</h3>
+<p>«La vigencia de tu negocio termina el [FECHA]. Si decides continuar,
+puedes renovar por pago directo. No hay cargo automático. Al vencer se
+conservan consulta, PDF y exportación del propietario; crear o editar
+requiere renovar.»</p>
+<p>No prometer conservación perpetua ni amenazar con borrar
+automáticamente si no existe esa política implementada.</p>
+<h2 id="4-borrador-de-condiciones-del-servicio">4. Borrador de
+condiciones del servicio</h2>
+<h3 id="prestador-y-objeto">Prestador y objeto</h3>
+<p>[IDENTIDAD LEGAL Y CONTACTO] presta acceso a Quoter para organizar
+cotizaciones en GTQ, catálogo, marca y equipo. El alcance es el
+anunciado para la versión y plan contratados; no se presta un servicio
+bancario, contable o de facturación fiscal dentro de la app.</p>
+<h3 id="prueba-vigencia-y-capacidad">Prueba, vigencia y capacidad</h3>
+<p>Siete días de prueba del Plan 1 desde la creación del negocio; planes
+mensuales por negocio con límites publicados. El propietario ocupa un
+lugar de equipo y las invitaciones pendientes reservan plazas. Las
+cotizaciones fuera de papelera consumen capacidad, sin reinicio mensual.
+No hay cargos automáticos.</p>
+<h3 id="pago-y-cambios-de-plan">Pago y cambios de plan</h3>
+<p>Pago directo sujeto a confirmación del abono, ID y plan. Cada
+activación añade un mes calendario; renovaciones conservan tiempo
+pendiente. Ampliación inmediata sin prorrateo automático; reducción solo
+al vencer el plan pagado. El precio final, medio, comprobante y atención
+son los aprobados y comunicados antes de pagar. No se debe prometer un
+plazo o descuento no operable.</p>
+<h3 id="datos-y-responsabilidades">Datos y responsabilidades</h3>
+<p>El negocio es responsable de los datos que introduce, su autorización
+para tratarlos, precios y condiciones dirigidas a sus clientes. Debe
+proteger sus credenciales, administrar accesos y revisar PDFs antes de
+enviarlos. Quoter ofrece controles de separación por negocio y respaldos
+del propietario, pero el cliente debe conservar copias de sus documentos
+necesarios.</p>
+<h3 id="vencimiento-suspensión-y-baja">Vencimiento, suspensión y
+baja</h3>
+<p>El vencimiento deja solo lectura con PDF/exportación del propietario.
+Suspensión administrativa y desactivación de cuenta tienen efectos
+distintos. La app no tiene baja/eliminación completa de cuenta por
+autoservicio: se solicita por el canal de soporte con validación de
+identidad. Definir motivos de suspensión, canal de revisión y
+conservación antes de publicar esta política.</p>
+<h3 id="devoluciones-y-errores">Devoluciones y errores</h3>
+<p>Propuesta para revisar: investigar pago duplicado o servicio no
+habilitado, conciliar y comunicar resolución por escrito. Establecer
+condiciones/plazo concreto y obligaciones legales antes de anunciar
+garantía de devolución. No hay reembolso automático ni botón de anular
+meses; la devolución bancaria requiere operación externa y, si procede,
+corrección autorizada de vigencia.</p>
+<h3 id="disponibilidad-y-soporte">Disponibilidad y soporte</h3>
+<p>Publicar [CANAL], [HORARIO] y objetivo de respuesta aprobado. No
+prometer 24/7, recuperación instantánea ni un porcentaje de
+disponibilidad sin capacidad medida. RPO/RTO internos no son garantía
+comercial por estar escritos en una guía.</p>
+<h3 id="cambios-de-precios-y-condiciones">Cambios de precios y
+condiciones</h3>
+<p>Definir aviso, fecha de aplicación, tratamiento de periodos ya
+pagados y forma de conservar la versión aceptada. El sistema actual no
+automatiza avisos ni un registro de aceptación de términos; debe
+prepararse el mecanismo antes de depender de él.</p>
+<h2 id="5-borrador-de-aviso-de-privacidad">5. Borrador de aviso de
+privacidad</h2>
+<h3 id="responsable-y-contacto">Responsable y contacto</h3>
+<p>[RESPONSABLE LEGAL], [CONTACTO DE PRIVACIDAD] y canales para
+solicitudes de acceso, corrección, exportación o eliminación, sujetos a
+validación de identidad y obligaciones legales aplicables. Estos campos
+todavía deben completarse.</p>
+<h3 id="datos-y-finalidades">Datos y finalidades</h3>
+<p>Cuentas y correo para autenticación, verificación, recuperación e
+invitaciones; datos del negocio y sus clientes, catálogo y cotizaciones
+para prestar el servicio; registros técnicos mínimos para
+seguridad/soporte; metadatos de suscripción para activar acceso. El
+libro externo de cobros trata datos propios del pago del SaaS y necesita
+su propia protección y aviso.</p>
+<h3 id="acceso-y-proveedores">Acceso y proveedores</h3>
+<p>Integrantes autorizados ven datos del negocio conforme al rol. El
+administrador maestro ve metadatos operativos, IDs y planes; no clientes
+o montos de cotizaciones. El operador de infraestructura y proveedores
+autorizados pueden tener acceso técnico necesario; no describir esto
+como cifrado de extremo a extremo. Identificar Cloudflare
+(alojamiento/D1/seguridad), Resend (correos) y cualquier proveedor
+adicional realmente contratado, incluidos lugar/condiciones de
+tratamiento que se confirmen.</p>
+<h3 id="exportación-conservación-y-eliminación">Exportación,
+conservación y eliminación</h3>
+<p>JSON/CSV y papelera pueden contener notas y datos privados. No existe
+una eliminación automática por vencimiento ni botón de eliminación
+completa de cuenta. Definir retención de datos activos, papelera,
+respaldos y documentación fiscal; cuándo y cómo se procesa una solicitud
+verificada; y qué copias no desaparecen inmediatamente por obligaciones
+o recuperación. No inventar un plazo legal o prometer borrado
+instantáneo de respaldos.</p>
+<h3 id="seguridad-y-sesiones">Seguridad y sesiones</h3>
+<p>Describir medidas verificadas sin garantizar invulnerabilidad: hashes
+de contraseña, control de sesión/negocio/rol y MFA del administrador
+maestro. No afirmar MFA obligatorio para todos los usuarios si la
+función solo se aplica al maestro. Las cookies de sesión y Turnstile
+tienen finalidad de acceso/seguridad; revisar condiciones antes de
+añadir rastreo publicitario.</p>
+<h3 id="marketing-y-consentimiento">Marketing y consentimiento</h3>
+<p>El contacto comercial es separado del uso operacional. No usar
+clientes de cotizaciones para marketing de Quoter. Si se incorporan
+formularios, píxeles o herramientas de analítica, revisar información,
+base/consentimiento y mecanismo de retiro antes de implementarlos. No
+afirmar que esas integraciones ya existen.</p>
+<h2 id="6-preparación-para-publicación">6. Preparación para
+publicación</h2>
+<p>Aprobar identidad fiscal, precios, contacto, condiciones y
+privacidad; preparar páginas accesibles y su versión/fecha; revisar alta
+y aceptación cuando corresponda; preparar evidencia de pago/comprobante;
+ensayar soporte/baja/incidentes. Este paquete permite discutir y
+redactar esas decisiones, pero no las hace efectivas ni crea los
+procesos externos.</p>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+</html>

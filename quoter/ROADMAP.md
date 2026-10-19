@@ -1,6 +1,6 @@
 # Estado y camino a la primera publicación
 
-Actualizado el 17 de octubre de 2026. Avance estimado: **93 %** hacia una versión online, revisada y lista para clientes. Es una estimación de preparación, no cobertura de pruebas ni porcentaje del tiempo restante. El propietario confirmó despliegue, acceso online y pruebas básicas satisfactorias. Cloudflare D1, secretos, Turnstile y correo de la cuenta propia ya se configuraron; falta completar la aceptación pública y la preparación operativa/comercial. Los 19 hallazgos de código de la auditoría ya tienen reparación o un procedimiento concreto; ver REMEDIATION.md para la evidencia y los límites externos. La cifra no aumenta automáticamente por una verificación exclusivamente local.
+Actualizado el 19 de octubre de 2026. Avance estimado: **93 %** hacia una versión online, revisada y lista para clientes. Es una estimación de preparación, no cobertura de pruebas ni porcentaje del tiempo restante. El propietario confirmó despliegue, acceso online y pruebas básicas satisfactorias. Cloudflare D1, secretos, Turnstile y correo de la cuenta propia ya se configuraron; falta completar la aceptación pública y la preparación operativa/comercial. Los 19 hallazgos de código de la auditoría ya tienen reparación o un procedimiento concreto; ver REMEDIATION.md para la evidencia y los límites externos. La cifra no aumenta automáticamente por una verificación exclusivamente local.
 
 ## Disponible y validado localmente
 
@@ -22,9 +22,13 @@ Actualizado el 17 de octubre de 2026. Avance estimado: **93 %** hacia una versi�
 | Aceptación publicada | Completar la matriz de ACCEPTANCE.md con cuentas controladas | MFA, recuperación, aislamiento, PDF, cuotas y renovaciones verificados en HTTPS |
 | Correo a clientes | Dominio de envío verificado y remitente autorizado | Verificación/recuperación entregadas a destinatarios del piloto; Resend de prueba solo cubre la cuenta propia |
 | Operación | Respaldo real y ensayo local confirmados; falta copia externa, monitor con alertas y ensayo de reemplazo publicado | Procedimiento de OPERATIONS.md ejecutado con producción; custodia separada de secretos |
-| Comercial | Precios e instrucciones P2P, soporte y privacidad | Pago y renovación entendibles, referencia repetida sin doble activación |
+| Comercial | Marketing, precios propuestos, procedimientos y manuales preparados; faltan aprobación y publicación de precios, soporte y privacidad | Pago y renovación entendibles, referencia repetida sin doble activación |
 | Piloto | Usuarios iniciales y revisión de incidencias | Flujos completos sin fallos pendientes que impidan trabajar |
 
 La recuperación D1 tiene respaldo cifrado, ensayo aislado, procedimiento ejecutable de reemplazo en una D1 nueva y modo mantenimiento. El respaldo real y su ensayo local fueron confirmados por el propietario; no se ejecutó la sustitución remota. La comprobación pública es de solo lectura. Estas herramientas no implican que los respaldos diarios, el monitoreo externo o el ensayo de producción ya estén operando.
 
 Ver [OPERATIONS.md](OPERATIONS.md) y [ACCEPTANCE.md](ACCEPTANCE.md). Los enlaces públicos, WhatsApp, conversión a facturas y cobro automático siguen al final de la lista, fuera del alcance de este primer lanzamiento.
+
+## Preparación comercial y formación
+
+Se preparó un [paquete de lanzamiento](docs/lanzamiento/README.md) para Guatemala, cobros GTQ y presupuesto comercial de Q300–Q1,000/mes. Incluye propuesta de Q600 de campaña y precios por validar, costos editables, manuales separados de usuario/propietario/maestro/operador y material de capacitación. Es documentación y planificación; no se ejecutaron campañas, altas de proveedores ni cambios de tarifas/cobros. La estimación se mantiene en 93 % hasta cerrar la aceptación pública y los pendientes operativos/comerciales.

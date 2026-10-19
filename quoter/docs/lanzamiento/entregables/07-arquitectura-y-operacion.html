@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es-GT" xml:lang="es-GT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Arquitectura y operación técnica</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+  :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#202534;background:#f5f5f8}body{max-width:1080px;padding:36px;margin:auto}header{border-top:8px solid #e85d04;padding:26px 0 12px}h1{font-size:2.2rem;line-height:1.2;color:#111321;margin:.8em 0}h2{font-size:1.45rem;color:#6a040f;border-bottom:1px solid #dddde6;padding-bottom:8px;margin-top:2em}h3{font-size:1.1rem;color:#943800;margin-top:1.8em}p,li{max-width:95ch}a{color:#943800;overflow-wrap:anywhere}strong{color:#171a28}#TOC{border:1px solid #dedee7;background:white;padding:18px 24px;border-radius:12px;margin:24px 0}#TOC>ul{padding-left:20px}#TOC a{text-decoration:none}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:.9rem;background:white}thead{background:#111321;color:white}th,td{padding:10px 12px;border-bottom:1px solid #d9dbe2;vertical-align:top;min-width:100px}th{text-align:left;font-weight:650}tr:nth-child(even){background:#f0f1f4}pre{background:#111321;color:#f9f4ef;border-radius:8px;padding:16px;overflow:auto;font-size:.85rem;line-height:1.55}code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}blockquote{border-left:4px solid #faa307;padding:4px 16px;background:#fff5e4}.doc-nav{font-size:.85rem;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.doc-note{background:#fff0d5;border-left:4px solid #e85d04;padding:12px 16px}.doc-footer{margin:40px 0 0;padding-top:20px;border-top:1px solid #d9dbe2;font-size:.8rem;color:#5b6072}ul,ol{padding-left:24px}@media(max-width:700px){body{padding:18px}h1{font-size:1.7rem}h2{font-size:1.2rem}th,td{padding:8px;font-size:.82rem}#TOC{padding:12px 18px}}@media print{:root{background:white;font-size:10.5pt}body{padding:0;max-width:none}header{padding:10px 0}h1{font-size:23pt}h2{font-size:15pt;break-after:avoid}h3{break-after:avoid}p{orphans:3;widows:3}pre,blockquote{break-inside:avoid}table{display:table;width:100%;font-size:8pt;table-layout:auto}thead{display:table-header-group}tr{break-inside:avoid}th,td{min-width:0;padding:6px;overflow-wrap:anywhere}td[style*="text-align: right"]{white-space:nowrap;overflow-wrap:normal}a{color:#444;text-decoration:none}#TOC{break-after:page;font-size:9pt}#TOC ul{margin:3px 0}#TOC>ul{columns:1}.doc-nav,.no-print{display:none}pre{white-space:pre-wrap;color:#222;background:#f2f2f5}h2,h3{scroll-margin-top:10px}}
+  </style>
+</head>
+<body><div class="doc-nav"><a href="index.html">Índice de documentación</a><span>Quoter · Guatemala · 19 oct 2026</span></div>
+<header id="title-block-header">
+<h1 class="title">Arquitectura y operación técnica</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#arquitectura-y-operación-técnica"
+id="toc-arquitectura-y-operación-técnica">Arquitectura y operación
+técnica</a>
+<ul>
+<li><a href="#1-componentes" id="toc-1-componentes">1.
+Componentes</a></li>
+<li><a href="#2-flujo-de-una-cotización"
+id="toc-2-flujo-de-una-cotización">2. Flujo de una cotización</a></li>
+<li><a href="#3-datos-y-permisos" id="toc-3-datos-y-permisos">3. Datos y
+permisos</a></li>
+<li><a href="#4-mapa-de-rutas" id="toc-4-mapa-de-rutas">4. Mapa de
+rutas</a></li>
+<li><a href="#5-configuración-y-secretos"
+id="toc-5-configuración-y-secretos">5. Configuración y secretos</a></li>
+<li><a href="#6-desarrollo-y-validación"
+id="toc-6-desarrollo-y-validación">6. Desarrollo y validación</a></li>
+<li><a href="#7-actualizar-producción"
+id="toc-7-actualizar-producción">7. Actualizar producción</a></li>
+<li><a href="#8-disponibilidad-y-costos"
+id="toc-8-disponibilidad-y-costos">8. Disponibilidad y costos</a></li>
+<li><a href="#9-respaldo-y-recuperación"
+id="toc-9-respaldo-y-recuperación">9. Respaldo y recuperación</a></li>
+<li><a href="#10-incidentes" id="toc-10-incidentes">10.
+Incidentes</a></li>
+<li><a href="#11-referencias-de-mantenimiento"
+id="toc-11-referencias-de-mantenimiento">11. Referencias de
+mantenimiento</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="arquitectura-y-operación-técnica">Arquitectura y operación
+técnica</h1>
+<p>Uso interno del operador. Revisión documental: 19 de octubre de 2026,
+base funcional <code>44e2561</code>. Esta guía organiza los
+procedimientos existentes; no reemplaza OPERATIONS.md ni acredita que
+monitoreo/copia externa ya estén configurados.</p>
+<h2 id="1-componentes">1. Componentes</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Capa</th>
+<th>Tecnología / ubicación</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Interfaz</td>
+<td>React 19, TypeScript, Vite; <code>src/</code></td>
+<td>Formularios, navegación responsive, vistas y validación de uso</td>
+</tr>
+<tr class="even">
+<td>API</td>
+<td>Cloudflare Worker; <code>worker/index.ts</code> y
+<code>worker/routes/</code></td>
+<td>Autenticación, permisos, vigencia, validación y respuestas</td>
+</tr>
+<tr class="odd">
+<td>Datos</td>
+<td>Cloudflare D1 / SQLite; <code>migrations/</code></td>
+<td>Negocios, cuentas, catálogo, clientes, cotizaciones, auditoría y
+planes</td>
+</tr>
+<tr class="even">
+<td>Documentos</td>
+<td>jsPDF y AutoTable; <code>src/lib/quote-pdf.ts</code></td>
+<td>PDF en el navegador con totales del servidor y marca guardada</td>
+</tr>
+<tr class="odd">
+<td>Correo de cuenta</td>
+<td>Adaptador Resend; <code>worker/auth/mail.ts</code></td>
+<td>Verificación, recuperación e invitaciones; no envío de
+cotizaciones</td>
+</tr>
+<tr class="even">
+<td>Verificación pública</td>
+<td>Cloudflare Turnstile</td>
+<td>Registro/recuperación y desafío de login cuando corresponde</td>
+</tr>
+<tr class="odd">
+<td>Operación</td>
+<td>Wrangler, scripts Node 24 y CI</td>
+<td>Migraciones, despliegue, ensayos y comandos de operador</td>
+</tr>
+</tbody>
+</table>
+<p>No existe servicio externo de pago por PDF, pasarela de suscripción,
+facturación fiscal ni integración WhatsApp en el primer lanzamiento. No
+hay almacenamiento offline de borradores ni caché local del contenido
+para trabajar sin conexión.</p>
+<h2 id="2-flujo-de-una-cotización">2. Flujo de una cotización</h2>
+<p>La cuenta autenticada selecciona un negocio del que es integrante. El
+Worker verifica correo, sesión, permiso y vigencia; valida que
+cliente/catálogo pertenezcan al negocio. Calcula importes en centavos y
+guarda número, filas y snapshot de marca en una transacción. La lectura
+obtiene una vista consistente de encabezado, cliente y partidas. Edición
+exige revisión; un cambio concurrente produce 409 y conserva el borrador
+de pantalla.</p>
+<p>El PDF usa totales guardados. Marca y modelo se capturan al crear;
+una nueva marca predeterminada no reescribe las anteriores. Cambiar solo
+modelo usa revisión del documento y conserva marca/importes. Una
+actualización explícita de marca reemplaza el snapshot. No se incluyen
+notas internas en PDF; sí pueden existir en JSON/CSV, por lo que esos
+archivos son privados.</p>
+<h2 id="3-datos-y-permisos">3. Datos y permisos</h2>
+<p>Grupos principales de tablas: organizations y memberships; users,
+sessions y tokens de cuenta; customers; catalog_items; quotes,
+quote_items y secuencias; plan_activations y subscription_plans;
+auditorías; invitaciones; MFA maestro; staging/validación de
+respaldos.</p>
+<p>Los IDs técnicos históricos de planes son <code>gratis</code> → Plan
+1, <code>pro</code> → Plan 2 y <code>negocio</code> → Plan 3. El nombre
+técnico <code>gratis</code> no indica un plan comercial gratuito. No
+renombrar IDs en producción para cambiar el precio anunciado.</p>
+<p>El panel maestro expone metadatos mediante rutas administrativas, no
+un selector para abrir negocios ajenos. El operador con D1 puede
+técnicamente acceder a datos completos; limitar cuentas/procesos y
+auditar su uso. D1 y snapshots no se presentan como cifrado de extremo a
+extremo de cada campo. Las contraseñas se almacenan con hashes
+versionados/salt y pepper; no son texto recuperable ni se «descifran»
+para soporte.</p>
+<h2 id="4-mapa-de-rutas">4. Mapa de rutas</h2>
+<p>Resumen para localizar código, no una API pública comercial estable.
+Todas las mutaciones tienen validación/controles adicionales; usar
+primero la UI y las pruebas existentes.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Familia</th>
+<th>Acceso y propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>/api/health</code></td>
+<td>GET público: salud sin datos privados</td>
+</tr>
+<tr class="even">
+<td><code>/api/auth/*</code></td>
+<td>Registro, login/logout, correo/recuperación y opciones públicas de
+seguridad</td>
+</tr>
+<tr class="odd">
+<td><code>/api/businesses</code>,
+<code>/api/businesses/switch</code></td>
+<td>Negocios del usuario y selección autorizada</td>
+</tr>
+<tr class="even">
+<td><code>/api/subscription</code>, <code>/api/plans</code></td>
+<td>Vigencia/capacidad; cambios simulados solo en preview local
+permitido</td>
+</tr>
+<tr class="odd">
+<td><code>/api/branding</code>, <code>/api/customers</code>,
+<code>/api/catalog</code></td>
+<td>Marca, clientes y catálogo del negocio activo</td>
+</tr>
+<tr class="even">
+<td><code>/api/quotes</code>, <code>/api/quotes/:id</code>,
+<code>/duplicate</code>, <code>/history</code></td>
+<td>CRUD con controles, duplicación e historial</td>
+</tr>
+<tr class="odd">
+<td><code>/api/dashboard</code></td>
+<td>Resumen y filtros del negocio activo</td>
+</tr>
+<tr class="even">
+<td><code>/api/team/*</code>, <code>/api/invitations/*</code></td>
+<td>Equipo e invitaciones vinculadas al correo verificado</td>
+</tr>
+<tr class="odd">
+<td><code>/api/backups/*</code>, <code>/api/trash*</code>,
+<code>/api/history</code></td>
+<td>Respaldo/recuperación/historial con permisos de propietario</td>
+</tr>
+<tr class="even">
+<td><code>/api/security/admin-mfa</code>, <code>/api/admin/*</code></td>
+<td>Segundo factor y administración exclusiva del maestro</td>
+</tr>
+<tr class="odd">
+<td><code>/api/diagnostics</code></td>
+<td>Metadatos técnicos permitidos; no cuerpos/logos/notas privadas</td>
+</tr>
+</tbody>
+</table>
+<p>Las rutas de datos requieren autenticación; las de administración
+también MFA. Una referencia <code>X-Request-ID</code> ayuda a
+correlacionar fallos sin exponer mensajes internos.</p>
+<h2 id="5-configuración-y-secretos">5. Configuración y secretos</h2>
+<p>Datos de configuración: nombre Worker, binding <strong>DB</strong>,
+ID real de D1, directorio migrations, URL pública HTTPS, remitente
+autorizado y site key pública de Turnstile. El archivo versionado
+contiene ID cero como plantilla: preservar la configuración real del
+equipo de despliegue.</p>
+<p>Secretos por nombre, nunca por valor en esta documentación:
+<code>PASSWORD_PEPPER</code>, <code>MFA_ENCRYPTION_KEY</code>,
+<code>RESEND_API_KEY</code>, <code>TURNSTILE_SECRET_KEY</code>. Otros
+controles: <code>SIGNUP_DAILY_LIMIT</code> y
+<code>MAINTENANCE_READ_ONLY</code> según operación.
+<code>EMAIL_MODE=preview</code> solo sirve en el entorno local
+permitido; no habilitarlo como sustituto del correo público.</p>
+<p>No regenerar pepper o clave de MFA al actualizar. Los respaldos D1 no
+contienen esos secretos del Worker; perderlos puede impedir acceso a
+cuentas restauradas. Custodia separada de secretos y respaldos, gestor
+seguro y permisos del equipo. No mandar archivos <code>.dev.vars</code>,
+<code>.env*</code>, SQL o <code>.qdb</code> a soporte abierto o CI.</p>
+<h2 id="6-desarrollo-y-validación">6. Desarrollo y validación</h2>
+<p>Desde <code>quoter</code>, Node 24.14+ dentro de versión 24:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>npm ci</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>npm run db<span class="op">:</span>migrate</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>npm run dev</span></code></pre></div>
+<p>Preparación inicial de <code>.dev.vars</code>, pepper y clave MFA:
+seguir README.md y los scripts de configuración, preservando claves
+existentes. No copiar secretos a la terminal del chat.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>npx playwright install chromium</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>npm run verify</span></code></pre></div>
+<p><code>verify</code> ejecuta unitarias, lint, tipos/build, 20 suites
+API/navegador y recuperación. Crea D1/configuración/credenciales
+ficticias aisladas; no necesita ni prueba el banco, dominio de correo,
+claves reales o recuperación remota. CI define Ubuntu y Windows; un
+workflow definido no acredita su ejecución ni configura protección de
+ramas.</p>
+<p>La última evidencia funcional citada está en REMEDIATION.md. No se
+reejecutó la batería por escribir este paquete documental. Para cambiar
+código, repetir las comprobaciones apropiadas.</p>
+<h2 id="7-actualizar-producción">7. Actualizar producción</h2>
+<ol type="1">
+<li>Revisar commit/configuración y respaldar antes de migraciones.</li>
+<li>En el equipo autorizado con Wrangler autenticado, actualizar código
+y dependencias.</li>
+<li>Aplicar migraciones remotas pendientes; este código requiere hasta
+<strong>0021_quote_templates.sql</strong>.</li>
+<li>Ejecutar despliegue y comprobación pública.</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>git pull origin main</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>npm ci</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>npx wrangler whoami</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>npx wrangler d1 migrations apply quoter-db <span class="op">--</span>remote</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>npm run deploy</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>npm run check<span class="op">:</span>production <span class="op">--</span> <span class="op">--</span>url https<span class="op">://</span>quoter<span class="op">.</span><span class="fu">cotizandome</span><span class="op">.</span><span class="fu">workers</span><span class="op">.</span><span class="fu">dev</span></span></code></pre></div>
+<p>Estos comandos son un procedimiento para una actualización
+autorizada; no fueron ejecutados contra producción al preparar los
+manuales. Local y remoto son bases independientes. No recrear D1 para
+resolver un error de autenticación o una migración parcialmente
+aplicada.</p>
+<p>Si aparece 7403, verificar cuenta/permisos con <code>whoami</code> y
+<code>d1 list</code>; renovar OAuth si corresponde. Si hay un API token
+de entorno, puede tener prioridad sobre OAuth: revisar solo su
+presencia/configuración, nunca mostrar su valor. Conservar bindings y
+secretos existentes.</p>
+<h2 id="8-disponibilidad-y-costos">8. Disponibilidad y costos</h2>
+<p>Configurar monitor externo de <code>/api/health</code> cada cinco
+minutos y alerta tras dos fallos consecutivos como propuesta inicial.
+Probar recepción de alerta. Un 200 de salud no prueba entrega de correo,
+funcionamiento del banco ni todos los flujos autenticados.</p>
+<p>Revisar semanalmente CPU/solicitudes, lecturas/escrituras y tamaño
+D1, correo por día/mes, almacenamiento de copia externa y facturación
+del proveedor. Los snapshots de logo pueden dominar espacio. Los cupos
+activos no controlan todo el almacenamiento conservado. No prometer
+hosting gratis o servicio ilimitado.</p>
+<h2 id="9-respaldo-y-recuperación">9. Respaldo y recuperación</h2>
+<p>JSON por negocio: 8 MiB / 2,000 registros, contenido del negocio, sin
+credenciales/equipo/historial. D1 completa cifrada: contenido de todos
+los negocios y datos de acceso; exclusiva del operador.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>npm run backup<span class="op">:</span>key</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>npm run backup<span class="op">:</span>db <span class="op">--</span> <span class="op">--</span>remote</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>npm run backup<span class="op">:</span>drill <span class="op">--</span> <span class="op">--</span>file <span class="st">&quot;.backups/ARCHIVO-REAL.qdb&quot;</span></span></code></pre></div>
+<p><code>backup:key</code> conserva la clave existente; no crear una
+nueva para intentar abrir respaldos anteriores.
+<code>backup:drill</code> descifra e importa en D1 local temporal,
+verifica y elimina ese estado; no sustituye producción. El fallback
+parametrizado conserva logos grandes ante límites SQL.</p>
+<p>Propuesta de operación: copia diaria y antes de migración; siete
+diarios y cuatro semanales; copia cifrada externa; ensayo mensual. RPO
+24 h/RTO 2 h son objetivos sin SLA medido. Automatización, servicio
+externo y ensayo publicado siguen pendientes de ejecución según
+OPERATIONS.md.</p>
+<p>El procedimiento de recuperación genera un plan y una D1 nueva,
+valida esquema y revoca credenciales restauradas; no cambia
+automáticamente el binding ni reabre el Worker. Seguir OPERATIONS.md
+para <code>recovery:plan</code> / <code>recovery:apply</code>,
+confirmaciones y manejo de claves. No ensayar sobre la D1 vigente ni
+publicar una copia completa sin revisión.</p>
+<h2 id="10-incidentes">10. Incidentes</h2>
+<p>Registrar hora local, versión, categoría/requestId y alcance mínimo.
+Si puede afectar integridad, usar modo mantenimiento de solo lectura
+según OPERATIONS.md. Separar fallo de proveedor,
+autenticación/configuración y error de datos; no volcar cuerpos privados
+en logs.</p>
+<p>Prioridad crítica: acceso de un negocio a otro, pérdida/corrupción de
+datos o compromiso de credenciales. Alta: registro/recuperación/guardado
+general bloqueados. Normal: un PDF/formato o consulta individual con
+alternativa. Son criterios operativos propuestos; no tiempos de
+respuesta ya contratados.</p>
+<p>Reabrir después de una recuperación requiere conciliación y pruebas
+controladas. Comunicar sin revelar datos ajenos y guardar evidencia
+privada. No resolver cambios de plan erróneos con SQL improvisado ni
+regeneración de secretos.</p>
+<h2 id="11-referencias-de-mantenimiento">11. Referencias de
+mantenimiento</h2>
+<p>Procedimientos canónicos: README.md, PRODUCTION_SETUP.md,
+OPERATIONS.md, ADMIN_MFA.md, PASSWORD_SECURITY.md,
+SECURITY_HARDENING.md, ACCEPTANCE.md y REMEDIATION.md, ubicados dos
+directorios arriba de este archivo. El documento de auditoría es
+histórico; no tratar sus hallazgos originales como pendientes sin
+revisar su reparación.</p>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+</html>

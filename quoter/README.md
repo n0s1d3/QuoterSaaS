@@ -85,3 +85,7 @@ En el detalle de una cotización puedes cambiar solo su modelo y ver o descargar
 La vista previa muestra el PDF generado y ofrece un enlace para abrirlo si el navegador móvil no integra visor. Los modelos respetan paginación, importes del servidor, condiciones de pago y exclusión de notas internas. Los respaldos JSON v1/v2 conservan la selección cuando existe y siguen aceptando archivos anteriores.
 
 Esta versión requiere `0021_quote_templates.sql`. Actualiza la base local con `npm run db:migrate`; antes de desplegar aplica las pendientes en remoto con `npx wrangler d1 migrations apply quoter-db --remote`. Conserva la configuración real de D1 del equipo de despliegue.
+
+## Documentación para lanzar y enseñar el producto
+
+Paquete preparado el 19 de octubre de 2026: [estado de lanzamiento, marketing, costos y manuales por rol](docs/lanzamiento/README.md). Incluye [índice HTML con descargas PDF](docs/lanzamiento/entregables/index.html) y [calculadora de planificación sin conexión](docs/lanzamiento/entregables/calculadora-costos.html). Los precios son propuestas, no cobros configurados. Las tarifas de proveedores requieren confirmación; las políticas son borradores por aprobar. No se modifica la aplicación ni es necesario desplegar para leer este material.
