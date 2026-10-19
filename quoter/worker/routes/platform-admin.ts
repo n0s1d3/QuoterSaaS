@@ -1,3 +1,4 @@
+import { billingOffer,isBillingMonths } from '../../src/lib/billing.ts'
 import type { PasswordEnvironment } from '../auth/passwords.ts'
 import { requirePlatformAdmin,confirmAdmin,adminGate } from '../auth/platform-admin.ts'
 import type { Account } from '../auth/session'
@@ -59,14 +60,17 @@ export async function platformAdmin(request:Request,db:D1Database,user:Account,p
   }
   if(business[2]&&request.method==='POST'){
    const reference=text(data.reference,'Referencia única de pago',true,200)!,planId=text(data.planId,'Plan',true,100)!
+   const durationMonths=data.durationMonths===undefined?1:data.durationMonths
+   if(!isBillingMonths(durationMonths))throw new HttpError(400,'El periodo debe ser 1, 3, 6 o 12 meses')
    if(!await db.prepare('SELECT id FROM subscription_plans WHERE id=?').bind(planId).first())throw new HttpError(400,'Plan inválido')
+   const offer=billingOffer(planId,durationMonths)
    const earlyDowngrade=await db.prepare(`SELECT o.id FROM organizations o JOIN subscription_plans current_plan ON current_plan.id=o.plan_id JOIN subscription_plans next_plan ON next_plan.id=? WHERE o.id=? AND o.paid_until>unixepoch() AND (next_plan.quote_limit<current_plan.quote_limit OR next_plan.catalog_limit<current_plan.catalog_limit OR next_plan.member_limit<current_plan.member_limit) AND NOT EXISTS(SELECT 1 FROM plan_activations WHERE payment_reference=?)`).bind(planId,id,reference).first()
    if(earlyDowngrade)throw new HttpError(409,'El plan pagado actual sigue vigente. Para reducir capacidad, espera a su vencimiento; no se registró el pago ni se cambió el plan.')
-   const rows=await db.batch<Record<string,unknown>>([db.prepare(`INSERT INTO plan_activations(id,organization_id,plan_id,payment_reference,operator_email) SELECT ?,?,?,?,'Administración de Quoter' WHERE ${adminGate} ON CONFLICT(payment_reference) DO NOTHING`).bind(operation,id,planId,reference,...gateValues),audit('plan.month.activated','business',id,{planId},'EXISTS(SELECT 1 FROM plan_activations WHERE id=?)',[operation])])
+   const rows=await db.batch<Record<string,unknown>>([db.prepare(`INSERT INTO plan_activations(id,organization_id,plan_id,payment_reference,operator_email,duration_months,tariff_cents) SELECT ?,?,?,?,'Administración de Quoter',?,? WHERE ${adminGate} ON CONFLICT(payment_reference) DO NOTHING`).bind(operation,id,planId,reference,durationMonths,offer.totalCents,...gateValues),audit(durationMonths===1?'plan.month.activated':'plan.period.activated','business',id,{planId,durationMonths},'EXISTS(SELECT 1 FROM plan_activations WHERE id=?)',[operation])])
    await requirePlatformAdmin(db,user)
-   const receipt=await db.prepare('SELECT organization_id AS businessId,plan_id AS planId FROM plan_activations WHERE payment_reference=?').bind(reference).first<{businessId:string;planId:string}>()
+   const receipt=await db.prepare('SELECT organization_id AS businessId,plan_id AS planId,duration_months AS durationMonths FROM plan_activations WHERE payment_reference=?').bind(reference).first<{businessId:string;planId:string;durationMonths:number}>()
    if(!receipt)throw new HttpError(403,'La autorización administrativa cambió. Recarga la sesión.')
-   if(receipt.businessId!==id||receipt.planId!==planId)throw new HttpError(409,'La referencia ya se utilizó para otro negocio o plan. No se realizó ningún cambio.')
+   if(receipt.businessId!==id||receipt.planId!==planId||receipt.durationMonths!==durationMonths)throw new HttpError(409,'La referencia ya se utilizó para otro negocio, plan o periodo. No se realizó ningún cambio.')
    return Response.json({activated:true,reused:!rows[0].meta.changes,subscription:await businessSubscription(db,id)})
   }
  }

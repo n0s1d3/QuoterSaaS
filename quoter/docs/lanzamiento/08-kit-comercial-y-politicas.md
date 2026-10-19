@@ -8,7 +8,7 @@ Documento de trabajo, 19 de octubre de 2026. **No es una política publicada, as
 | --- | --- |
 | Nombre comercial definitivo y titular/razón social | Pendiente de definir/publicar |
 | NIT, régimen fiscal y medio de emisión del comprobante de Quoter | Revisión contable pendiente |
-| Precio final aprobado y tratamiento de impuestos | Q49/Q89/Q149 propuestos, no aprobados |
+| Precio final aprobado y tratamiento de impuestos | Q49/Q89/Q149 de base mensual; descuentos 5/10/15 % por 3/6/12 meses; confirmar tratamiento fiscal |
 | Beneficiario, banco/medio y procedimiento de referencia | Pendiente; compartir solo por canal oficial |
 | Contacto y horario de soporte | Pendiente de designar |
 | Objetivo de activación y respuesta | Propuesto un día hábil; pendiente compromiso operativo |
@@ -53,7 +53,7 @@ Usar solo contactos permitidos y reemplazar [OFICIO]. No enviar masivamente ni p
 
 ### Instrucciones de pago
 
-«Para activar [PLAN] por un mes calendario, el importe final aprobado es [PRECIO]. Confirma tu ID desde Plan y uso y paga por el medio oficial [MEDIO]. Comparte la referencia por [CANAL]. Verificaremos el abono antes de registrar el mes; el plazo de atención comunicado es [PLAZO/HORARIO]. No necesitamos tu contraseña, códigos de autenticación ni datos de tus cotizaciones.»
+«Para activar [PLAN] por [PERIODO DE 1/3/6/12 MESES] calendario, el importe final aprobado es [PRECIO]. Confirma tu ID desde Plan y uso y paga por el medio oficial [MEDIO]. Comparte la referencia por [CANAL]. Verificaremos el abono antes de registrar el periodo; el plazo de atención comunicado es [PLAZO/HORARIO]. No necesitamos tu contraseña, códigos de autenticación ni datos de tus cotizaciones.»
 
 Los corchetes son campos pendientes. No utilizar el texto sin completarlo con datos aprobados. Una captura no sustituye la verificación del abono.
 
@@ -79,7 +79,7 @@ Siete días de prueba del Plan 1 desde la creación del negocio; planes mensuale
 
 ### Pago y cambios de plan
 
-Pago directo sujeto a confirmación del abono, ID y plan. Cada activación añade un mes calendario; renovaciones conservan tiempo pendiente. Ampliación inmediata sin prorrateo automático; reducción solo al vencer el plan pagado. El precio final, medio, comprobante y atención son los aprobados y comunicados antes de pagar. No se debe prometer un plazo o descuento no operable.
+Pago directo sujeto a confirmación del abono, ID y plan. Cada activación añade el periodo contratado de 1, 3, 6 o 12 meses calendario; renovaciones conservan tiempo pendiente. Ampliación inmediata sin prorrateo automático; reducción solo al vencer el plan pagado. El precio final, medio, comprobante y atención son los aprobados y comunicados antes de pagar. No se debe prometer un plazo o descuento no operable.
 
 ### Datos y responsabilidades
 

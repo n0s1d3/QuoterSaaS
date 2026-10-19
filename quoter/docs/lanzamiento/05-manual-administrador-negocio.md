@@ -59,9 +59,9 @@ La pantalla muestra ID de negocio, plan actual, vigencia, cotizaciones activas, 
 
 Todos los documentos fuera de papelera cuentan, incluidos aceptados, rechazados y vencidos. Los límites son capacidad acumulada y no se reinician cada mes. El catálogo archivado y las cotizaciones en papelera no consumen esos cupos, aunque siguen ocupando almacenamiento.
 
-Para renovar, usa el canal comercial autorizado y comunica ID de negocio, plan deseado y referencia de pago. El administrador verifica externamente y registra la activación. **No hay cargo automático, pasarela de pago ni activación automática por capturas.** Los precios comerciales aprobados se comunican por el canal oficial; esta pantalla no procesa ni valida un monto bancario.
+Para renovar, usa el canal comercial autorizado y comunica ID de negocio, plan deseado, periodo y referencia de pago. El administrador verifica externamente y registra la activación. **No hay cargo automático, pasarela de pago ni activación automática por capturas.** La pantalla permite consultar los precios por 1/3/6/12 meses y sus descuentos de 0/5/10/15 %. El total se paga anticipadamente; la pantalla no procesa ni valida un abono bancario.
 
-Cada registro agrega un mes calendario y preserva tiempo pendiente del mismo plan/prueba. Una ampliación cambia capacidad inmediatamente y agrega un mes; el sistema no calcula prorrateos. Reducir un plan pagado exige esperar a su vencimiento; no hay cambio programado. Si al reducir el uso excede cupos, se conservan datos y puede requerirse liberar capacidad para crear más.
+Cada registro agrega 1, 3, 6 o 12 meses calendario según lo contratado y preserva tiempo pendiente del mismo plan/prueba. Una ampliación cambia capacidad inmediatamente y agrega el periodo contratado; el sistema no calcula prorrateos. Reducir un plan pagado exige esperar a su vencimiento; no hay cambio programado. Si al reducir el uso excede cupos, se conservan datos y puede requerirse liberar capacidad para crear más.
 
 Al vencer se puede consultar, descargar PDF y exportar JSON/CSV. Restaurar, editar o administrar accesos requiere vigencia. Pagar no levanta una suspensión administrativa; solicitar revisión si el plan aparece activo pero el negocio sigue suspendido.
 

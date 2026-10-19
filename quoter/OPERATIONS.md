@@ -13,7 +13,7 @@ npm run check:production -- --url https://quoter.cotizandome.workers.dev
 
 La comprobación solo realiza GET sin credenciales: página/encabezados, disponibilidad D1 y configuración mínima, Turnstile, preview de correo desactivado y rechazo de acceso anónimo. No crea cuentas ni envía correos. Un resultado correcto no prueba que las claves externas sean válidas o que el remitente pueda entregar a cualquier destinatario.
 
-`GET /api/health` devuelve exclusivamente `{"status":"ok"}` (200) o `{"status":"unavailable"}` (503). Comprueba conexión D1, migración 0021, cuatro triggers de seguridad y presencia/formato de configuración necesaria; no consulta clientes ni cotizaciones. Configurar un monitor HTTPS cada cinco minutos y alertar tras dos fallos consecutivos es el siguiente paso del operador; todavía no hay alertas externas configuradas. Conservar únicamente categorías de error y requestId en registros, nunca cuerpos, tokens ni respaldos.
+`GET /api/health` devuelve exclusivamente `{"status":"ok"}` (200) o `{"status":"unavailable"}` (503). Comprueba conexión D1, migración 0022, cuatro triggers de seguridad y presencia/formato de configuración necesaria; no consulta clientes ni cotizaciones. Configurar un monitor HTTPS cada cinco minutos y alertar tras dos fallos consecutivos es el siguiente paso del operador; todavía no hay alertas externas configuradas. Conservar únicamente categorías de error y requestId en registros, nunca cuerpos, tokens ni respaldos.
 
 ## Respaldo completo D1, exclusivo del operador
 

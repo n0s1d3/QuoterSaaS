@@ -30,6 +30,6 @@ export async function plans(request:Request,db:D1Database,user:Account,env:Email
  ])
  const usage=result[2].results[0]
  const subscription=await businessSubscription(db,org)
- const activations=(await db.prepare('SELECT p.name AS planName,a.created_at AS createdAt,a.period_start AS periodStart,a.period_end AS periodEnd,a.payment_reference AS reference FROM plan_activations a JOIN subscription_plans p ON p.id=a.plan_id WHERE a.organization_id=? ORDER BY a.rowid DESC LIMIT 10').bind(org).all()).results
+ const activations=(await db.prepare('SELECT p.name AS planName,a.created_at AS createdAt,a.period_start AS periodStart,a.period_end AS periodEnd,a.payment_reference AS reference,a.duration_months AS durationMonths,a.tariff_cents AS tariffCents FROM plan_activations a JOIN subscription_plans p ON p.id=a.plan_id WHERE a.organization_id=? ORDER BY a.rowid DESC LIMIT 10').bind(org).all()).results
  return Response.json({businessId:org,subscription,activations,plan:result[0].results[0],plans:result[1].results,usage:{...usage,pendingInvitations:Number(usage.seats)-Number(usage.members)},...(includeStorage?{storage:result[3].results[0]}:{}),preview})
 }

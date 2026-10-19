@@ -1,0 +1,4 @@
+﻿producto,commit,fecha_fuente,url,evidencia
+Invoice Ninja,15ea35ea63f367eba33c04b7acd9ab1227853537,2026-10-18,https://github.com/invoiceninja/invoiceninja/blob/15ea35ea63f367eba33c04b7acd9ab1227853537/README.md,README consultado; USD40/año licencia white-label autohospedada; no precio SaaS alojado
+InvoicePlane,cee512f0dec672fcecec01150e374148c2ac5fa5,2026-10-18,https://github.com/InvoicePlane/InvoicePlane/blob/cee512f0dec672fcecec01150e374148c2ac5fa5/README.md,"README consultado; aplicación libre autohospedada, cotizaciones y facturas; sin precio SaaS verificado"
+InvoiceShelf estable 2.x,0287adf6472dd4fe0f6f731c966afcd685086bdb,2026-09-25,https://github.com/InvoiceShelf/InvoiceShelf/blob/0287adf6472dd4fe0f6f731c966afcd685086bdb/README.md,README estable consultado; facturas y estimaciones; no atribuir funciones 3.x alpha a 2.x

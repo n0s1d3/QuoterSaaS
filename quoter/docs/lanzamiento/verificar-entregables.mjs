@@ -12,14 +12,17 @@ try{
  context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)))
  page.on('pageerror',e=>errors.push(e.message));context.on('request',r=>requests.push(r.url()))
  await page.setContent(readFileSync(root+'/calculadora-costos.html','utf8'))
- assert.ok((await page.locator('#gross').innerText()).includes('1,675'))
- assert.ok((await page.locator('#economic').innerText()).includes('69.69'))
- assert.equal(await page.locator('#breakEven').innerText(),'27')
- await page.locator('#businesses').fill('50');assert.ok((await page.locator('#economic').innerText()).includes('1,125.85'))
- await page.locator('#tax').fill('0');assert.equal(await page.locator('#breakEven').innerText(),'24')
- await page.locator('#marketing').fill('1000');assert.equal(await page.locator('#breakEven').innerText(),'31')
+ assert.ok((await page.locator('#gross').innerText()).includes('1,423.75'))
+ assert.ok((await page.locator('#economic').innerText()).includes('327.68'))
+ assert.equal(await page.locator('#breakEven').innerText(),'17')
+ await page.locator('#businesses').fill('50');assert.ok((await page.locator('#economic').innerText()).includes('1,306.58'))
+ await page.locator('#tax').fill('0');assert.equal(await page.locator('#breakEven').innerText(),'15')
+ await page.locator('#marketing').fill('1000');assert.equal(await page.locator('#breakEven').innerText(),'30')
  await page.locator('#mix1').fill('0');await page.locator('#mix2').fill('0');await page.locator('#mix3').fill('0');assert.ok(await page.locator('#error').isVisible());assert.ok(await page.locator('#results').isHidden())
- await page.getByRole('button',{name:'Restablecer supuestos'}).click();await page.waitForFunction(()=>!document.getElementById('results').hidden);assert.equal(await page.locator('#breakEven').innerText(),'27')
+ await page.getByRole('button',{name:'Restablecer supuestos'}).click();await page.waitForFunction(()=>!document.getElementById('results').hidden);assert.equal(await page.locator('#breakEven').innerText(),'17')
+ await page.locator('#email').fill('20');assert.equal(await page.locator('#breakEven').innerText(),'21');await page.locator('#email').fill('0');
+ await page.locator('#months').selectOption('3');assert.equal(await page.locator('#discount').inputValue(),'5');assert.equal(await page.locator('#breakEven').innerText(),'15');await page.locator('#months').selectOption('12');
+ await page.locator('#refund').fill('100');assert.equal(await page.locator('#breakEven').innerText(),'Sin equilibrio');await page.locator('#refund').fill('3');
  await page.locator('#fx').fill('');assert.ok(await page.locator('#results').isHidden());await page.locator('#fx').fill('7.70');assert.ok(await page.locator('#results').isVisible())
  for(const width of [375,768,1440]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'calculator overflow at '+width)}
  const files=readdirSync(root).filter(f=>f.endsWith('.html')&&!f.endsWith('.css.html'))
@@ -30,8 +33,8 @@ try{
   await doc.setViewportSize({width:375,height:900});assert.ok(await doc.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'document overflow '+file)
   await doc.close()
  }
- const pdfs=readdirSync(root).filter(file=>file.endsWith('.pdf'));assert.equal(pdfs.length,9)
+ const pdfs=readdirSync(root).filter(file=>file.endsWith('.pdf'));assert.equal(pdfs.length,10)
  for(const file of pdfs)assert.equal(readFileSync(root+'/'+file).subarray(0,5).toString(),'%PDF-')
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[])
- console.log('Documentation passed: '+files.length+' HTML documents, 9 PDF headers, local links, 375px layouts, calculator at 375/768/1440px, independent financial examples, reset/error handling, no browser errors or network requests.')
+ console.log('Documentation passed: '+files.length+' HTML documents, 10 PDF headers, local links, 375px layouts, calculator at 375/768/1440px, independent financial examples, reset/error handling, no browser errors or network requests.')
 }finally{await browser.close()}

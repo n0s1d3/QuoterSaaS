@@ -1,6 +1,6 @@
 # Manual de usuario de Quoter
 
-Versión de referencia: 19 de octubre de 2026, código `44e2561`. Para propietarios, editores y personas con permiso de solo lectura de un negocio. Los botones disponibles dependen del permiso y de la vigencia del negocio. Todos los ejemplos son ficticios.
+Versión de referencia: 19 de octubre de 2026, base `44e2561` y periodos 0022. Para propietarios, editores y personas con permiso de solo lectura de un negocio. Los botones disponibles dependen del permiso y de la vigencia del negocio. Todos los ejemplos son ficticios.
 
 ## 1. Qué puedes hacer
 

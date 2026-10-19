@@ -238,7 +238,7 @@
 <body><div class="doc-nav"><a href="index.html">Índice de documentación</a><span>Quoter · Guatemala · 19 oct 2026</span></div>
 <header id="title-block-header">
 <h1 class="title">Lanzamiento y documentación de Quoter</h1>
-</header><section class="no-print"><h2>Archivos para descargar o imprimir</h2><ul><li><a href="01-estado-y-lanzamiento.pdf">Estado y plan de salida a producción · PDF</a></li><li><a href="02-marketing-y-distribucion.pdf">Plan de marketing y distribución para Guatemala · PDF</a></li><li><a href="03-costos-precios-y-cobro.pdf">Costos, precios y proceso de cobro · PDF</a></li><li><a href="04-manual-usuario.pdf">Manual de usuario de Quoter · PDF</a></li><li><a href="05-manual-administrador-negocio.pdf">Manual del propietario / administrador de un negocio · PDF</a></li><li><a href="06-manual-administrador-plataforma.pdf">Manual del administrador maestro de Quoter · PDF</a></li><li><a href="07-arquitectura-y-operacion.pdf">Arquitectura y operación técnica · PDF</a></li><li><a href="08-kit-comercial-y-politicas.pdf">Kit comercial y borradores de políticas · PDF</a></li><li><a href="09-capacitacion-y-faq.pdf">Capacitación y preguntas frecuentes · PDF</a></li></ul><p><a href="calculadora-costos.html">Calculadora interactiva de costos</a> · <a href="../costos-escenarios.csv">Escenarios en CSV</a></p></section>
+</header><section class="no-print"><h2>Archivos para descargar o imprimir</h2><ul><li><a href="01-estado-y-lanzamiento.pdf">Estado y plan de salida a producción · PDF</a></li><li><a href="02-marketing-y-distribucion.pdf">Plan de marketing y distribución para Guatemala · PDF</a></li><li><a href="03-costos-precios-y-cobro.pdf">Costos, periodos, descuentos y cobro · PDF</a></li><li><a href="04-manual-usuario.pdf">Manual de usuario de Quoter · PDF</a></li><li><a href="05-manual-administrador-negocio.pdf">Manual del propietario / administrador de un negocio · PDF</a></li><li><a href="06-manual-administrador-plataforma.pdf">Manual del administrador maestro de Quoter · PDF</a></li><li><a href="07-arquitectura-y-operacion.pdf">Arquitectura y operación técnica · PDF</a></li><li><a href="08-kit-comercial-y-politicas.pdf">Kit comercial y borradores de políticas · PDF</a></li><li><a href="09-capacitacion-y-faq.pdf">Capacitación y preguntas frecuentes · PDF</a></li><li><a href="10-estudio-de-mercado-y-validacion.pdf">Estudio de competencia, viabilidad y validación comercial · PDF</a></li></ul><p><a href="calculadora-costos.html">Calculadora interactiva de costos</a> · <a href="../costos-escenarios.csv">Escenarios en CSV</a></p></section>
 <nav id="TOC" role="doc-toc">
 <ul>
 <li><a href="#lanzamiento-y-documentación-de-quoter"
@@ -259,6 +259,9 @@ entrega</a></li>
 <li><a href="#comprobación-de-este-paquete"
 id="toc-comprobación-de-este-paquete">Comprobación de este
 paquete</a></li>
+<li><a href="#actualización-de-periodos-y-mercado"
+id="toc-actualización-de-periodos-y-mercado">Actualización de periodos y
+mercado</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -266,15 +269,17 @@ paquete</a></li>
 documentación de Quoter</h1>
 <p>Preparado el <strong>19 de octubre de 2026</strong>, horario de
 Guatemala. Mercado: Guatemala; moneda: quetzales. Presupuesto de
-marketing elegido: Q300–Q1,000 mensuales; propuesta inicial: Q600.
-Versión funcional revisada: <code>44e2561</code>, esquema hasta
-<code>0021_quote_templates.sql</code>.</p>
+marketing elegido: Q300–Q1,000 mensuales; piloto recomendado: Q300 antes
+de ampliar gasto. Versión funcional revisada: base <code>44e2561</code>
+y ampliación de periodos, esquema hasta
+<code>0022_billing_periods.sql</code> (requiere despliegue).</p>
 <p>Este paquete documenta lo que existe y propone cómo comercializarlo.
-<strong>No configura anuncios, no modifica precios dentro de la app, no
-automatiza cobros ni publica políticas legales.</strong> Los importes de
-venta son propuestas pendientes de aprobación. Las tarifas de
-proveedores son presupuestos de referencia, pendientes de validación en
-sus paneles.</p>
+<strong>Incluye precios y periodos de la app, sin configurar anuncios,
+automatizar cobros ni publicar políticas legales.</strong> Los importes
+base de venta y descuentos están definidos para esta versión; la
+publicación y obligaciones tributarias requieren revisión. Las tarifas
+de proveedores son presupuestos de referencia, pendientes de validación
+en sus paneles.</p>
 <h2 id="qué-leer-y-a-quién-entregar-cada-documento">Qué leer y a quién
 entregar cada documento</h2>
 <table>
@@ -334,6 +339,13 @@ políticas</a></td>
 <td>Textos listos para adaptar, soporte y borradores de condiciones</td>
 </tr>
 <tr class="odd">
+<td><a href="10-estudio-de-mercado-y-validacion.html">10 · Mercado y
+validación</a></td>
+<td>Dirección / ventas</td>
+<td>Competidores, fuentes verificadas, hipótesis de conversión,
+devolución y piloto</td>
+</tr>
+<tr class="even">
 <td><a href="09-capacitacion-y-faq.html">09 · Capacitación y preguntas
 frecuentes</a></td>
 <td>Instructor / soporte</td>
@@ -356,9 +368,9 @@ todavía no hay evidencia completa del alta y uso de clientes externos ni
 de toda la preparación operativa. No es cobertura de pruebas, una
 garantía de seguridad ni una estimación de horas restantes.</p>
 <p>La verificación anterior aprobó 89 pruebas unitarias, tipos, lint,
-build, 20 suites de integración y recuperación D1. En esta tarea se
-revisaron el código y los documentos; no se repitió esa batería porque
-no se cambió la aplicación. El despliegue fue confirmado por el
+build, 20 suites de integración y recuperación D1. La ampliación actual
+modifica periodos, tarifas y documentación; su evidencia de verificación
+se registra en REMEDIATION.md. El despliegue fue confirmado por el
 propietario. El 19 de octubre no se pudo revalidar la URL pública desde
 este entorno por fallo de resolución/red. Tampoco fue posible consultar
 las páginas oficiales de tarifas: el proxy respondió 403. No interpretar
@@ -396,8 +408,8 @@ No es un comando requerido para ejecutar o desplegar la app. La
 calculadora y la hoja de estilos están en <code>entregables/</code> como
 fuentes estáticas; el generador no las sobrescribe.</p>
 <h2 id="comprobación-de-este-paquete">Comprobación de este paquete</h2>
-<p>Se verificaron los enlaces locales, encabezados de los nueve PDF,
-once páginas HTML, contenido legible de muestras PDF y diseño sin
+<p>Se verificaron los enlaces locales, encabezados de los diez PDF, doce
+páginas HTML, contenido legible de muestras PDF y diseño sin
 desbordamiento a 375 px. La calculadora se comprobó a 375/768/1440 px,
 con ejemplos financieros independientes, restablecimiento y rechazo de
 entradas inválidas; no produjo solicitudes de red ni errores del
@@ -410,5 +422,23 @@ href="../costos-escenarios.csv">CSV</a>. Los datos son supuestos de
 planificación, no cobros o cuentas reales. Para entregar al cliente
 bastan los PDF 04 y, si es propietario, 05; los demás documentos son
 para dirección, formación o administración interna.</p>
-<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+<h2 id="actualización-de-periodos-y-mercado">Actualización de periodos y
+mercado</h2>
+<p>La versión con 0022 añade 1/3/6/12 meses y descuentos 0/5/10/15 %,
+con tarifa por negocio calculada en servidor. El estudio 10 incluye tres
+competidores con documentación oficial consultada y distingue precios no
+verificables y tasas hipotéticas. El recálculo recomienda iniciar con
+Q300 de captación, sin afirmar que una reserva de correo gratuito cubra
+cualquier cuenta o volumen. La política existente de ampliación se
+conserva mientras se define la alternativa de crédito proporcional; sus
+efectos comerciales están documentados.</p>
+<p>Las tasas propuestas de conversión, devolución y renovación son
+sensibilidades, no estadísticas de clientes reales ni datos privados de
+competidores. El código, documentos y calculadora se verifican antes de
+publicar; producción no se modifica desde este entorno.</p>
+<p>Verificación de la ampliación: 94 pruebas unitarias,
+tipos/build/lint, 21 suites de integración y recuperación D1 aprobados;
+doce HTML y diez PDF comprobados. La verificación no confirma demanda de
+mercado ni cambia producción.</p>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Versión de referencia: base 44e2561 y periodos 0022; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
 </html>

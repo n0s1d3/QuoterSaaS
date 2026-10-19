@@ -51,14 +51,14 @@ Registra la comprobación en el libro privado de cobros de Quoter. Usa una refer
 
 1. Abre **Negocios**, busca por ID y confirma nombre/plan/vigencia.
 2. Pulsa **Activar o renovar plan**.
-3. Selecciona el plan correcto y escribe **Referencia única de pago**.
+3. Selecciona el plan correcto y el Periodo contratado (1, 3, 6 o 12 meses); revisa la tarifa y escribe **Referencia única de pago**.
 4. En **Confirmar contraseña administrativa**, introduce tu contraseña actual.
 5. Pulsa **Registrar pago y renovar** y confirma que verificaste el pago.
 6. Revisa el mensaje y la nueva vigencia; informa al propietario para que compruebe **Plan y uso**.
 
-Resultado: un mes calendario añadido; tiempo pendiente conservado; ampliación inmediata. Un plan inferior está bloqueado durante vigencia pagada. No hay prorrateo automático, programación de reducción, facturación fiscal o envío de recibo en este flujo.
+Resultado: periodo de 1/3/6/12 meses calendario añadido; tiempo pendiente conservado; ampliación inmediata. Un plan inferior está bloqueado durante vigencia pagada. No hay prorrateo automático, programación de reducción, facturación fiscal o envío de recibo en este flujo.
 
-Si la referencia ya estaba registrada para el mismo negocio/plan, se informa y no se añade otro mes. Si se usó para otro destino/plan, hay conflicto y no debe inventarse otra referencia para eludirlo. Revisa el libro de cobros y la incidencia antes de continuar.
+Si la referencia ya estaba registrada para el mismo negocio/plan/periodo, se informa y no se añade otro mes. Si se usó para otro destino/plan, hay conflicto y no debe inventarse otra referencia para eludirlo. Revisa el libro de cobros y la incidencia antes de continuar.
 
 Si el usuario pagó pero sigue bloqueado, revisar por separado: cuenta desactivada, negocio suspendido, plan vigente, cupo agotado o sesión desactualizada. **Registrar el pago no levanta suspensiones**.
 
@@ -106,4 +106,4 @@ Incidentes de acceso ajeno o pérdida de datos requieren detener la operación a
 
 ## 10. Evaluación del administrador
 
-Con datos de prueba, demostrar: entrar con MFA; localizar negocio por ID; registrar un mes; repetir referencia sin duplicar; distinguir vencido de suspendido; habilitar sin alterar vigencia; desactivar una cuenta de prueba sin borrar el negocio; consultar historial; explicar por qué no se pide información privada de cotizaciones.
+Con datos de prueba, demostrar: entrar con MFA; localizar negocio por ID; registrar un periodo; repetir referencia sin duplicar; distinguir vencido de suspendido; habilitar sin alterar vigencia; desactivar una cuenta de prueba sin borrar el negocio; consultar historial; explicar por qué no se pide información privada de cotizaciones.

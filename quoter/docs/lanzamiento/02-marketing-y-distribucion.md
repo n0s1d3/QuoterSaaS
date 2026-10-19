@@ -1,6 +1,6 @@
 # Plan de marketing y distribución para Guatemala
 
-Propuesta del 19 de octubre de 2026. Presupuesto autorizado para planificar: Q300–Q1,000/mes; recomendado para la primera prueba: Q600. No se ha contratado publicidad ni contactado personas desde este trabajo.
+Propuesta del 19 de octubre de 2026. Presupuesto autorizado para planificar: Q300–Q1,000/mes; recomendado para la primera prueba: Q300. No se ha contratado publicidad ni contactado personas desde este trabajo.
 
 ## Producto y posicionamiento
 
@@ -12,7 +12,7 @@ El nombre Quoter es provisional mientras se define marca/dominio. No imprimir ma
 
 ## Primer segmento
 
-Enfocar el piloto en **instaladores y pequeños contratistas de mantenimiento/remodelación de Guatemala**: pintura, carpintería, electricidad, rotulación y servicios similares. No abrir cinco campañas separadas con Q600: elegir una actividad donde el propietario pueda conseguir cinco entrevistas.
+Enfocar el piloto en **instaladores y pequeños contratistas de mantenimiento/remodelación de Guatemala**: pintura, carpintería, electricidad, rotulación y servicios similares. No abrir cinco campañas separadas con Q300: elegir una actividad donde el propietario pueda conseguir cinco entrevistas.
 
 Perfil inicial a validar: dueño que cotiza desde el teléfono, trabaja solo o con hasta cinco personas, reutiliza precios por hora/metro/producto y prepara al menos varias cotizaciones al mes. Hoy puede usar Word, Excel, notas o mensajes. La disposición a pagar y el volumen se deben entrevistar, no asumir.
 
@@ -23,7 +23,7 @@ Segundo segmento, solo tras validar el primero: agencias pequeñas, consultores 
 - Siete días de prueba del Plan 1, sin tarjeta ni cargo automático.
 - Acompañamiento breve para configurar marca y tres precios del catálogo.
 - Demo con datos ficticios y una primera cotización creada por el usuario.
-- Precio mensual propuesto: Q49 / Q89 / Q149 según capacidad; pendiente aprobación y definición tributaria.
+- Base mensual Q49 / Q89 / Q149 según capacidad; descuento 5/10/15 % por 3/6/12 meses. Revisar tratamiento tributario antes de publicar.
 - Pago directo verificado y activación manual; comunicar tiempo de atención aprobado antes de cobrar.
 
 Los límites son cotizaciones **conservadas fuera de papelera**, catálogo activo y lugares de equipo; no son «25 cotizaciones nuevas cada mes». El primer puesto de equipo es el propietario. Todas las plantillas están disponibles; no inventar diferencias de funciones entre planes.
@@ -45,7 +45,7 @@ La app no incorpora todavía atribución UTM, píxel Meta, automatización de nu
 
 ## Presupuesto de campaña
 
-| Destino mensual | Q300 | Q600 recomendado | Q1,000 |
+| Destino mensual | Q300 recomendado | Q600 ampliación | Q1,000 |
 | --- | ---: | ---: | ---: |
 | Publicidad de prueba | 225 | 450 | 750 |
 | Preparación de piezas/demo | 50 | 100 | 150 |
@@ -54,7 +54,7 @@ La app no incorpora todavía atribución UTM, píxel Meta, automatización de nu
 
 Los importes son presupuestos máximos, no cotizaciones de diseñadores ni tarifas de Meta. Si las piezas las hace el propietario, su tiempo se valora aparte; gastar menos no obliga a consumir la reserva. Infraestructura, dominio, impuestos y soporte no están incluidos en esta tabla.
 
-Con Q450 de anuncios, probar dos videos del mismo segmento en dos bloques de Q225. Empezar por un objetivo de mensajes si puede atenderlos; no vender un embudo automático inexistente. No dividir el monto en múltiples audiencias y redes. No activar retargeting hasta tener audiencia suficiente, consentimiento y medición adecuada.
+En una ampliación a Q600 de campaña, con Q450 de anuncios, probar dos videos del mismo segmento en dos bloques de Q225. Empezar por un objetivo de mensajes si puede atenderlos; no vender un embudo automático inexistente. No dividir el monto en múltiples audiencias y redes. No activar retargeting hasta tener audiencia suficiente, consentimiento y medición adecuada.
 
 ## Contenido inicial: dos semanas
 
@@ -120,3 +120,5 @@ El calendario es un procedimiento comercial; no existen estos correos/mensajes a
 Días 1–14: entrevistas, demo y primeros 5–10 negocios. Días 15–30: primer pago, dos piezas de anuncios y registro de incidencias. Días 31–60: primeras renovaciones y un aliado; publicar un caso solo con permiso. Días 61–90: concentrar gasto en el canal con mejor contribución, completar una segunda cohorte y evaluar ampliar catálogo/capacidad según el uso observado.
 
 Revisión semanal de 30 minutos: producto (fallos), ventas (demos/pagos), operación (correo/alertas/respaldo), finanzas (costo y cobros). Mantener un único responsable por cada consulta para evitar promesas contradictorias.
+
+Para la etapa inicial y su prueba de mercado, usar el documento 10 y el presupuesto austero del documento 03. El bloque de Q600 queda como opción posterior, condicionada a consultas, pagos y soporte medidos.

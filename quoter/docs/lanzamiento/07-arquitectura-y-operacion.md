@@ -1,6 +1,6 @@
 # Arquitectura y operación técnica
 
-Uso interno del operador. Revisión documental: 19 de octubre de 2026, base funcional `44e2561`. Esta guía organiza los procedimientos existentes; no reemplaza OPERATIONS.md ni acredita que monitoreo/copia externa ya estén configurados.
+Uso interno del operador. Revisión documental: 19 de octubre de 2026, base funcional `44e2561` y periodos 0022. Esta guía organiza los procedimientos existentes; no reemplaza OPERATIONS.md ni acredita que monitoreo/copia externa ya estén configurados.
 
 ## 1. Componentes
 
@@ -75,15 +75,15 @@ npx playwright install chromium
 npm run verify
 ```
 
-`verify` ejecuta unitarias, lint, tipos/build, 20 suites API/navegador y recuperación. Crea D1/configuración/credenciales ficticias aisladas; no necesita ni prueba el banco, dominio de correo, claves reales o recuperación remota. CI define Ubuntu y Windows; un workflow definido no acredita su ejecución ni configura protección de ramas.
+`verify` ejecuta unitarias, lint, tipos/build, 21 suites API/navegador y recuperación. Crea D1/configuración/credenciales ficticias aisladas; no necesita ni prueba el banco, dominio de correo, claves reales o recuperación remota. CI define Ubuntu y Windows; un workflow definido no acredita su ejecución ni configura protección de ramas.
 
-La última evidencia funcional citada está en REMEDIATION.md. No se reejecutó la batería por escribir este paquete documental. Para cambiar código, repetir las comprobaciones apropiadas.
+La última evidencia funcional citada está en REMEDIATION.md. La versión con periodos requiere las verificaciones indicadas en REMEDIATION.md. Para cambiar código, repetir las comprobaciones apropiadas.
 
 ## 7. Actualizar producción
 
 1. Revisar commit/configuración y respaldar antes de migraciones.
 2. En el equipo autorizado con Wrangler autenticado, actualizar código y dependencias.
-3. Aplicar migraciones remotas pendientes; este código requiere hasta **0021_quote_templates.sql**.
+3. Aplicar migraciones remotas pendientes; este código requiere hasta **0022_billing_periods.sql**.
 4. Ejecutar despliegue y comprobación pública.
 
 ```powershell

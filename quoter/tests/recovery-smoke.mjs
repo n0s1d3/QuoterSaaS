@@ -54,7 +54,7 @@ try{
   assert.equal(result.databaseId,createdId);assert.equal((await replacement.prepare("SELECT logo FROM organizations WHERE id='recover-org'").first()).logo,logo);assert.equal((await replacement.prepare("SELECT branding_snapshot FROM quotes WHERE id='recover-quote'").first()).branding_snapshot,brand)
   for(const table of ['sessions','account_tokens','admin_mfa_recovery'])assert.equal((await replacement.prepare('SELECT count(*) AS n FROM '+table).first()).n,0)
   assert.equal((await replacement.prepare('SELECT count(*) AS n FROM users').first()).n,1)
-  assert.equal((await replacement.prepare("SELECT count(*) AS n FROM d1_migrations WHERE name IN ('0018_auth_cleanup.sql','0019_backup_validation.sql','0020_plan_schedule.sql','0021_quote_templates.sql')").first()).n,4)
+  assert.equal((await replacement.prepare("SELECT count(*) AS n FROM d1_migrations WHERE name IN ('0018_auth_cleanup.sql','0019_backup_validation.sql','0020_plan_schedule.sql','0021_quote_templates.sql','0022_billing_periods.sql')").first()).n,5)
   assert.equal((await replacement.prepare('SELECT count(*) AS n FROM backup_restore_images').first()).n,0)
   const receipt=JSON.parse(readFileSync(result.receipt,'utf8'));assert.equal(receipt.status,'verified-not-published');assert.equal(receipt.bindingChanged,false)
   assert.equal(JSON.parse(readFileSync(result.binding,'utf8')).requiredDuringReview.MAINTENANCE_READ_ONLY,'true')

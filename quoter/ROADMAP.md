@@ -10,7 +10,7 @@ Actualizado el 19 de octubre de 2026. Avance estimado: **93 %** hacia una versi�
 - PDF con cuatro modelos, selector, vista previa y membrete de marca; notas internas excluidas. Modelo predeterminado por negocio y cambio de modelo/marca por cotización.
 - Resumen compacto, gráficos, recordatorios y vistas responsive.
 - Respaldos y restauración sin duplicación de cotizaciones/clientes, validación e historial.
-- Tres planes, cuotas, prueba de siete días, meses de vigencia y renovación P2P manual por referencia única.
+- Tres planes, cuotas, prueba de siete días, periodos 1/3/6/12 con descuentos y renovación P2P manual por referencia única.
 - Revisión de seguridad, límites de solicitudes, sesiones/roles comprobados durante escrituras, encabezados de navegador y segundo factor obligatorio para el panel maestro.
 - Hashes versionados con PBKDF2 nativo de 100.000 iteraciones y pepper independiente, con compatibilidad de formatos previos según runtime; validación de archivos de logo y expansión PNG limitada. El uso de 600.000 iteraciones en una sola llamada falló durante el registro publicado; véase PASSWORD_SECURITY.md.
 - Integración Turnstile para registro/recuperación y presupuesto diario de registros; claves y hostname configurados por el propietario.
@@ -32,3 +32,5 @@ Ver [OPERATIONS.md](OPERATIONS.md) y [ACCEPTANCE.md](ACCEPTANCE.md). Los enlaces
 ## Preparación comercial y formación
 
 Se preparó un [paquete de lanzamiento](docs/lanzamiento/README.md) para Guatemala, cobros GTQ y presupuesto comercial de Q300–Q1,000/mes. Incluye propuesta de Q600 de campaña y precios por validar, costos editables, manuales separados de usuario/propietario/maestro/operador y material de capacitación. Es documentación y planificación; no se ejecutaron campañas, altas de proveedores ni cambios de tarifas/cobros. La estimación se mantiene en 93 % hasta cerrar la aceptación pública y los pendientes operativos/comerciales.
+
+Actualización de periodos: descuentos 5/10/15 % por 3/6/12 meses a partir de Q49/Q89/Q149 mensuales por negocio. El modelo austero recomienda Q300 de captación y la ampliación incluye estudio preliminar con fuentes oficiales consultadas, límites de investigación y escenarios de conversión/devolución. Requiere migración 0022 y despliegue; no se ejecutaron campañas ni cobros reales.

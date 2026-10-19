@@ -1,6 +1,6 @@
 # Quoter
 
-MicroSaaS de cotizaciones en español con React, TypeScript, Vite y Cloudflare Workers/D1. Incluye cuentas y negocios separados, catálogo, PDF con membrete, planes mensuales P2P, administración con MFA, historial, papelera y respaldos.
+MicroSaaS de cotizaciones en español con React, TypeScript, Vite y Cloudflare Workers/D1. Incluye cuentas y negocios separados, catálogo, PDF con membrete, planes P2P de 1, 3, 6 y 12 meses, administración con MFA, historial, papelera y respaldos.
 
 ## Desarrollo local
 
@@ -84,8 +84,14 @@ En el detalle de una cotización puedes cambiar solo su modelo y ver o descargar
 
 La vista previa muestra el PDF generado y ofrece un enlace para abrirlo si el navegador móvil no integra visor. Los modelos respetan paginación, importes del servidor, condiciones de pago y exclusión de notas internas. Los respaldos JSON v1/v2 conservan la selección cuando existe y siguen aceptando archivos anteriores.
 
-Esta versión requiere `0021_quote_templates.sql`. Actualiza la base local con `npm run db:migrate`; antes de desplegar aplica las pendientes en remoto con `npx wrangler d1 migrations apply quoter-db --remote`. Conserva la configuración real de D1 del equipo de despliegue.
+Esta versión requiere todas las migraciones hasta `0022_billing_periods.sql`, incluida la `0021_quote_templates.sql` de plantillas. Actualiza la base local con `npm run db:migrate`; antes de desplegar aplica las pendientes en remoto con `npx wrangler d1 migrations apply quoter-db --remote`. Conserva la configuración real de D1 del equipo de despliegue.
 
 ## Documentación para lanzar y enseñar el producto
 
-Paquete preparado el 19 de octubre de 2026: [estado de lanzamiento, marketing, costos y manuales por rol](docs/lanzamiento/README.md). Incluye [índice HTML con descargas PDF](docs/lanzamiento/entregables/index.html) y [calculadora de planificación sin conexión](docs/lanzamiento/entregables/calculadora-costos.html). Los precios son propuestas, no cobros configurados. Las tarifas de proveedores requieren confirmación; las políticas son borradores por aprobar. No se modifica la aplicación ni es necesario desplegar para leer este material.
+Paquete preparado el 19 de octubre de 2026: [estado de lanzamiento, marketing, costos y manuales por rol](docs/lanzamiento/README.md). Incluye [índice HTML con descargas PDF](docs/lanzamiento/entregables/index.html) y [calculadora de planificación sin conexión](docs/lanzamiento/entregables/calculadora-costos.html). Incluye tarifas y periodos, estudio de mercado preliminar y modelos financieros; el pago sigue siendo P2P manual. Las tarifas de proveedores requieren confirmación; las políticas son borradores por aprobar. Leer los documentos no requiere desplegar; activar los nuevos periodos sí requiere migración 0022 y actualización de la app.
+
+## Periodos de suscripción
+
+Base mensual GTQ por negocio: Plan 1 Q49, Plan 2 Q89 y Plan 3 Q149. Periodos 1/3/6/12 meses con 0/5/10/15 % de descuento. Plan y uso muestra el pago total anticipado, ahorro y equivalente mensual. El maestro elige periodo al verificar el pago P2P; el servidor registra duración y tarifa. Una misma referencia solo se reutiliza si coinciden negocio, plan y periodo. Las activaciones anteriores conservan sus fechas y no se inventan sus tarifas históricas. Para el operador: `npm run plan:activate -- --business ID --plan 1 --months 12 --reference REFERENCIA --operator operador@correo.com --remote`.
+
+Aplicar `0022_billing_periods.sql` antes del despliegue. Los cupos y los siete días de prueba no cambian; no hay cargo automático ni devoluciones bancarias integradas. El estudio de mercado distingue hechos consultados, páginas bloqueadas y escenarios hipotéticos; no atribuye tasas privadas de conversión a competidores.

@@ -69,7 +69,7 @@ Criterio de cierre propuesto: completar el ejercicio de su rol y responder corre
 | ¿Genera facturas/FEL? | No; cotizaciones y adicional por facturación no equivalen a factura fiscal |
 | ¿Calcula ganancias? | Muestra montos aceptados/potenciales de propuestas, sin descontar costos ni confirmar cobros |
 | ¿Tengo que pagar al terminar la prueba? | Solo si deseas continuar creando/editando; no hay cargo automático y queda solo lectura |
-| ¿Cuál es el precio? | El publicado/aprobado por el vendedor; Q49/Q89/Q149 son propuestas de este paquete, no tarifas ya aprobadas |
+| ¿Cuál es el precio? | El publicado/aprobado por el vendedor; la base es Q49/Q89/Q149 por mes y hay descuentos 5/10/15 % por 3/6/12 meses; confirmar precio final y condiciones con el vendedor |
 | ¿Por qué mi amigo no puede entrar con la invitación? | Debe usar el correo invitado verificado, enlace vigente y cupo válido; revisar negocio vigente |
 | ¿Por qué cambió el resumen al borrar una cotización? | La papelera se excluye de vistas activas; recuperar vuelve a incorporarla cuando corresponda |
 | ¿Cómo cambio los datos de un cliente existente? | La UI actual crea/selecciona clientes desde cotización; no ofrece una pantalla independiente de edición del perfil. Solicita ayuda antes de crear duplicados |

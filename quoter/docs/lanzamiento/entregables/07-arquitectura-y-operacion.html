@@ -274,9 +274,9 @@ mantenimiento</a></li>
 <h1 id="arquitectura-y-operación-técnica">Arquitectura y operación
 técnica</h1>
 <p>Uso interno del operador. Revisión documental: 19 de octubre de 2026,
-base funcional <code>44e2561</code>. Esta guía organiza los
-procedimientos existentes; no reemplaza OPERATIONS.md ni acredita que
-monitoreo/copia externa ya estén configurados.</p>
+base funcional <code>44e2561</code> y periodos 0022. Esta guía organiza
+los procedimientos existentes; no reemplaza OPERATIONS.md ni acredita
+que monitoreo/copia externa ya estén configurados.</p>
 <h2 id="1-componentes">1. Componentes</h2>
 <table>
 <thead>
@@ -459,22 +459,23 @@ existentes. No copiar secretos a la terminal del chat.</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>npx playwright install chromium</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>npm run verify</span></code></pre></div>
-<p><code>verify</code> ejecuta unitarias, lint, tipos/build, 20 suites
+<p><code>verify</code> ejecuta unitarias, lint, tipos/build, 21 suites
 API/navegador y recuperación. Crea D1/configuración/credenciales
 ficticias aisladas; no necesita ni prueba el banco, dominio de correo,
 claves reales o recuperación remota. CI define Ubuntu y Windows; un
 workflow definido no acredita su ejecución ni configura protección de
 ramas.</p>
-<p>La última evidencia funcional citada está en REMEDIATION.md. No se
-reejecutó la batería por escribir este paquete documental. Para cambiar
-código, repetir las comprobaciones apropiadas.</p>
+<p>La última evidencia funcional citada está en REMEDIATION.md. La
+versión con periodos requiere las verificaciones indicadas en
+REMEDIATION.md. Para cambiar código, repetir las comprobaciones
+apropiadas.</p>
 <h2 id="7-actualizar-producción">7. Actualizar producción</h2>
 <ol type="1">
 <li>Revisar commit/configuración y respaldar antes de migraciones.</li>
 <li>En el equipo autorizado con Wrangler autenticado, actualizar código
 y dependencias.</li>
 <li>Aplicar migraciones remotas pendientes; este código requiere hasta
-<strong>0021_quote_templates.sql</strong>.</li>
+<strong>0022_billing_periods.sql</strong>.</li>
 <li>Ejecutar despliegue y comprobación pública.</li>
 </ol>
 <div class="sourceCode" id="cb3"><pre
@@ -551,5 +552,5 @@ SECURITY_HARDENING.md, ACCEPTANCE.md y REMEDIATION.md, ubicados dos
 directorios arriba de este archivo. El documento de auditoría es
 histórico; no tratar sus hallazgos originales como pendientes sin
 revisar su reparación.</p>
-<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Funcionalidades documentadas según versión 44e2561; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
+<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Versión de referencia: base 44e2561 y periodos 0022; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>
 </html>

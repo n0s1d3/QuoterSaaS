@@ -1,22 +1,30 @@
-# Costos, precios y proceso de cobro
+# Costos, periodos, descuentos y cobro
 
-Guatemala, 19 de octubre de 2026. Moneda comercial: GTQ. **Precios de venta propuestos; no están aprobados ni configurados como tarifas de cobro en Quoter.** El código aplica planes/capacidad/vigencia; no calcula el importe pagado por una suscripción.
+Guatemala, 19 de octubre de 2026. Base mensual en GTQ: Q49 / Q89 / Q149. Los periodos contratables de esta versión son **1, 3, 6 y 12 meses**, con descuentos de **0, 5, 10 y 15 %** respectivamente. Venta por negocio con usuarios incluidos; pago anticipado del periodo y verificación P2P manual. No hay cargos automáticos.
 
-## Propuesta de planes mensuales
+## Precios del periodo
 
-| Plan actual | Precio propuesto/mes | Cotizaciones activas | Catálogo activo | Equipo total, incluido propietario |
+| Plan | 1 mes, 0 % | 3 meses, 5 % | 6 meses, 10 % | 12 meses, 15 % |
 | --- | ---: | ---: | ---: | ---: |
-| Plan 1 | Q49 | 25 | 15 | 1 |
-| Plan 2 | Q89 | 50 | 25 | 3 |
-| Plan 3 | Q149 | 100 | 50 | 5 |
+| Plan 1 | Q49.00 | Q139.65 | Q264.60 | Q499.80 |
+| Plan 2 | Q89.00 | Q253.65 | Q480.60 | Q907.80 |
+| Plan 3 | Q149.00 | Q424.65 | Q804.60 | Q1,519.80 |
 
-Todos incluyen los cuatro modelos PDF, marca y funcionalidades correspondientes a los permisos del usuario. Son cupos de capacidad acumulada, **no paquetes de creación que se reinician cada mes**. También cuentan cotizaciones aceptadas, rechazadas o vencidas fuera de papelera. Invitaciones pendientes reservan plazas; no son 3 o 5 personas adicionales al propietario.
+Son importes totales del periodo, no precios mensuales ni importes por cada integrante. Ejemplo Plan 1 anual: Q49 × 12 = Q588; descuento Q88.20; pago Q499.80; equivalente Q41.65/mes. Plan 2 anual: Q907.80, equivalente Q75.65/mes. Plan 3 anual: Q1,519.80, equivalente Q126.65/mes. El redondeo se hace a centavos sobre el total.
 
-Hay siete días de prueba del Plan 1. Luego hay solo lectura hasta renovar; no hay plan gratuito permanente para clientes ni cargos automáticos. La cuenta maestra es la excepción administrativa permanente. El plan se activa por negocio; una cuenta que participa en varios negocios no compra capacidad compartida entre ellos.
+Los planes conservan **25/15/1, 50/25/3 y 100/50/5** cotizaciones activas / catálogo activo / equipo total incluido propietario. Comprar doce meses no multiplica cupos ni concede una licencia perpetua. Las cotizaciones aceptadas, rechazadas y vencidas fuera de papelera también consumen capacidad, sin reinicio mensual.
 
-Recomendación inicial: cobrar mes a mes, no ofrecer anualidades, precios vitalicios ni descuentos de upgrades que el sistema no sabe calcular. Validar precio y capacidad con 5–10 negocios. No competir solo por precio: el acompañamiento inicial cuesta tiempo y debe ser sostenible.
+La prueba sigue siendo de siete días del Plan 1. Mantener opción mensual reduce el pago inicial de una persona que aún está evaluando el producto. El descuento remunera compromiso y menor frecuencia de conciliación; no garantiza más aceptación ni renovación.
 
-Definir antes de cobrar el precio final al público y el régimen tributario con el contador. Para modelar se tratan Q49/Q89/Q149 como importes finales y se permite una reserva hipotética equivalente a IVA incluido del 12 %. **Ese 12 % es una sensibilidad financiera, no una determinación de régimen, tasa aplicable o obligación fiscal de Quoter.** Si el régimen es otro, sustituir el cálculo y los textos comerciales. No sumar impuestos ocultos después de anunciar un precio final.
+Los importes están definidos en `src/lib/billing.ts` y se muestran en Plan y uso y Administración. El administrador registra plan, periodo, referencia y tarifa calculada por servidor; **la app no comprueba un abono bancario ni emite el comprobante fiscal del SaaS**. La migración 0022 mantiene activaciones anteriores como un mes, sin inventar sus importes históricos. Confirmar antes de ofrecer al público el tratamiento tributario y condiciones legales; no agregar cargos ocultos después de comunicar el precio final.
+
+## Qué significaban los 51 clientes
+
+La cifra anterior suponía toda la cartera en el básico anual de Q500 y gastos fijos altos, y conservaba Q2 de conciliación cada mes aunque el pago fuera anual. Este recálculo reparte ese trabajo entre los meses contratados: Q2 por pago anual equivale a Q0.17 al mes. Con Q499.80/año, sin reserva de devolución y el mismo gasto fijo alto, el umbral ronda 47 negocios básicos; con reserva hipotética de 3 %, ronda 49. No es una meta de captación demostrada.
+
+La palanca principal al iniciar es el gasto fijo. Con Q300 de captación, siete horas fijas valoradas al mes y mezcla de planes, el umbral anual pasa a 17–21 negocios según correo gratuito elegible o pagado. Si **todos** compran solo el básico anual, son 26–32. La mezcla 70/20/10 es una hipótesis, no una venta de planes superiores ya conseguida.
+
+Descontar más reduce la contribución; solo ayuda si mejora suficientemente conversión, retención o costo de cobro. No bajar precios para ocultar un gasto comercial que todavía no produce clientes.
 
 ## Presupuesto de proveedores
 
@@ -46,78 +54,88 @@ Fuentes para **verificar antes de comprar**, sin afirmar consulta exitosa hoy:
 
 No trasladar sin revisar las cuotas gratuitas a una cuenta de pago ni presupuestar recursos como ilimitados. PDF se genera en el navegador; no se paga a un servicio externo por cada PDF. Sí se paga el consumo asociado a leer/guardar la cotización y a servir la app.
 
-## Costos que suelen olvidarse
 
-| Rubro | Supuesto editable | Cómo tratarlo |
-| --- | --- | --- |
-| Marketing | Q600/mes | Gasto de caja; desglose en el plan de marketing |
-| Operación del propietario | 3 h/mes × Q40 = Q120 | Respaldo, alertas y revisión de cobros; valoración del tiempo, no un salario ya desembolsado |
-| Trabajo comercial/contenido | 8 h/mes × Q40 = Q320 | Aparte de los Q600 de caja; ajustar si ya se pagó dentro de las piezas de campaña para no duplicarlo |
-| Soporte recurrente | 15 min/negocio pagador/mes × Q40/h = Q10 | Valoración variable por negocio; validar con tiempos reales |
-| Conciliación P2P | 3 min/pago × Q40/h = Q2 | Un pago mensual por negocio; más pagos significan más trabajo |
-| Onboarding inicial | 20 min/alta asistida × Q40/h = Q13.33 | Costo de una sola vez; también los negocios que prueban y no pagan consumen asistencia |
-| Comisión bancaria/procesador | Q0 en el ejemplo | Supuesto, no garantía; introducir comisión real fija/porcentual, incluidos impuestos del proveedor si corresponden |
-| Contabilidad, formalización, facturación fiscal, soporte legal | Sin cotizar | Agregarlos al presupuesto antes de la apertura; no están incluidos en los resultados de abajo |
-| Desarrollo ya invertido / mantenimiento futuro | Sin valorar | El ejemplo no recupera inversión histórica ni presupuesta todas las horas de desarrollo |
+## Presupuestos revisados
 
-No son «ganancias netas» mientras falten impuestos sobre renta, obligaciones de personal y gastos no cotizados. El dinero de las cotizaciones de los negocios clientes no es ingreso de Quoter; solo sus suscripciones lo son.
+Todos son presupuestos de referencia: tarifas vigentes de proveedores bloqueadas por red, tipo de cambio de planificación Q7.70/USD e impuestos aún por confirmar. «Correo gratuito» solo es válido si el plan contratado permite el volumen con dominio/remitente verificados; una cuenta de prueba restringida a su propio destinatario no sirve para lanzar a terceros.
 
-## Ejemplo financiero mensual estable
+| Partida | Piloto austero | Correo pagado | Escenario anterior |
+| --- | ---: | ---: | ---: |
+| Infraestructura mensual equivalente | Q71.23 | Q225.23 | Q225.23 |
+| Captación mensual, dentro del rango elegido | Q300 | Q300 | Q600 |
+| Operación fija valorada | 3 h × Q40 = Q120 | Q120 | Q120 |
+| Comercial/contenido fijo valorado | 4 h × Q40 = Q160 | Q160 | 8 h × Q40 = Q320 |
+| Total fijo, incluyendo tiempo | Q651.23 | Q805.23 | Q1,265.23 |
 
-Supuestos: 70 % de negocios en Plan 1, 20 % en Plan 2 y 10 % en Plan 3; ticket promedio ponderado Q67. Infraestructura Q225.23; marketing Q600; tiempo fijo valorado Q440; soporte y conciliación Q12 por negocio pagador; comisión externa 0; sin nuevas altas asistidas ni soporte de pruebas en esta tabla. El escenario fiscal de sensibilidad reserva 12/112 del cobro final; no descuenta créditos fiscales ni ISR.
+No confundir tiempo valorado del propietario con dinero ya desembolsado. No duplicar el costo de contenido si se paga dentro del presupuesto de campaña. Añadir contabilidad, formalización, mantenimiento/desarrollo, obligaciones fiscales y otros gastos cuando se coticen. Estos modelos no acreditan utilidad neta fiscal.
 
-Fórmulas:
+Variable por negocio: soporte de quince minutos/mes × Q40/h = Q10/mes, más tres minutos × Q40/h = Q2 por **cada pago**. Al distribuirlo entre 1/3/6/12 meses resulta Q12 / Q10.67 / Q10.33 / Q10.17 al mes respectivamente. Un alta/prueba asistida cuesta veinte minutos = Q13.33 una sola vez; también consume tiempo si no paga. Las entrevistas iniciales son trabajo adicional que debe presupuestarse.
 
-- Cobro nominal mensual = negocios pagadores × Q67.
-- Ingreso tras reserva tributaria hipotética = cobro nominal / 1.12.
-- Efectivo antes de remunerar al propietario = ingreso tras reserva − infraestructura − marketing − comisiones externas.
-- Resultado económico = efectivo anterior − Q440 de tiempo fijo − Q12 por negocio − tiempo adicional de onboarding/pruebas.
-- Contribución media por negocio = 67 / 1.12 − 12 = Q47.82, antes de comisiones externas y adquisición.
+## Punto de equilibrio por periodo
 
-| Pagadores | Cobrado | Tras reserva | Infra. | Marketing | Caja antes de tiempo | Tiempo | Resultado |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10 | Q670.00 | Q598.21 | Q225.23 | Q600.00 | Q-227.01 | Q560.00 | Q-787.01 |
-| 25 | Q1,675.00 | Q1,495.54 | Q225.23 | Q600.00 | Q670.31 | Q740.00 | Q-69.69 |
-| 50 | Q3,350.00 | Q2,991.07 | Q225.23 | Q600.00 | Q2,165.85 | Q1,040.00 | Q1,125.85 |
-| 100 | Q6,700.00 | Q5,982.14 | Q225.23 | Q600.00 | Q5,156.92 | Q1,640.00 | Q3,516.92 |
+Mezcla hipotética: 70 % Plan 1, 20 % Plan 2 y 10 % Plan 3. Reserva por devolución del **3 % de ingresos**, no tasa observada. Sensibilidad tributaria: precio final / 1.12, sin crédito fiscal ni ISR; no determina el régimen de Quoter. Sin comisiones externas ni nuevas altas en la tabla. Equilibrio de caja excluye remunerar al propietario; equilibrio con tiempo sí incluye su trabajo recurrente valorado.
 
-La mezcla es una hipótesis de cartera, por eso puede representar negocios fraccionarios en escenarios pequeños; los cobros reales se calculan sumando las suscripciones existentes. El mes cobrado por adelantado y el MRR reconocido no siempre coinciden con esta fotografía estable.
+| Escenario | Periodo | Ticket mensual equivalente | Contribución mensual | Equilibrio de caja | Equilibrio con tiempo |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Anterior | 1 mes | Q67.00 | Q46.03 | 15 | 28 |
+| Anterior | 3 meses | Q63.65 | Q44.46 | 15 | 29 |
+| Anterior | 6 meses | Q60.30 | Q41.89 | 16 | 31 |
+| Anterior | 12 meses | Q56.95 | Q39.16 | 17 | 33 |
+| Piloto austero | 1 mes | Q67.00 | Q46.03 | 7 | 15 |
+| Piloto austero | 3 meses | Q63.65 | Q44.46 | 7 | 15 |
+| Piloto austero | 6 meses | Q60.30 | Q41.89 | 8 | 16 |
+| Piloto austero | 12 meses | Q56.95 | Q39.16 | 8 | 17 |
+| Correo pagado | 1 mes | Q67.00 | Q46.03 | 10 | 18 |
+| Correo pagado | 3 meses | Q63.65 | Q44.46 | 10 | 19 |
+| Correo pagado | 6 meses | Q60.30 | Q41.89 | 11 | 20 |
+| Correo pagado | 12 meses | Q56.95 | Q39.16 | 11 | 21 |
 
-Punto de equilibrio del escenario base: **14 negocios pagadores para cubrir caja antes de remunerar al propietario**, o **27 para cubrir también el tiempo recurrente valorado**. Sin reserva tributaria hipotética: 13 y 24 respectivamente. No incluyen nuevas altas asistidas ni los rubros sin cotizar. No afirmar rentabilidad desde el primer cliente porque la factura de hosting sea pequeña.
+Las cifras son equivalentes mensuales de una cartera estable, no una predicción de caja de cada mes. Un pago anual concentra efectivo al inicio y exige financiar doce meses. No sumar ese pago entero a «ganancia del mes».
 
-Cada Q100 adicional de gasto fijo exige aproximadamente tres negocios más con la contribución de Q47.82. La calculadora permite cambiar presupuesto, precios, mezcla, tipo de cambio, impuestos de sensibilidad, comisiones y tiempo. Es un modelo; no está conectado a la app ni sustituye contabilidad.
+Fórmulas: ingreso nominal equivalente = total contratado / meses; ingreso tras reservas = nominal × (1 − devolución) / (1 + impuesto hipotético); contribución = ingreso tras reservas − soporte mensual − conciliación por pago/meses − comisiones. Equilibrio = redondear hacia arriba costo fijo / contribución. Si la contribución es cero o negativa no existe equilibrio con esos supuestos.
+
+## Ejemplo de cartera anual austera
+
+| Negocios | Cobro inicial de la cohorte | Ingreso nominal mensual equivalente | Resultado económico mensual equivalente |
+| --- | ---: | ---: | ---: |
+| 5 | Q3,417.00 | Q284.75 | Q-455.44 |
+| 10 | Q6,834.00 | Q569.50 | Q-259.66 |
+| 15 | Q10,251.00 | Q854.25 | Q-63.88 |
+| 20 | Q13,668.00 | Q1,139.00 | Q131.90 |
+| 30 | Q20,502.00 | Q1,708.50 | Q523.46 |
+
+Se usan los mismos supuestos: Q651.23 fijos con tiempo, reserva del 3 %, impuesto de sensibilidad 12 % y conciliación repartida. El cobro inicial es bruto y solo ocurre si todos compran ese día; reservar impuestos/devoluciones y costo de los meses restantes. No representa ingreso recurrente de un mes ni demuestra que se conseguirán esos clientes.
+
+## Presupuesto del piloto de tres meses
+
+Con USD5 de ejecución, USD3 de copia externa y Q300 de captación al mes, más dominio USD15 pagado de una vez: **Q1,200.30 de caja** durante tres meses si el correo gratuito realmente es suficiente. Con la reserva de USD20/mes para correo pagado: **Q1,662.30**. Una contingencia de 10 % los lleva a Q1,320.33 / Q1,828.53. No incluyen gastos no cotizados ni el tiempo del propietario. Estos totales pagan el dominio anual de una vez: no lo suman de nuevo como cuota mensual.
+
+Una etapa de aprendizaje puede producir pérdidas. La meta inicial es demostrar uso y tres pagos dentro de un presupuesto acotado, no contratar gasto de operación plena esperando 51 clientes inmediatos.
 
 ## Escala y almacenamiento
 
-El uso de D1 crece con clientes, catálogo, cotizaciones, papelera e historial. El logo puede ocupar hasta aproximadamente 400,000 caracteres por copia de marca; cien cotizaciones con copias grandes se acercan a 40 MB por negocio solo en snapshots. Cien negocios en ese caso se acercan a 4 GB antes del resto de datos e índices. El JSON de exportación deduplica imágenes, pero eso no significa que D1 deduplique los snapshots guardados.
+Snapshots de marca y logos, cotizaciones, clientes, papelera e historial consumen D1 aunque no ocupen cupos activos. Un logo de aproximadamente 400,000 caracteres en cien documentos puede acercarse a 40 MB por negocio, antes del resto de información e índices. El JSON deduplica imágenes al exportar; eso no deduplica automáticamente la base.
 
-Revisar tamaño real, lecturas/escrituras, CPU, correos por día/mes y costos a 10, 25, 50 y 100 negocios. Tener papelera o catálogo archivado no implica almacenamiento gratis ni limpieza automática. Revisar límites vigentes por base/cuenta y prever cambios de arquitectura antes de alcanzarlos; los presupuestos anteriores no garantizan servicio para cualquier volumen.
+Medir CPU, consultas, tamaño, correo y soporte a 10/25/50/100 negocios. Confirmar límites/excedentes del proveedor; el presupuesto fijo no garantiza cualquier volumen. Los precios más largos no multiplican capacidad ni eliminan costos de conservar datos.
 
-## Proceso P2P recomendado
+## Cobro y activación
 
-1. El propietario del negocio abre **Plan y uso** y comunica su ID de negocio y plan deseado al canal autorizado.
-2. El vendedor comunica precio final aprobado, datos de pago, vencimiento, tiempo de activación y condiciones. Los datos bancarios/beneficiario aún deben definirse; no enviar un formulario que pida contraseña de Quoter.
-3. El cliente realiza el pago externo y comunica la referencia. Una captura sola no acredita fondos recibidos.
-4. El administrador verifica el abono y su importe en el banco/proveedor. Mantiene un libro de suscripciones propio y privado, separado de las cotizaciones del cliente.
-5. Registra el mes en **Administración → Negocios → Activar o renovar plan**, con ID, plan, referencia única y su contraseña administrativa.
-6. Confirma el resultado y la nueva vigencia; el cliente revisa **Plan y uso**. Si falta actualizar la pantalla, puede recargarla.
-7. Emite el comprobante/factura del servicio SaaS por el medio legal aplicable, externo a Quoter, según asesoría contable.
+1. El propietario comunica ID de negocio, plan y periodo elegido.
+2. El vendedor confirma importe total final, medio, condiciones y atención aprobada.
+3. Se verifica externamente abono e importe. Una captura no acredita fondos por sí sola.
+4. Administración → Negocios → Activar o renovar plan: elegir plan y **Periodo contratado**, escribir referencia canónica, confirmar contraseña y registrar.
+5. Revisar nueva vigencia y tarifa registrada; el cliente confirma Plan y uso. Emitir comprobante fiscal por el medio externo que corresponda al régimen confirmado.
 
-Objetivo de atención propuesto: activación dentro de un día hábil tras verificación del abono y datos completos; no publicarlo hasta aprobar horario y responsable. La app no comprueba importes bancarios ni envía este comprobante automáticamente.
+La API calcula la tarifa del periodo; ignora importes enviados por el navegador. Una referencia repetida solo se considera el mismo pago si coinciden negocio, plan y periodo; cambiar el periodo con la misma referencia se rechaza. No registrar doce referencias para una anualidad.
 
-## Reglas que ya aplica el sistema
+El periodo suma meses calendario desde la vigencia pendiente o desde ahora si venció, con ajuste al último día válido del mes destino. Enero 31 + tres meses llega a abril 30 en una operación. Febrero 29 + doce meses ajusta a febrero 28 del año siguiente. Los meses no son paquetes fijos de treinta días.
 
-- Un registro de pago agrega **un mes calendario**, no necesariamente treinta días. En fin de mes ajusta al último día válido.
-- Si aún queda prueba o vigencia pagada, suma el mes desde el vencimiento que corresponda y conserva el tiempo. Si está vencido, parte del momento de activación.
-- Repetir exactamente la misma referencia para el mismo negocio/plan no vuelve a sumar un mes. Reutilizarla para otro negocio/plan se rechaza. Conservar una referencia canónica sin datos bancarios completos; un cambio manual de letras/prefijo puede convertirla en otra referencia y duplicar un registro.
-- Una ampliación aplica el plan superior de inmediato y agrega el mes completo. No hay cálculo de diferencias ni prorrateo automático. Ejemplo comercial propuesto: si vence el 20 de noviembre y el 25 de octubre paga un mes del Plan 2, el nuevo vencimiento es el 20 de diciembre y los cupos superiores aplican ya. Confirmar fechas mostradas por la app.
-- Una reducción de un plan pagado vigente se rechaza hasta que venza; no hay programación anticipada. Tras el vencimiento conserva datos; si excede los cupos, bloquea nuevas altas de ese tipo, sin borrar lo existente.
-- Renovar no levanta automáticamente una suspensión administrativa ni reactiva cuentas deshabilitadas. Resolver primero el motivo y habilitar explícitamente si corresponde.
-- La prueba y el vencimiento se controlan por servidor. No se conceden meses cambiando fechas del dispositivo.
-- No hay botón de reembolso ni de anular pagos en el panel; una corrección requiere procedimiento controlado del operador y verificación posterior. No registrar otra referencia «para arreglar» una activación errónea.
+Se mantienen solo lectura al vencer, control de suspensiones separado del pago y prohibición de reducir capacidad mientras hay plan pagado vigente. Esta entrega mantiene la regla existente de ampliación: cupos superiores inmediatos y conservación del tiempo pendiente, sin crédito ni prorrateo automáticos. Eso puede conceder mucho tiempo de un plan superior al ampliar después de comprar un anual básico; revisar esa política antes de comercializar cambios entre niveles. La decisión sobre crédito proporcional sigue pendiente; no se implementa una política nueva sin definirla. El tratamiento de ampliaciones se debe explicar antes de cobrar; no confundirlo con una devolución automática. No existe reembolso bancario ni factura FEL dentro de este flujo.
 
-## Libro de cobros externo
+## Libro de cobros y devoluciones
 
-Campos mínimos: ID de negocio, fecha del abono y de revisión, plan, precio final acordado, moneda, importe verificado, medio, referencia bancaria protegida, referencia canónica usada en Quoter, identificador de comprobante fiscal, inicio/fin del periodo y responsable. Añadir incidencia/reembolso si existe. Restringir acceso; no almacenar contraseñas, códigos MFA ni contenido de cotizaciones de clientes.
+Registrar por fuera, con acceso restringido: ID de negocio, plan, periodo, importe final acordado/verificado, moneda/medio, referencia bancaria protegida y referencia canónica de Quoter, comprobante, inicio/fin y responsable. El panel maestro no expone contenido privado de cotizaciones.
 
-Antes de lanzar se debe acordar el tratamiento de pagos parciales, excedentes, referencias de un pago que cubre varios negocios, devoluciones y errores de asignación. Hasta tener una regla implementable, preferir un pago identificable por negocio y periodo; no improvisar fraccionamientos de referencias que impidan conciliar.
+Definir política de devolución aplicable y revisión contable antes de prometer garantías. La reserva financiera del 3 % no crea un botón de devolución ni significa que los competidores tengan esa tasa. Separar tasa por contratos, tasa por importe y abandono/renovación; pueden ser distintas. Una devolución externa necesita conciliación y, si corresponde, corrección controlada de vigencia; no agregar otra activación para compensar un error.
+
+Contemplar comisiones no recuperables, impuestos, cancelación parcial y atención de la incidencia. No se presupuestan como cero por no estar integrados en la app.
