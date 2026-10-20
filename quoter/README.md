@@ -50,7 +50,7 @@ Los comandos individuales `test:api`, `test:auth`, etc. siguen disponibles para 
 - JSON: exportación formato 2 con imágenes compartidas deduplicadas; admite formato 1. La revisión valida logos por lotes y la restauración conserva identidades/fechas originales de registros nuevos. Límites: 8 MiB y 2000 registros por archivo. Las bases mayores requieren respaldo del operador.
 - Planes: 25/15/1, 50/25/3 y 100/50/5 cotizaciones activas/partidas activas/plazas. Prueba inicial de siete días y solo lectura al vencer. Renovar el mismo nivel conserva el tiempo; ampliar es inmediato; bajar un plan pagado exige esperar a su vencimiento. El cobro y confirmación P2P siguen siendo manuales.
 - Conservación: sin eliminación automática de cotizaciones, clientes, marcas o auditorías. El propietario puede revisar el volumen en Plan y uso y eliminar definitivamente una cotización de la papelera solo con confirmación de su número. Esta purga no se puede deshacer desde la aplicación.
-- Administración: acceso maestro con correo verificado, contraseña y MFA; únicamente metadatos de otros negocios, IDs y planes, sin contenido privado.
+- Administración: acceso maestro con correo verificado, contraseña y MFA; autorización de una hora u opción de 90/180 días en equipo personal ([detalle](ADMIN_MFA.md)); únicamente metadatos de otros negocios, IDs y planes, sin contenido privado.
 
 ## Publicación y actualización
 

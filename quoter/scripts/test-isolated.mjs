@@ -8,7 +8,7 @@ import { createServer } from 'node:net'
 
 const project=fileURLToPath(new URL('../',import.meta.url)),temp=mkdtempSync(join(tmpdir(),'quoter-tests-'))
 const state=join(temp,'state'),config=join(temp,'wrangler.json'),wrangler=join(project,'node_modules/wrangler/bin/wrangler.js')
-const tests=['auth-smoke','email-smoke','api-smoke','business-smoke','data-smoke','customer-import-smoke','plans-smoke','activation-smoke','subscription-smoke','security-smoke','platform-admin-smoke','mfa-smoke','browser-smoke','subscription-browser','backup-roundtrip-smoke','editor-browser','trash-purge-smoke','request-context-smoke','hardening-smoke','templates-smoke','billing-smoke']
+const tests=['auth-smoke','email-smoke','api-smoke','business-smoke','data-smoke','customer-import-smoke','plans-smoke','activation-smoke','subscription-smoke','security-smoke','platform-admin-smoke','mfa-smoke','mfa-duration-smoke','browser-smoke','subscription-browser','backup-roundtrip-smoke','editor-browser','trash-purge-smoke','request-context-smoke','hardening-smoke','templates-smoke','billing-smoke']
 const selected=process.argv.slice(2);if(selected.some(name=>!tests.includes(name)))throw new Error('Prueba no reconocida')
 const suite=selected.length?selected:tests
 const env={...process.env,XDG_CONFIG_HOME:join(temp,'config'),WRANGLER_SEND_METRICS:'false',WRANGLER_LOG_PATH:join(temp,'wrangler.log'),QUOTER_IMPORT_STATE:state,QUOTER_TEST_CONFIG:config,QUOTER_ADMIN_ISOLATED:'1'}

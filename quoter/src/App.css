@@ -277,3 +277,6 @@ th { color: var(--muted); }
 .pdf-preview-content iframe{border:0;background:#fff;width:100%;flex:1;min-height:120px}
 .pdf-preview-help{font-size:.8rem}
 @media(max-width:700px){.template-options{grid-template-columns:repeat(2,minmax(0,1fr))}.template-choice{padding:10px}.pdf-preview-content{padding:10px}.pdf-preview-content .section-heading{align-items:flex-start}.pdf-preview-content h2{font-size:1rem}}
+
+.mfa-session-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; color: var(--muted); font-size: 12px; }
+.mfa-session-summary button { padding: 8px 10px; font-size: 12px; }

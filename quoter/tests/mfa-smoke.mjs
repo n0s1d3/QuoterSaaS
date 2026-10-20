@@ -13,7 +13,7 @@ async function call(user,path,data,status=200){const response=await user.request
 const master=await testAccount(),other=await testAccount();operator(['scripts/admin-master.mjs','--email',master.email])
 await call(other,'/security/admin-mfa',undefined,403);await call(other,'/security/admin-mfa',{action:'setup',currentPassword:other.password},403)
 await call(master,'/admin/overview',undefined,403);await call(master,'/admin/businesses',undefined,403)
-assert.deepEqual(await call(master,'/security/admin-mfa'),{enabled:false,verified:false,configured:true})
+assert.deepEqual(await call(master,'/security/admin-mfa'),{enabled:false,verified:false,verifiedUntil:null,configured:true})
 await call(master,'/security/admin-mfa',{action:'setup',currentPassword:'wrong'},403)
 let setup=await call(master,'/security/admin-mfa',{action:'setup',currentPassword:master.password});assert.match(setup.secret,/^[A-Z2-7]{32}$/);assert.ok(setup.uri.startsWith('otpauth://totp/'))
 await call(master,'/security/admin-mfa',{action:'confirm',currentPassword:master.password,code:'invalid'},403)
@@ -21,7 +21,7 @@ const confirmed=await call(master,'/security/admin-mfa',{action:'confirm',curren
 await call(master,'/admin/overview');await call(master,'/security/admin-mfa',{action:'setup',currentPassword:master.password},409)
 await call(master,'/security/admin-mfa',{action:'verify',code:codeFor(setup.secret)},403)
 const login=await call(master,'/auth/login',{email:master.email,password:master.password});assert.ok(login.id);await call(master,'/admin/overview',undefined,403)
-const attempts=await Promise.all([master.request(base+'/api/security/admin-mfa',{method:'POST',body:JSON.stringify({action:'verify',code:confirmed.recoveryCodes[0]})}),master.request(base+'/api/security/admin-mfa',{method:'POST',body:JSON.stringify({action:'verify',code:confirmed.recoveryCodes[0]})})]);assert.deepEqual(attempts.map(x=>x.status).sort(),[200,403]);await call(master,'/admin/overview')
+const attempts=await Promise.all([master.request(base+'/api/security/admin-mfa',{method:'POST',body:JSON.stringify({action:'verify',code:confirmed.recoveryCodes[0]})}),master.request(base+'/api/security/admin-mfa',{method:'POST',body:JSON.stringify({action:'verify',code:confirmed.recoveryCodes[0]})})]);assert.equal(attempts.filter(x=>x.status===200).length,1);assert.ok(attempts.filter(x=>x.status!==200).every(x=>[401,403].includes(x.status)));await call(master,'/admin/overview')
 const backup=JSON.stringify(await call(master,'/backups/export'));assert.ok(!backup.includes(setup.secret));for(const code of confirmed.recoveryCodes)assert.ok(!backup.includes(code));assert.ok(!backup.includes('sealed_secret'))
 execute(`UPDATE sessions SET mfa_verified_until=0 WHERE user_id='${master.user.id}'`);await call(master,'/admin/overview',undefined,403);assert.equal((await call(master,'/security/admin-mfa')).verified,false)
 // The database guard also rejects a write after the factor expires.

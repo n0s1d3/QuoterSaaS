@@ -20,7 +20,13 @@ Entrar con la cuenta maestra verificada. Elegir Configurar autenticador y confir
 
 La configuración pendiente vence en 20 minutos. Los códigos son de seis dígitos cada 30 segundos, con tolerancia de un intervalo para desfase de reloj. Un código aceptado no se reutiliza. Un código de recuperación también funciona una sola vez; guardar los códigos fuera del navegador en un lugar privado. No se vuelven a mostrar ni se incluyen en los respaldos JSON del negocio.
 
-Una autorización de segundo factor dura una hora y está vinculada a la sesión. Iniciar sesión de nuevo exige un nuevo código. Cerrar sesión, restablecer la contraseña o desactivar la cuenta revoca el acceso. Las acciones administrativas siguen pidiendo la contraseña además del factor de sesión. La interfaz comprueba periódicamente el vencimiento y el servidor lo exige inmediatamente.
+La pantalla de segundo factor permite seleccionar **una hora (predeterminado), 90 o 180 días**. Para modificar un acceso que ya está activo, usar **Cambiar duración 2FA** en Administración y comprobarlo con un código nuevo o un código de recuperación sin usar. No es necesario volver a configurar el autenticador. Los códigos de seis dígitos siguen cambiando cada 30 segundos; el plazo elegido corresponde a la autorización del navegador.
+
+Con 90 o 180 días también se amplía la sesión de cuenta de ese navegador hasta la misma fecha; de otro modo, su vencimiento habitual a los siete días interrumpiría el acceso recordado. El plazo es fijo desde la comprobación: visitar la app, consultar el estado o recargar no lo renueva. Las sesiones de otros navegadores y de los demás usuarios no se amplían. Elegir una hora de nuevo limita el 2FA a una hora y la sesión de cuenta a un máximo de siete días, sin prolongar una sesión más corta.
+
+Usar plazos largos solo en equipos personales. Cerrar sesión, borrar las cookies, restablecer la contraseña, desactivar la cuenta o restablecer el factor por operador revoca el acceso. Iniciar sesión de nuevo exige un nuevo código; no se conserva confianza entre sesiones distintas ni entre navegadores. Eliminar cookies o usar navegación privada puede terminar el acceso antes del plazo elegido. No se ofrece duración indefinida.
+
+El servidor valida exclusivamente los plazos permitidos y exige prueba válida para cambiarlos. Al comprobar el segundo factor se sustituye el token de esa sesión por uno aleatorio nuevo: el token previo deja de servir. La cookie sigue siendo HttpOnly, SameSite=Strict, Path=/ y Secure con prefijo __Host- en HTTPS; D1 conserva solo su hash. La expiración del servidor coincide con la de la cookie para los plazos largos. Las acciones administrativas siguen pidiendo la contraseña además del factor de sesión. La interfaz comprueba periódicamente el vencimiento y el servidor lo exige inmediatamente. Cada comprobación posterior a la inscripción registra `mfa.session.verified` con el plazo, sin claves ni códigos.
 
 ## Protección y configuración de producción
 
@@ -45,5 +51,7 @@ Agregar `--remote` únicamente cuando se quiera modificar la D1 publicada. El re
 ## Pruebas
 
 Las pruebas unitarias incluyen vectores RFC 6238, códigos vencidos/reutilizados y cifrado ligado a la cuenta. `test:mfa` comprueba inscripción obligatoria, contraseña de configuración, recuperación concurrente de un solo uso, aislamiento entre sesiones, vencimiento, privacidad de respaldos, restablecimiento por operador y acceso desde móvil. `test:admin` conserva las pruebas de privacidad, activación de planes y permisos, ahora con MFA.
+
+La suite aislada `mfa-duration-smoke` comprueba plazos 90/180 en inscripción y verificación, duración fija de cookie/servidor, rechazo de plazos inválidos, sustitución del token, aislamiento entre sesiones, vuelta a una hora, vencimiento y revocación por cierre, recuperación de contraseña y restablecimiento del factor. También recorre el selector y el cambio de duración en móvil. Se ejecuta con `npm run test:integration -- mfa-smoke mfa-duration-smoke`. No se requiere una nueva migración para este selector: usa las columnas de la migración 0017.
 
 Las pruebas MFA y administrativas cambian la designación de cuenta maestra: usar exclusivamente un estado D1 local aislado, con `QUOTER_ADMIN_ISOLATED=1`, `QUOTER_IMPORT_STATE`, `QUOTER_TEST_URL` y, opcionalmente, `QUOTER_BROWSER_PATH`. No usar una base con clientes o una cuenta maestra real.
