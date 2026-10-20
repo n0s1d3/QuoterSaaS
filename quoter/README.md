@@ -2,6 +2,8 @@
 
 MicroSaaS de cotizaciones en español con React, TypeScript, Vite y Cloudflare Workers/D1. Incluye cuentas y negocios separados, catálogo, PDF con membrete, planes P2P de 1, 3, 6 y 12 meses, administración con MFA, historial, papelera y respaldos.
 
+La identidad visual de la plataforma utiliza el concepto [Conecta](BRAND_IDENTITY.md), con un símbolo SVG compartido por acceso, navegación y favicon.
+
 ## Desarrollo local
 
 Requiere **Node 24.14 o superior dentro de la versión 24**, npm y una instalación local de Chromium para las pruebas de navegador. Desde `quoter`:

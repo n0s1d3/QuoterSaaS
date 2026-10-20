@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Account } from '../pages/Access'
 import AppIcon, { type AppIconName } from './AppIcon'
+import Brand from './Brand'
 function closeDisclosures(root: HTMLElement | null, target?: Node) {
   root?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(menu => { if(!target || !menu.contains(target)) menu.open = false })
 }
@@ -46,7 +47,7 @@ export default function AppShell({ user, businesses, path, navigate, switchBusin
   return <div ref={shell} className={`app app-shell${menuOpen ? ' nav-open' : ''}${collapsed ? ' nav-collapsed' : ''}`}>
     <a className="skip-link" href="#main-content">Saltar al contenido</a>
     {menuOpen && <button type="button" className="nav-backdrop" aria-label="Cerrar menú" onClick={() => setMenuOpen(false)}/>}
-    <aside ref={sidebar} id="app-navigation" aria-label="Menú principal" inert={mobile && !menuOpen}><a className="brand" href="/" onClick={e => {e.preventDefault();go(user.isPlatformAdmin?'/admin':'/')}}><span>Q</span><b>Quoter</b></a><button type="button" className="mobile-nav-close icon-button" aria-label="Cerrar menú lateral" onClick={() => setMenuOpen(false)}><AppIcon name="close"/></button>
+    <aside ref={sidebar} id="app-navigation" aria-label="Menú principal" inert={mobile && !menuOpen}><Brand onClick={e => {e.preventDefault();go(user.isPlatformAdmin?'/admin':'/')}}/><button type="button" className="mobile-nav-close icon-button" aria-label="Cerrar menú lateral" onClick={() => setMenuOpen(false)}><AppIcon name="close"/></button>
       <div className="workspace"><p className="sidebar-caption">ESPACIO DE TRABAJO</p><strong>{user.organizationName}</strong><small>{role}</small></div>
       <label className="business-switch">Negocio<select aria-label="Negocio" value={user.organizationId} onChange={e => {setMenuOpen(false);void switchBusiness(e.target.value)}}>{businesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
       <p className="sidebar-caption nav-caption">PRINCIPAL</p><nav>{links.map(link => <a key={link.url} href={link.url} title={link.label} className={(link.url === '/' ? path === '/' : path.startsWith(link.url)) ? 'active' : ''} aria-current={(link.url === '/' ? path === '/' : path.startsWith(link.url)) ? 'page' : undefined} onClick={e => {e.preventDefault();go(link.url)}}><AppIcon name={link.icon}/><span>{link.label}</span></a>)}</nav>
