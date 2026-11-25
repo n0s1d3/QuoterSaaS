@@ -1,6 +1,6 @@
 # Lanzamiento y documentación de Quoter
 
-Preparado el **19 de octubre de 2026**, horario de Guatemala. Mercado: Guatemala; moneda: quetzales. Presupuesto de marketing elegido: Q300–Q1,000 mensuales; piloto recomendado: Q300 antes de ampliar gasto. Versión funcional revisada: base `44e2561` y ampliación de periodos, esquema hasta `0023_product_images_conditions.sql` (requiere despliegue).
+Preparado el **19 de octubre de 2026**, horario de Guatemala. Mercado: Guatemala; moneda: quetzales. Presupuesto de marketing elegido: Q300–Q1,000 mensuales; piloto recomendado: Q300 antes de ampliar gasto. Versión funcional revisada: base `44e2561` y ampliación de periodos, esquema hasta `0024_business_website.sql` (requiere despliegue).
 
 Este paquete documenta lo que existe y propone cómo comercializarlo. **Incluye precios y periodos de la app, sin configurar anuncios, automatizar cobros ni publicar políticas legales.** Los importes base de venta y descuentos están definidos para esta versión; la publicación y obligaciones tributarias requieren revisión. Las tarifas de proveedores son presupuestos de referencia, pendientes de validación en sus paneles.
 
@@ -66,3 +66,5 @@ Verificación de la ampliación: 94 pruebas unitarias, tipos/build/lint, 21 suit
 ## Actualización: imágenes y condiciones
 
 Los manuales 04 y 05 incluyen imágenes de producto/partida y los grupos de condiciones públicas del negocio. Esta actualización requiere esquema `0023_product_images_conditions.sql` y desplegar el código correspondiente. Las versiones HTML/PDF y el ZIP se regeneraron con estos cambios.
+
+El enlace del logo al sitio del negocio y los títulos de condiciones en línea requieren actualizar el código y aplicar `0024_business_website.sql`. Se incluyen en los manuales 04/05 y operación.

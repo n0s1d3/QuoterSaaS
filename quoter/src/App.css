@@ -296,3 +296,8 @@ th { color: var(--muted); }
 .quote-conditions-settings strong, .quote-conditions-settings h2, .conditions-group h3, .quote-terms strong { font-weight: 700; }
 .quote-terms>div { margin-bottom: 12px; }
 .quote-terms .notes { margin-top: 4px; }
+
+.business-logo { width: 220px; height: 140px; max-width: 100%; max-height: none; display: block; object-fit: contain; }
+.business-logo-link { display: inline-block; max-width: 100%; }
+.conditions-format-preview { margin-block: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
+.conditions-format-preview summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }

@@ -1,4 +1,5 @@
-import {quoteTermSections} from './quote-conditions.ts'
+import {layoutPdfTerms} from './pdf-terms.ts'
+import {normalizeWebsite} from './website.ts'
 import {inspectProductImage,validateProductImage,quoteImageLimit} from './product-image.ts'
 import { inspectLogo, validateLogo } from './raster.ts'
 import { jsPDF } from 'jspdf'
@@ -19,6 +20,7 @@ function ink(color: Color): Color {
 
 /** Generate from persisted server totals; never recalculate or mutate the quote. */
 export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
+  const website=normalizeWebsite(brand.website)
   const template=resolveQuoteTemplate(brand.quoteTemplate)
   const lateral=template==='sidebar', minimal=template==='minimal', corporate=template==='corporate'
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: false })
@@ -26,30 +28,30 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   const primary=rgb(brand.primaryColor), accent=rgb(brand.accentColor), dark:Color=[21,24,34], text:Color=[36,42,51]
   const left=lateral?78:14, width=196-left
   doc.setFont('helvetica', 'bold'); doc.setFontSize(lateral?13:18)
-  const allNameLines: string[] = doc.splitTextToSize(brand.name.replace(/\s+/g, ' ').trim(), lateral?44:brand.logo?108:145)
+  const allNameLines: string[] = doc.splitTextToSize(brand.name.replace(/\s+/g, ' ').trim(), lateral?44:brand.logo?98:145)
   const nameLines = allNameLines.slice(0, 2)
   doc.setFont('helvetica','normal');doc.setFontSize(lateral?8:9)
   const contacts=[brand.taxId?`NIT: ${brand.taxId}`:null,brand.address,brand.phone,brand.contactEmail].filter(Boolean).join('\n')
-  const allContactLines:string[]=doc.splitTextToSize(contacts,lateral?44:brand.logo?108:145)
+  const allContactLines:string[]=doc.splitTextToSize(contacts,lateral?44:brand.logo?98:145)
   const contactLines = allContactLines.slice(0, 5)
   const continuedDetails = [...allNameLines.slice(2), ...allContactLines.slice(5)].join('\n')
   const contactStart=18+(nameLines.length-1)*7+6
-  const bandBottom=Math.min(70,Math.max(43,contactStart+contactLines.length*4.5+6))
-  const headerBottom=lateral?50:corporate?bandBottom+27:Math.min(70,Math.max(50,contactStart+contactLines.length*4.5+8))
+  const bandBottom=Math.min(70,Math.max(brand.logo?58:43,contactStart+contactLines.length*4.5+6))
+  const headerBottom=lateral?50:corporate?bandBottom+27:Math.min(70,Math.max(brand.logo?60:50,contactStart+contactLines.length*4.5+8))
   let logo: { width: number; height: number } | undefined
   if (brand.logo) {
     // Invalid images cause a visible generation error rather than a silently missing logo.
     inspectLogo(brand.logo)
     const properties = doc.getImageProperties(brand.logo)
     diagnostic('pdf.logo.decodificado', JSON.stringify({ width: properties.width, height: properties.height, format: properties.fileType }))
-    const scale = Math.min(28 / properties.width, 28 / properties.height)
+    const scale = Math.min(40 / properties.width, 40 / properties.height)
     logo = { width: properties.width * scale, height: properties.height * scale }
   }
   if(quote.items.reduce((sum,item)=>sum+(item.image?.length||0),0)>quoteImageLimit)throw new Error('Las imágenes de la cotización superan 500 KB')
   const productImages=new Map<string,{width:number;height:number}>()
   for(const item of quote.items){if(!item.image||productImages.has(item.image))continue;inspectProductImage(item.image);const properties=doc.getImageProperties(item.image),scale=Math.min(26/properties.width,22/properties.height);productImages.set(item.image,{width:properties.width*scale,height:properties.height*scale})}
   const headedPages = new Set<number>()
-  function image(x:number,y:number){if(brand.logo&&logo){doc.addImage(brand.logo,x,y,logo.width,logo.height);diagnostic('pdf.logo.incrustado',`Página ${doc.getCurrentPageInfo().pageNumber}; ${logo.width.toFixed(1)} × ${logo.height.toFixed(1)} mm`)}}
+  function image(x:number,y:number){if(brand.logo&&logo){doc.addImage(brand.logo,x,y,logo.width,logo.height);if(website)doc.link(x,y,logo.width,logo.height,{url:website});diagnostic('pdf.logo.incrustado',`Página ${doc.getCurrentPageInfo().pageNumber}; ${logo.width.toFixed(1)} × ${logo.height.toFixed(1)} mm`)}}
   function header() {
     const page = doc.getCurrentPageInfo().pageNumber
     if (headedPages.has(page)) return
@@ -58,7 +60,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
       doc.setFillColor(...accent);doc.rect(0,0,65,297,'F')
       doc.setFillColor(...primary);doc.rect(0,0,4,297,'F')
       image(12,14)
-      const y=brand.logo?54:24
+      const y=brand.logo?64:24
       doc.setTextColor(...ink(accent));doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(nameLines,12,y)
       doc.setFont('helvetica','normal');doc.setFontSize(8);if(contactLines.length)doc.text(contactLines,12,y+nameLines.length*6+5)
       doc.setDrawColor(...primary);doc.line(12,252,53,252)
@@ -73,8 +75,8 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
         doc.setFillColor(...accent);doc.rect(0,0,210,headerBottom-3,'F')
         doc.setFillColor(...primary);doc.rect(0,0,210,3,'F')
       }
-      image(corporate?164:14,12)
-      const x=corporate?14:brand.logo?48:14
+      image(corporate?156:14,12)
+      const x=corporate?14:brand.logo?60:14
       doc.setTextColor(...(corporate?[255,255,255] as Color:minimal?text:ink(accent)))
       doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text(nameLines,x,18)
       doc.setFont('helvetica','normal');doc.setFontSize(9);if(contactLines.length)doc.text(contactLines,x,contactStart)
@@ -122,16 +124,18 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     didParseCell:cell=>{if(cell.row.index===totals.length-1){cell.cell.styles.fontStyle='bold';cell.cell.styles.fillColor=corporate?dark:minimal?primary:accent;cell.cell.styles.textColor=ink(corporate?dark:minimal?primary:accent)}},
   })
   if(quote.paymentTerms){
-    let startY=lastY()+8
-    quoteTermSections(quote.paymentTerms).forEach((section,index)=>{
-      autoTable(doc,{
-        ...common,startY,theme:'plain',showHead:'firstPage',
-        head:[...(index===0?[['CONDICIONES DE LA COTIZACIÓN']]:[]),...(section.title?[[section.title+':']]:[])],
-        body:[[section.text]],
-        headStyles:{textColor:text,fontStyle:'bold',cellPadding:{top:1,right:3,bottom:0,left:3}},
-        bodyStyles:{fontStyle:'normal',cellPadding:{top:0,right:3,bottom:2,left:3}},
-      })
-      startY=lastY()+1
+    const fontSize=lateral?8:10,lines=layoutPdfTerms(doc,quote.paymentTerms,width-6,fontSize)
+    const lineHeight=fontSize*1.15/doc.internal.scaleFactor
+    autoTable(doc,{
+      ...common,startY:lastY()+8,theme:'plain',showHead:'firstPage',head:[['CONDICIONES DE LA COTIZACIÓN']],
+      headStyles:{textColor:text,fontStyle:'bold'},
+      body:lines.map(line=>[{content:'',styles:{minCellHeight:lineHeight+line.gap,cellPadding:{top:0,right:3,bottom:line.gap,left:3}}}]),
+      didDrawCell:cell=>{
+        if(cell.section!=='body')return
+        let x=cell.cell.x+3
+        doc.setFontSize(fontSize);doc.setTextColor(...text)
+        for(const run of lines[cell.row.index].runs){doc.setFont('helvetica',run.style);doc.text(run.text,x,cell.cell.y,{baseline:'top'});x+=doc.getTextWidth(run.text)}
+      },
     })
   }
   const pages=doc.getNumberOfPages()

@@ -126,3 +126,9 @@ Los campos son opcionales y solo se imprimen los que completes. La política adm
 La configuración se aplica a nuevas cotizaciones; las condiciones de documentos anteriores se conservan incluso al cambiar su marca. Los costos de envío de esta sección son texto informativo y deben agregarse como partida para formar parte del total.
 
 El catálogo permite una foto por producto, que se copia como imagen de cada partida al cotizar. Las fotos guardadas se mantienen aunque cambies o archives el catálogo. Los permisos de creación/edición y la vigencia del negocio siguen aplicando. Los respaldos JSON incluyen estas imágenes y condiciones; protegen también datos bancarios, por lo que deben manejarse como archivos privados.
+
+### Sitio web del negocio
+
+En **Mi negocio → Sitio web**, escribe la dirección completa, por ejemplo `https://tunegocio.com`, y pulsa **Guardar marca**. El logo ampliado enlazará esa dirección en la app y en el PDF. Si dejas el sitio vacío, el logo no llevará enlace.
+
+Las nuevas cotizaciones toman ese sitio; para una anterior, abre su detalle y elige **Actualizar a la marca actual**. Esta acción reemplaza la marca guardada de ese documento. Las condiciones anteriores se conservan. Los títulos antes de dos puntos se presentan automáticamente en negrita, con el contenido normal a continuación; puedes revisar el formato desde el editor o la vista previa del PDF.

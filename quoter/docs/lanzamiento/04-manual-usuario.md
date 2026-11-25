@@ -180,3 +180,9 @@ Las fotos se muestran en el detalle, la vista previa y los cuatro modelos de PDF
 Las condiciones guardadas por el propietario —pagos, banco, entrega, envío, garantía, validez y asesor— se incorporan a las nuevas cotizaciones. Puedes ajustar el texto público en **Condiciones de pago** antes de guardar. La validez configurada en días calcula el vencimiento; puedes elegir otra fecha. Revisa que fecha y texto de validez coincidan. Los costos de envío escritos en condiciones no se suman automáticamente: agrega una partida de envío para incluirlos en el total.
 
 Las cotizaciones anteriores conservan las condiciones que tenían. Las notas internas permanecen fuera del PDF. El estado «Borrador» sirve para tu organización dentro de la app y no aparece en el PDF descargado. Para obtener este formato, vuelve a descargar archivos antiguos después de actualizar la app.
+
+### Títulos de condiciones y logo con enlace
+
+Escribe cada condición como **Título: contenido**, al inicio de una línea. El texto anterior a los dos puntos aparece en negrita; el contenido continúa en letra normal, en la misma línea si cabe. Se admiten títulos propios. Abre **Ver formato de las condiciones** en el editor para revisar el resultado; el cuadro de edición conserva texto simple.
+
+El logo se muestra más grande y permite visitar el sitio web que el propietario guardó en Mi negocio. El vínculo también está disponible en el logo del PDF, en todas sus páginas. Las cotizaciones guardadas conservan el sitio de su marca; usa **Actualizar a la marca actual** cuando debas aplicar una dirección nueva y vuelve a descargar el PDF.

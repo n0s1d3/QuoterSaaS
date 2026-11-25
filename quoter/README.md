@@ -109,3 +109,11 @@ Mi negocio incluye condiciones editables por grupos: pagos/datos bancarios, entr
 Las nuevas cotizaciones toman los valores guardados. La validez en días calcula el vencimiento si no se elige otra fecha. Se puede personalizar el texto público desde el formulario; las cotizaciones anteriores conservan sus condiciones al editarse o actualizar su marca. Las notas siguen siendo internas y «Borrador» no se imprime.
 
 Origen de imagen PNG/JPEG/WebP hasta 10 MB y 16 megapíxeles. Se normaliza a un máximo de 480 px y 60 000 caracteres; la API exige imagen raster completa, sin URLs externas ni SVG, máximo 640 px. Las partidas de una cotización admiten 500 000 caracteres de imágenes en total. Las condiciones públicas admiten hasta 12 000 caracteres. El respaldo JSON 2 deduplica fotos y logos; la restauración admite formatos 1 y 2 y conserva imágenes, condiciones y fechas. Más detalle: [PRODUCT_IMAGES_CONDITIONS.md](PRODUCT_IMAGES_CONDITIONS.md).
+
+## Sitio web del negocio y formato de condiciones
+
+Aplicar `0024_business_website.sql` antes de desplegar. En **Mi negocio → Sitio web**, guardar una URL completa `https://...` o `http://...`. El logo se muestra más grande en la app y ocupa hasta 40 × 40 mm en el PDF, conservando sus proporciones. Al pulsarlo abre el sitio configurado; en el PDF el vínculo se repite en el logo de cada página. Sin sitio configurado, se muestra el logo sin enlace.
+
+Las nuevas cotizaciones capturan ese sitio junto con la marca. Las anteriores conservan la dirección histórica; para aplicar el sitio nuevo usar **Actualizar a la marca actual** y volver a descargar el PDF. La exportación/restauración JSON incluye el sitio y valida que no contenga protocolos ejecutables ni credenciales.
+
+Las condiciones reconocen títulos personalizados al inicio de una línea, seguidos de dos puntos: `Título: contenido`. El título se imprime en negrita y el contenido normal en la misma línea, con ajuste y paginación a todo el ancho. Las direcciones URL y horas conservan sus dos puntos como contenido. **Ver formato de las condiciones**, en el editor de cotizaciones, permite revisar el resultado sin abrir el PDF. No se guarda HTML ni se requiere convertir documentos existentes.

@@ -83,7 +83,7 @@ La última evidencia funcional citada está en REMEDIATION.md. La versión con p
 
 1. Revisar commit/configuración y respaldar antes de migraciones.
 2. En el equipo autorizado con Wrangler autenticado, actualizar código y dependencias.
-3. Aplicar migraciones remotas pendientes; este código requiere hasta **0023_product_images_conditions.sql**.
+3. Aplicar migraciones remotas pendientes; este código requiere hasta **0024_business_website.sql**.
 4. Ejecutar despliegue y comprobación pública.
 
 ```powershell

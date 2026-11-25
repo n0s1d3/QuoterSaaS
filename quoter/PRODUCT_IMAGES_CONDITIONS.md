@@ -1,6 +1,6 @@
 # Imágenes de productos y condiciones del negocio
 
-Requiere migración `0023_product_images_conditions.sql`. Añade `image` nullable a catálogo/partidas y `quote_conditions` JSON nullable a negocios. No modifica las cotizaciones, fotos ni condiciones históricas. Debe aplicarse a la D1 de destino antes de desplegar código que consulte las columnas nuevas.
+Requiere `0023_product_images_conditions.sql` y, para el enlace del logo, `0024_business_website.sql`. Añade `image` nullable a catálogo/partidas y `quote_conditions` JSON nullable a negocios. No modifica las cotizaciones, fotos ni condiciones históricas. Debe aplicarse a la D1 de destino antes de desplegar código que consulte las columnas nuevas.
 
 ## Uso
 
@@ -31,3 +31,11 @@ Las rutas y las búsquedas siguen limitadas al negocio activo; una referencia a 
 ## Verificación
 
 `npm test`, `npm run lint`, `npm run build` y el runner aislado de integración. La suite `products-conditions-smoke` prueba carga desde producto/cotización, fotos históricas, validación, condiciones extensas, fechas, permisos entre negocios, respaldo/restauración 1/2 e idempotencia, PDF y móvil. Las pruebas PDF revisan los cuatro modelos con 100 imágenes y varias páginas. La recuperación D1 comprueba también la migración nueva.
+
+## Logo con sitio web y formato de títulos
+
+`organizations.website` guarda una dirección opcional de hasta 2048 caracteres; solo HTTP/HTTPS, sin credenciales ni caracteres de control. Omitirla en una actualización conserva el valor anterior. Se captura en `branding_snapshot` y se incluye en respaldo/restauración del negocio y documentos. Los snapshots históricos no se actualizan automáticamente.
+
+El logo usa hasta 40 × 40 mm y ajusta el espacio del membrete en cada modelo. Cada página recibe una anotación de enlace exactamente sobre el área de la imagen. No se consulta el destino al generar el PDF. En la app el enlace abre otra pestaña con `noopener noreferrer`.
+
+Los títulos personalizados de hasta 100 caracteres antes del primer «:» de una línea se muestran en negrita; el resto permanece normal y en la misma línea cuando cabe. Se excluyen prefijos de URL y horas. El texto almacenado sigue siendo plano: no se incorpora HTML ni scripts. El renderizador PDF mide los tramos por su fuente y distribuye las líneas antes de paginar, de manera que las continuaciones aprovechan todo el ancho. El editor incluye una vista previa del formato.

@@ -1,6 +1,7 @@
+import {normalizeWebsite} from '../src/lib/website.ts'
 import {test} from 'node:test'
 import assert from 'node:assert/strict'
-import {normalizeQuoteConditions,composeQuoteTerms,quoteExpiryDate} from '../src/lib/quote-conditions.ts'
+import {normalizeQuoteConditions,composeQuoteTerms,quoteExpiryDate,quoteTermSections} from '../src/lib/quote-conditions.ts'
 import {validateProductImage} from '../src/lib/product-image.ts'
 import {productPng} from './image-fixture.mjs'
 test('structured conditions validate private input, preserve complete policies and compose public text without empty sections',()=>{
@@ -15,4 +16,16 @@ test('structured conditions validate private input, preserve complete policies a
 test('product pictures accept only complete bounded raster data, without external or SVG references',async()=>{
  await validateProductImage(productPng())
  for(const image of ['https://example.com/private.png','data:image/svg+xml;base64,PHN2Zy8+','data:image/png;base64,AA==','x'.repeat(60001),productPng(641,2)])await assert.rejects(()=>validateProductImage(image))
+})
+
+test('colon headings include custom labels while URL and time colons remain ordinary values',()=>{
+ const text='Métodos de pago disponibles: Transferencia bancaria\nTiempo de entrega: 10 días hábiles (dependiendo del volumen de compra)\nEnvíos a departamentos: Por medio de Forza, Cargo Expreso o Guatex\nGarantía: 30 días por desperfectos de fabricación.\nReferencia comercial: REF-123\nhttps://example.com:8443/shop\n10:30 horas'
+ const sections=quoteTermSections(text)
+ assert.deepEqual(sections.map(row=>row.title),['Métodos de pago disponibles','Tiempo de entrega','Envíos a departamentos','Garantía','Referencia comercial'])
+ assert.equal(sections[0].text,'Transferencia bancaria');assert.ok(sections[4].text.includes('https://example.com:8443/shop'));assert.ok(sections[4].text.includes('10:30 horas'))
+ assert.deepEqual(quoteTermSections('Texto libre sin encabezado'),[{title:null,text:'Texto libre sin encabezado'}])
+})
+test('business website accepts only explicit HTTP(S) destinations without credentials or control characters',()=>{
+ assert.equal(normalizeWebsite(' https://example.com '),'https://example.com/');assert.equal(normalizeWebsite('http://example.com/shop'),'http://example.com/shop');assert.equal(normalizeWebsite(null),null);assert.equal(normalizeWebsite(''),null)
+ for(const input of ['javascript:alert(1)','data:text/html,hello','file:///tmp/foo','https://user:password@example.com','example.com','https://exam\nple.com','x'.repeat(2049),{}])assert.throws(()=>normalizeWebsite(input))
 })
