@@ -1,3 +1,4 @@
+import {quoteTermSections} from './quote-conditions.ts'
 import {inspectProductImage,validateProductImage,quoteImageLimit} from './product-image.ts'
 import { inspectLogo, validateLogo } from './raster.ts'
 import { jsPDF } from 'jspdf'
@@ -120,7 +121,19 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     body:totals,columnStyles:{1:{halign:'right'}},
     didParseCell:cell=>{if(cell.row.index===totals.length-1){cell.cell.styles.fontStyle='bold';cell.cell.styles.fillColor=corporate?dark:minimal?primary:accent;cell.cell.styles.textColor=ink(corporate?dark:minimal?primary:accent)}},
   })
-  if(quote.paymentTerms)autoTable(doc,{...common,startY:lastY()+8,theme:'plain',head:[['CONDICIONES DE LA COTIZACIÓN']],body:[[quote.paymentTerms]],headStyles:{textColor:text}})
+  if(quote.paymentTerms){
+    let startY=lastY()+8
+    quoteTermSections(quote.paymentTerms).forEach((section,index)=>{
+      autoTable(doc,{
+        ...common,startY,theme:'plain',showHead:'firstPage',
+        head:[...(index===0?[['CONDICIONES DE LA COTIZACIÓN']]:[]),...(section.title?[[section.title+':']]:[])],
+        body:[[section.text]],
+        headStyles:{textColor:text,fontStyle:'bold',cellPadding:{top:1,right:3,bottom:0,left:3}},
+        bodyStyles:{fontStyle:'normal',cellPadding:{top:0,right:3,bottom:2,left:3}},
+      })
+      startY=lastY()+1
+    })
+  }
   const pages=doc.getNumberOfPages()
   for(let page=1;page<=pages;page++){
     doc.setPage(page)
