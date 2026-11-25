@@ -2,7 +2,7 @@ import { isQuoteTemplate } from '../../src/lib/quote-templates.ts'
 import { categoryColumn,currentDate,quoteFilters,summaries } from '../db/quote-filters'
 import type { Account } from '../auth/session'
 import { auditStatement } from '../db/audit'
-import { captureBranding } from '../db/branding'
+import { captureBranding,templateSnapshot } from '../db/branding'
 import { body, HttpError } from '../http'
 import { getQuote, summaryColumns } from '../db/quotes'
 import { createQuote } from '../services/quote-service'
@@ -21,9 +21,10 @@ export async function quotes(request: Request, db: D1Database, org: string, id?:
         if(!isQuoteTemplate(data.quoteTemplate)||!Number.isSafeInteger(data.revision)||(data.revision as number)<0)throw new HttpError(400,'Plantilla o revisión inválida')
         const previous=await getQuote(db,org,id)
         if(!previous.branding)throw new HttpError(409,'Actualiza primero la marca de esta cotización')
+        const snapshot=templateSnapshot(data.quoteTemplate,org)
         const operation=crypto.randomUUID()
         const result=(await db.batch([
-          db.prepare("UPDATE quotes SET branding_snapshot=json_set(branding_snapshot,'$.quoteTemplate',?),revision=revision+1,updated_at=CURRENT_TIMESTAMP,write_token=? WHERE id=? AND organization_id=? AND deleted_at IS NULL AND revision=?").bind(data.quoteTemplate,operation,id,org,data.revision),
+          db.prepare(`UPDATE quotes SET branding_snapshot=${snapshot.sql},revision=revision+1,updated_at=CURRENT_TIMESTAMP,write_token=? WHERE id=? AND organization_id=? AND deleted_at IS NULL AND revision=?`).bind(...snapshot.values,operation,id,org,data.revision),
           ...(actor?[auditStatement(db,actor,'quote.template.updated',id,{template:data.quoteTemplate},{sql:'EXISTS (SELECT 1 FROM quotes WHERE id=? AND organization_id=? AND write_token=?)',values:[id,org,operation]})]:[]),
         ]))[0]
         if(!result.meta.changes)throw new HttpError(409,'La cotización cambió. Recarga antes de cambiar su plantilla.')

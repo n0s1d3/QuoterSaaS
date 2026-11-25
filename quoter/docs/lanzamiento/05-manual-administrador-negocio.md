@@ -132,3 +132,14 @@ El catálogo permite una foto por producto, que se copia como imagen de cada par
 En **Mi negocio → Sitio web**, escribe la dirección completa, por ejemplo `https://tunegocio.com`, y pulsa **Guardar marca**. El logo ampliado enlazará esa dirección en la app y en el PDF. Si dejas el sitio vacío, el logo no llevará enlace.
 
 Las nuevas cotizaciones toman ese sitio; para una anterior, abre su detalle y elige **Actualizar a la marca actual**. Esta acción reemplaza la marca guardada de ese documento. Las condiciones anteriores se conservan. Los títulos antes de dos puntos se presentan automáticamente en negrita, con el contenido normal a continuación; puedes revisar el formato desde el editor o la vista previa del PDF.
+
+## Guardar un diseño personalizado
+
+1. Abre **Mi negocio** y selecciona **Personalizada** en Modelo de cotización.
+2. Pulsa **Encabezado compacto** para reducir espacio o **Encabezado amplio** como alternativa inicial.
+3. Elige estilo base: Corporativa, Clásica o Minimalista. Ajusta posición/tamaño del logo, altura mínima, margen vertical, separación, tamaño del nombre, datos y contenido.
+4. Marca los datos que deseas imprimir en el encabezado. Si el logo ya incluye el nombre del negocio, puedes desmarcar **Mostrar nombre del negocio** para evitar repetirlo.
+5. Abre **Vista previa del PDF** y comprueba el membrete. La altura mínima se amplía si el logo o los datos requieren más espacio; reduce su tamaño o el margen vertical para compactar más.
+6. Pulsa **Guardar marca** para reutilizarlo como modelo predeterminado. Cambiar después a otro modelo conserva los ajustes personalizados.
+
+Las nuevas cotizaciones guardan su propia copia. Los cambios posteriores no reescriben documentos existentes ni alteran partidas, totales o condiciones. Desde el detalle se puede elegir Personalizada conservando la marca anterior; para adoptar la versión actual completa se utiliza **Actualizar a la marca actual**. La selección y los ajustes también se incluyen en el respaldo JSON.

@@ -301,3 +301,13 @@ th { color: var(--muted); }
 .business-logo-link { display: inline-block; max-width: 100%; }
 .conditions-format-preview { margin-block: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
 .conditions-format-preview summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+
+.custom-layout-editor { padding-top: 20px; margin-block: 20px; border-top: 1px solid var(--border); }
+.custom-layout-editor .fields { margin-top: 16px; }
+.custom-layout-editor small { color: var(--muted); }
+.custom-layout-visibility { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+.custom-layout-visibility .checkbox { display: flex; align-items: center; gap: 8px; }
+.custom-layout-visibility input { width: auto; }
+.template-mini-custom .mini-header { height: 24%; background: #151822; border-bottom: 3px solid var(--template-primary); }
+.template-mini-custom .mini-header i { background: #fff; }
+@media(max-width:700px) { .custom-layout-visibility { grid-template-columns: 1fr; } }

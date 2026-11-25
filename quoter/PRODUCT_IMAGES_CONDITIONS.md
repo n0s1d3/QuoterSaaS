@@ -39,3 +39,13 @@ Las rutas y las búsquedas siguen limitadas al negocio activo; una referencia a 
 El logo usa hasta 40 × 40 mm y ajusta el espacio del membrete en cada modelo. Cada página recibe una anotación de enlace exactamente sobre el área de la imagen. No se consulta el destino al generar el PDF. En la app el enlace abre otra pestaña con `noopener noreferrer`.
 
 Los títulos personalizados de hasta 100 caracteres antes del primer «:» de una línea se muestran en negrita; el resto permanece normal y en la misma línea cuando cabe. Se excluyen prefijos de URL y horas. El texto almacenado sigue siendo plano: no se incorpora HTML ni scripts. El renderizador PDF mide los tramos por su fuente y distribuye las líneas antes de paginar, de manera que las continuaciones aprovechan todo el ancho. El editor incluye una vista previa del formato.
+
+## Diseño personalizado
+
+`0025_custom_quote_layout.sql` añade `custom_layout` y `custom_template_active` al negocio. No reconstruye la tabla ni elimina el CHECK anterior de los cuatro estilos: `quote_template` sigue guardando un estilo base permitido y el indicador expone `custom` a la API cuando corresponde.
+
+La configuración tiene estilos base default/minimal/corporate, posición del logo, tamaños numéricos acotados, margen vertical, altura mínima, separación y visibilidad de datos del encabezado. Solo se admiten propiedades conocidas, valores finitos en sus rangos y booleanos. No se reciben HTML, CSS, fuentes ni código del usuario. El PDF calcula el alto necesario para no cortar datos y mantiene enlaces del logo y encabezados al paginar.
+
+La configuración se guarda independientemente de la selección: cambiar a otro modelo no borra los ajustes personalizados. Cada cotización captura una copia; seleccionar custom cuando aún no tiene copia adopta la configuración actual del negocio o los valores compactos predeterminados, sin cambiar nombre/logo/colores del documento. Una copia ya guardada no se reemplaza al cambiar modelos; actualizar la marca es la acción explícita para adoptar la configuración actual completa. Edición y selección mantienen revisión optimista y ámbito del negocio.
+
+La suite `custom-layout-smoke` verifica persistencia, herencia, selección en documentos anteriores, histórico, aislamiento, conflictos, restauración idempotente, editor móvil, vista previa y descarga. Las pruebas PDF cubren tres estilos base y ambas posiciones del logo, visibilidad, enlace, paginación y conservación de importes.

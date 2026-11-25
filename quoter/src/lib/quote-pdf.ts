@@ -1,3 +1,5 @@
+import {resolveCustomLayout} from './custom-layout.ts'
+import {customHeaderGeometry} from './pdf-custom-header.ts'
 import {layoutPdfTerms} from './pdf-terms.ts'
 import {normalizeWebsite} from './website.ts'
 import {inspectProductImage,validateProductImage,quoteImageLimit} from './product-image.ts'
@@ -22,7 +24,9 @@ function ink(color: Color): Color {
 export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
   const website=normalizeWebsite(brand.website)
   const template=resolveQuoteTemplate(brand.quoteTemplate)
-  const lateral=template==='sidebar', minimal=template==='minimal', corporate=template==='corporate'
+  const custom=template==='custom'?resolveCustomLayout(brand.customLayout):null
+  const base=custom?.baseTemplate??template
+  const lateral=base==='sidebar', minimal=base==='minimal', corporate=base==='corporate'
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: false })
   doc.setProperties({ title: `Cotización ${quote.quoteNumber}`, author: brand.name, subject: `Cotización para ${quote.customer.name}` })
   const primary=rgb(brand.primaryColor), accent=rgb(brand.accentColor), dark:Color=[21,24,34], text:Color=[36,42,51]
@@ -34,19 +38,21 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   const contacts=[brand.taxId?`NIT: ${brand.taxId}`:null,brand.address,brand.phone,brand.contactEmail].filter(Boolean).join('\n')
   const allContactLines:string[]=doc.splitTextToSize(contacts,lateral?44:brand.logo?98:145)
   const contactLines = allContactLines.slice(0, 5)
-  const continuedDetails = [...allNameLines.slice(2), ...allContactLines.slice(5)].join('\n')
+  let continuedDetails = [...allNameLines.slice(2), ...allContactLines.slice(5)].join('\n')
   const contactStart=18+(nameLines.length-1)*7+6
   const bandBottom=Math.min(70,Math.max(brand.logo?58:43,contactStart+contactLines.length*4.5+6))
-  const headerBottom=lateral?50:corporate?bandBottom+27:Math.min(70,Math.max(brand.logo?60:50,contactStart+contactLines.length*4.5+8))
+  let headerBottom=lateral?50:corporate?bandBottom+27:Math.min(70,Math.max(brand.logo?60:50,contactStart+contactLines.length*4.5+8))
   let logo: { width: number; height: number } | undefined
-  if (brand.logo) {
+  if (brand.logo && (!custom||custom.showLogo)) {
     // Invalid images cause a visible generation error rather than a silently missing logo.
     inspectLogo(brand.logo)
     const properties = doc.getImageProperties(brand.logo)
     diagnostic('pdf.logo.decodificado', JSON.stringify({ width: properties.width, height: properties.height, format: properties.fileType }))
-    const scale = Math.min(40 / properties.width, 40 / properties.height)
+    const scale = Math.min((custom?.logoSizeMm??40) / properties.width, (custom?.logoSizeMm??40) / properties.height)
     logo = { width: properties.width * scale, height: properties.height * scale }
   }
+  const customHeader=custom?customHeaderGeometry(doc,brand,custom,logo):null
+  if(customHeader){headerBottom=customHeader.bodyTop;continuedDetails=customHeader.continuedDetails}
   if(quote.items.reduce((sum,item)=>sum+(item.image?.length||0),0)>quoteImageLimit)throw new Error('Las imágenes de la cotización superan 500 KB')
   const productImages=new Map<string,{width:number;height:number}>()
   for(const item of quote.items){if(!item.image||productImages.has(item.image))continue;inspectProductImage(item.image);const properties=doc.getImageProperties(item.image),scale=Math.min(26/properties.width,22/properties.height);productImages.set(item.image,{width:properties.width*scale,height:properties.height*scale})}
@@ -56,6 +62,19 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     const page = doc.getCurrentPageInfo().pageNumber
     if (headedPages.has(page)) return
     headedPages.add(page)
+    if(custom&&customHeader){
+      const h=customHeader
+      if(corporate){doc.setFillColor(...dark);doc.rect(0,0,210,h.bandBottom,'F');doc.setFillColor(...primary);doc.rect(0,h.bandBottom,116,2,'F');doc.setFillColor(...accent);doc.rect(116,h.bandBottom,94,1,'F')}
+      else if(!minimal){doc.setFillColor(...accent);doc.rect(0,0,210,h.bandBottom,'F');doc.setFillColor(...primary);doc.rect(0,0,210,2,'F')}
+      else{doc.setDrawColor(...primary);doc.setLineWidth(.5);doc.line(14,h.bandBottom,196,h.bandBottom)}
+      image(h.logoX,h.logoY)
+      doc.setTextColor(...(corporate?[255,255,255] as Color:minimal?text:ink(accent)))
+      doc.setFont('helvetica','bold');doc.setFontSize(custom.nameFontSize);if(h.nameLines.length)doc.text(h.nameLines,h.x,h.nameY,{lineHeightFactor:1.2})
+      doc.setFont('helvetica','normal');doc.setFontSize(custom.contactFontSize);if(h.contactLines.length)doc.text(h.contactLines,h.x,h.contactY,{lineHeightFactor:1.25})
+      doc.setTextColor(...text);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('COTIZACIÓN',14,h.bandBottom+8);doc.text(quote.quoteNumber,196,h.bandBottom+8,{align:'right'})
+      if(quote.status!=='draft'){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(statuses[quote.status]||quote.status,196,h.bandBottom+13,{align:'right'})}
+      return
+    }
     if(lateral){
       doc.setFillColor(...accent);doc.rect(0,0,65,297,'F')
       doc.setFillColor(...primary);doc.rect(0,0,4,297,'F')
@@ -91,7 +110,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   }
   const common = {
     margin: { top: headerBottom, bottom: corporate?25:18, left, right: 14 },
-    styles: { font: 'helvetica', fontSize: lateral?8:10, cellPadding: lateral?2:3, textColor: text, overflow: 'linebreak' as const },
+    styles: { font: 'helvetica', fontSize: custom?.bodyFontSize??(lateral?8:10), cellPadding: lateral?2:3, textColor: text, overflow: 'linebreak' as const },
     willDrawPage: header,
   }
   const lastY=()=> (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY
@@ -113,7 +132,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     body:quote.items.map(item=>[item.description+`\nUnidad: ${item.unit||'unidad'}`+(item.duration?` · Tiempo: ${item.duration}`:'')+(item.validUntil?`\nVigencia: ${item.validUntil}`:''),String(item.quantity),formatMoney(item.unitPrice),formatMoney(item.lineTotal)]),
     didParseCell:cell=>{if(cell.section==='body'&&cell.column.index===0&&quote.items[cell.row.index]?.image)cell.cell.styles.cellPadding={top:28,right:lateral?2:3,bottom:lateral?2:3,left:lateral?2:3}},
     didDrawCell:cell=>{const item=quote.items[cell.row.index];if(cell.section==='body'&&cell.column.index===0&&item?.image){const image=productImages.get(item.image)!;doc.addImage(item.image,cell.cell.x+3,cell.cell.y+3,image.width,image.height)}},
-    headStyles:{fillColor:corporate?dark:primary,textColor:corporate?[255,255,255]:ink(primary),fontSize:lateral?7:10},
+    headStyles:{fillColor:corporate?dark:primary,textColor:corporate?[255,255,255]:ink(primary),fontSize:custom?.bodyFontSize??(lateral?7:10)},
     alternateRowStyles:{fillColor:minimal?[241,242,244]:[246,248,247]},
     columnStyles:{0:{cellWidth:lateral?54:88},1:{cellWidth:lateral?16:22,halign:'right'},2:{cellWidth:lateral?24:36,halign:'right'},3:{cellWidth:lateral?24:36,halign:'right'}},
   })
@@ -124,7 +143,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     didParseCell:cell=>{if(cell.row.index===totals.length-1){cell.cell.styles.fontStyle='bold';cell.cell.styles.fillColor=corporate?dark:minimal?primary:accent;cell.cell.styles.textColor=ink(corporate?dark:minimal?primary:accent)}},
   })
   if(quote.paymentTerms){
-    const fontSize=lateral?8:10,lines=layoutPdfTerms(doc,quote.paymentTerms,width-6,fontSize)
+    const fontSize=custom?.bodyFontSize??(lateral?8:10),lines=layoutPdfTerms(doc,quote.paymentTerms,width-6,fontSize)
     const lineHeight=fontSize*1.15/doc.internal.scaleFactor
     autoTable(doc,{
       ...common,startY:lastY()+8,theme:'plain',showHead:'firstPage',head:[['CONDICIONES DE LA COTIZACIÓN']],

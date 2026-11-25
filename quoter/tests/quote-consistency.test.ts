@@ -1,3 +1,4 @@
+import {compactQuoteLayout} from '../src/lib/custom-layout.ts'
 import {productPng} from './image-fixture.mjs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -130,5 +131,23 @@ test('product images and conditions freeze on quotes, inherit only on creation a
   const without=await createQuote(state.db,'org',{...input,expiryDate:null,items:[{...input.items[0],image:null}]});assert.equal(without.items[0].image,null);assert.equal(without.expiryDate,null)
   await assert.rejects(()=>createQuote(state.db,'org',{...input,items:[{...input.items[0],catalogItemId:'other-catalog'}]}),rejected(400))
   await assert.rejects(()=>createQuote(state.db,'org',{...input,items:[{...input.items[0],image:'https://other.example/image.png'}]}),rejected(400))
+ }finally{state.sqlite.close()}
+})
+
+test('custom layout selection freezes its configuration without changing organization template constraints or previous quotes',async()=>{
+ const state=fixture();try{
+  state.sqlite.prepare('UPDATE organizations SET custom_layout=?,custom_template_active=1,quote_template=? WHERE id=?').run(JSON.stringify(compactQuoteLayout),'corporate','org')
+  const original=await createQuote(state.db,'org',input)
+  assert.equal(original.branding.quoteTemplate,'custom');assert.deepEqual(original.branding.customLayout,compactQuoteLayout)
+  const updated={...compactQuoteLayout,logoSizeMm:40,headerMinHeightMm:58}
+  state.sqlite.prepare('UPDATE organizations SET custom_layout=? WHERE id=?').run(JSON.stringify(updated),'org')
+  assert.deepEqual((await getQuote(state.db,'org',original.id)).branding.customLayout,compactQuoteLayout)
+  const edited=await createQuote(state.db,'org',{...input,revision:original.revision,quoteTemplate:'custom'},original.id)
+  assert.deepEqual(edited.branding.customLayout,compactQuoteLayout);assert.equal(edited.total,original.total)
+  const next=await createQuote(state.db,'org',input);assert.deepEqual(next.branding.customLayout,updated)
+  state.sqlite.exec("UPDATE organizations SET custom_layout=NULL,custom_template_active=0 WHERE id='org'")
+  const override=await createQuote(state.db,'org',{...input,quoteTemplate:'custom'});assert.deepEqual(override.branding.customLayout,compactQuoteLayout)
+  state.beforeBatch(()=>state.sqlite.prepare('UPDATE organizations SET custom_layout=?,name=? WHERE id=?').run(JSON.stringify(updated),'Concurrent business','org'))
+  const raced=await createQuote(state.db,'org',{...input,quoteTemplate:'custom'});assert.deepEqual(raced.branding.customLayout,updated);assert.equal(raced.branding.name,'Concurrent business')
  }finally{state.sqlite.close()}
 })

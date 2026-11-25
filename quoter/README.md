@@ -44,7 +44,7 @@ Los comandos individuales `test:api`, `test:auth`, etc. siguen disponibles para 
 ## Comportamiento relevante
 
 - Cotizaciones: totales calculados por servidor, revisión obligatoria al editar y respuesta 409 cuando otra edición cambió el documento. El formulario conserva el borrador ante conflicto y permite recargar explícitamente.
-- PDF: cuatro modelos (Clásica, Lateral, Minimalista y Corporativa), vista previa, membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. El estado «Borrador» se conserva en la app y no se imprime en el PDF ni en su vista previa. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
+- PDF: cuatro modelos base (Clásica, Lateral, Minimalista y Corporativa) y Personalizada, vista previa, membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. El estado «Borrador» se conserva en la app y no se imprime en el PDF ni en su vista previa. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
 - Borradores: advertencia antes de salir, volver, cambiar de negocio o cerrar sesión. No se guardan documentos privados en almacenamiento del navegador.
 - Catálogo y clientes: búsqueda y carga por páginas. El catálogo conserva tarifas archivadas en las cotizaciones existentes.
 - JSON: exportación formato 2 con imágenes compartidas deduplicadas; admite formato 1. La revisión valida logos por lotes y la restauración conserva identidades/fechas originales de registros nuevos. Límites: 8 MiB y 2000 registros por archivo. Las bases mayores requieren respaldo del operador.
@@ -102,7 +102,7 @@ Aplicar `0022_billing_periods.sql` antes del despliegue. Los cupos y los siete d
 
 Aplicar `0023_product_images_conditions.sql` antes de desplegar esta actualización. En desarrollo local: `npm run db:migrate`. En producción, después de respaldar y verificar el destino: `npx wrangler d1 migrations apply quoter-db --remote`, seguido de `npm run deploy`.
 
-En Catálogo se puede cargar una imagen opcional al crear o editar un producto. También puede cargarse o quitarse directamente en una partida de la cotización. La imagen se optimiza localmente; aparece en el detalle, la vista previa y los cuatro modelos PDF. Cada partida guarda su propia copia: cambiar el catálogo no modifica las fotos de documentos anteriores.
+En Catálogo se puede cargar una imagen opcional al crear o editar un producto. También puede cargarse o quitarse directamente en una partida de la cotización. La imagen se optimiza localmente; aparece en el detalle, la vista previa y los modelos base y Personalizada. Cada partida guarda su propia copia: cambiar el catálogo no modifica las fotos de documentos anteriores.
 
 Mi negocio incluye condiciones editables por grupos: pagos/datos bancarios, entrega/envío, garantía/validez y asesor. Los campos vacíos no se imprimen. La opción **Completar campos vacíos con ejemplo** incorpora envío a departamentos Q40, garantía de 30 días, una política editable y 15 días de validez; no inventa cuentas bancarias ni correos. Revisar esos valores antes de guardar. Los costos de envío escritos como condición son informativos; para sumarlos al total hay que agregarlos como partida.
 
@@ -117,3 +117,11 @@ Aplicar `0024_business_website.sql` antes de desplegar. En **Mi negocio → Siti
 Las nuevas cotizaciones capturan ese sitio junto con la marca. Las anteriores conservan la dirección histórica; para aplicar el sitio nuevo usar **Actualizar a la marca actual** y volver a descargar el PDF. La exportación/restauración JSON incluye el sitio y valida que no contenga protocolos ejecutables ni credenciales.
 
 Las condiciones reconocen títulos personalizados al inicio de una línea, seguidos de dos puntos: `Título: contenido`. El título se imprime en negrita y el contenido normal en la misma línea, con ajuste y paginación a todo el ancho. Las direcciones URL y horas conservan sus dos puntos como contenido. **Ver formato de las condiciones**, en el editor de cotizaciones, permite revisar el resultado sin abrir el PDF. No se guarda HTML ni se requiere convertir documentos existentes.
+
+## Modelo de cotización Personalizada
+
+Aplicar `0025_custom_quote_layout.sql` antes de desplegar. En **Mi negocio → Modelo de cotización → Personalizada**, ajustar estilo base (Corporativa, Clásica o Minimalista), logo a izquierda/derecha, tamaño, margen vertical, altura mínima, separación antes del cliente, tipografía y datos visibles del negocio. **Encabezado compacto** ofrece un punto de partida para reducir la franja superior; **Encabezado amplio** permite compararlo con una presentación más espaciosa.
+
+Usar **Vista previa del PDF** para comprobar el resultado y **Guardar marca** para conservar el diseño como predeterminado. Se puede ocultar el nombre si ya aparece dentro del logo. La altura mínima se amplía para acomodar logo y datos; el contenido largo visible continúa en el cuerpo. No cambia partidas, importes ni condiciones.
+
+Las nuevas cotizaciones toman una copia del diseño guardado. Cambiar la configuración del negocio no reescribe documentos anteriores. Desde el detalle se puede seleccionar Personalizada para una cotización existente, conservando su marca e importes; si ya tiene ajustes guardados, se conservan. **Actualizar a la marca actual** permite adoptar explícitamente la versión actual completa de la marca y el diseño. El respaldo JSON conserva la selección y cada configuración histórica.

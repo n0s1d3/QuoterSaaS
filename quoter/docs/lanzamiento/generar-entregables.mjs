@@ -16,7 +16,7 @@ const navigation='<div class="doc-nav"><a href="index.html">Índice de documenta
 for(const file of [...files,'README.md']){
  const source=join(root,file),name=file==='README.md'?'index':basename(file,'.md'),title=readFileSync(source,'utf8').split('\n')[0].replace(/^# /,'')
  let html=execFileSync('pandoc',[source,'--from=gfm','--to=html5','--standalone','--toc','--toc-depth=2','--metadata','lang=es-GT','--metadata','title='+title,'--include-in-header',join(out,'documentos.css.html')],{encoding:'utf8',maxBuffer:4*1024*1024})
- html=html.replace('<body>','<body>'+navigation).replace('</body>','<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Versión de referencia: base 44e2561 y actualizaciones hasta esquema 0024; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>')
+ html=html.replace('<body>','<body>'+navigation).replace('</body>','<footer class="doc-footer">Quoter · Documento del 19 de octubre de 2026. Versión de referencia: base 44e2561 y actualizaciones hasta esquema 0025; decisiones comerciales pendientes de aprobación. Material interno salvo los manuales de cliente destinados a su rol.</footer></body>')
  html=html.replace(/href="([^"#]+\.md)(#[^"]*)?"/g,(_,target,hash='')=>{
   if(/^[a-z][a-z0-9+.-]*:/i.test(target)||target.startsWith('//'))return `href="${target}${hash}"`
   const base=basename(target)

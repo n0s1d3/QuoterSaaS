@@ -175,7 +175,7 @@ En Catálogo puedes agregar una imagen opcional al guardar o editar un producto.
 
 También puedes usar **Imagen de la partida** para cargar, reemplazar o quitar una foto solamente en ese documento. PNG, JPEG o WebP de hasta 10 MB se optimizan automáticamente. Espera a que termine la carga antes de guardar. Si hay demasiadas imágenes para una cotización, reduce la cantidad o usa archivos más pequeños.
 
-Las fotos se muestran en el detalle, la vista previa y los cuatro modelos de PDF. Cambiar la foto del catálogo no cambia las cotizaciones guardadas. Editar una cotización conserva la foto anterior hasta que la cambies expresamente.
+Las fotos se muestran en el detalle, la vista previa y los modelos base y Personalizada. Cambiar la foto del catálogo no cambia las cotizaciones guardadas. Editar una cotización conserva la foto anterior hasta que la cambies expresamente.
 
 Las condiciones guardadas por el propietario —pagos, banco, entrega, envío, garantía, validez y asesor— se incorporan a las nuevas cotizaciones. Puedes ajustar el texto público en **Condiciones de pago** antes de guardar. La validez configurada en días calcula el vencimiento; puedes elegir otra fecha. Revisa que fecha y texto de validez coincidan. Los costos de envío escritos en condiciones no se suman automáticamente: agrega una partida de envío para incluirlos en el total.
 
@@ -186,3 +186,9 @@ Las cotizaciones anteriores conservan las condiciones que tenían. Las notas int
 Escribe cada condición como **Título: contenido**, al inicio de una línea. El texto anterior a los dos puntos aparece en negrita; el contenido continúa en letra normal, en la misma línea si cabe. Se admiten títulos propios. Abre **Ver formato de las condiciones** en el editor para revisar el resultado; el cuadro de edición conserva texto simple.
 
 El logo se muestra más grande y permite visitar el sitio web que el propietario guardó en Mi negocio. El vínculo también está disponible en el logo del PDF, en todas sus páginas. Las cotizaciones guardadas conservan el sitio de su marca; usa **Actualizar a la marca actual** cuando debas aplicar una dirección nueva y vuelve a descargar el PDF.
+
+### Usar el modelo Personalizada
+
+El propietario puede guardar un diseño reutilizable desde Mi negocio. Las nuevas cotizaciones lo seleccionan automáticamente si es el predeterminado. También puedes elegir **Personalizada** en el formulario o el detalle de una cotización. La opción conserva la marca e importes del documento y usa su copia del diseño cuando ya existe; de lo contrario, toma los ajustes guardados del negocio.
+
+Cambiar el diseño del negocio no modifica las cotizaciones anteriores. Para adoptar la marca y diseño actuales en un documento anterior, utiliza **Actualizar a la marca actual** y revisa su vista previa antes de descargarlo.

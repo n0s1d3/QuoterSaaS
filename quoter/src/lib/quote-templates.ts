@@ -3,6 +3,7 @@ export const quoteTemplates = [
   { id: 'sidebar', name: 'Lateral', description: 'Una columna de marca acompaña el contenido.' },
   { id: 'minimal', name: 'Minimalista', description: 'Fondo blanco, líneas limpias y filas suaves.' },
   { id: 'corporate', name: 'Corporativa', description: 'Franjas oscuras con acentos de tu marca.' },
+  { id: 'custom', name: 'Personalizada', description: 'Tu encabezado, tamaños y datos guardados en Mi negocio.' },
 ] as const
 export type QuoteTemplate = typeof quoteTemplates[number]['id']
 export function isQuoteTemplate(value: unknown): value is QuoteTemplate {
