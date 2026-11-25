@@ -168,3 +168,15 @@ Llegar al cupo no elimina datos. Consulta al propietario para revisar uso o ampl
 ## 12. Práctica para completar la capacitación
 
 Con un negocio de demostración: verificar la cuenta; guardar tres tarifas; crear una cotización con dos partidas, descuento y adicional; diferenciar condiciones de pago de notas internas; generar PDF; cambiar estado a Enviada; duplicarla y reconocer el nuevo número; buscarla; cerrar sesión. El usuario termina cuando puede repetir el flujo sin que el instructor opere su cuenta.
+
+## Actualización: fotos y condiciones de la cotización
+
+En Catálogo puedes agregar una imagen opcional al guardar o editar un producto. Selecciona **Imagen del producto**, espera la optimización y pulsa **Guardar partida**. La foto aparece en el catálogo y se copia al elegir esa partida en una cotización.
+
+También puedes usar **Imagen de la partida** para cargar, reemplazar o quitar una foto solamente en ese documento. PNG, JPEG o WebP de hasta 10 MB se optimizan automáticamente. Espera a que termine la carga antes de guardar. Si hay demasiadas imágenes para una cotización, reduce la cantidad o usa archivos más pequeños.
+
+Las fotos se muestran en el detalle, la vista previa y los cuatro modelos de PDF. Cambiar la foto del catálogo no cambia las cotizaciones guardadas. Editar una cotización conserva la foto anterior hasta que la cambies expresamente.
+
+Las condiciones guardadas por el propietario —pagos, banco, entrega, envío, garantía, validez y asesor— se incorporan a las nuevas cotizaciones. Puedes ajustar el texto público en **Condiciones de pago** antes de guardar. La validez configurada en días calcula el vencimiento; puedes elegir otra fecha. Revisa que fecha y texto de validez coincidan. Los costos de envío escritos en condiciones no se suman automáticamente: agrega una partida de envío para incluirlos en el total.
+
+Las cotizaciones anteriores conservan las condiciones que tenían. Las notas internas permanecen fuera del PDF. El estado «Borrador» sirve para tu organización dentro de la app y no aparece en el PDF descargado. Para obtener este formato, vuelve a descargar archivos antiguos después de actualizar la app.

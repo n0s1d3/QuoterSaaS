@@ -1,6 +1,7 @@
+import { validateProductImage,productImageLimit } from '../../src/lib/product-image.ts'
 import { body, HttpError, text } from '../http.ts'
 import { listQuery,listSearch } from '../db/list-query.ts'
-const columns = 'c.id,c.name,c.description,c.unit_price AS unitPrice,c.unit,c.category,c.duration,c.valid_until AS validUntil,c.reviewed_at AS reviewedAt,c.stale_after_days AS staleAfterDays,c.active'
+const columns = 'c.id,c.image,c.name,c.description,c.unit_price AS unitPrice,c.unit,c.category,c.duration,c.valid_until AS validUntil,c.reviewed_at AS reviewedAt,c.stale_after_days AS staleAfterDays,c.active'
 export async function catalog(request: Request, db: D1Database, org: string, id?: string) {
   if (request.method === 'GET' && !id) {
     const url=new URL(request.url),{paged,limit,offset,search}=listQuery(url),conditions=['c.organization_id=?'],values:unknown[]=[org]
@@ -34,7 +35,10 @@ export async function catalog(request: Request, db: D1Database, org: string, id?
   if (!Number.isSafeInteger(data.unitPrice) || (data.unitPrice as number)<0 || !Number.isInteger(data.staleAfterDays) || (data.staleAfterDays as number)<1 || (data.staleAfterDays as number)>3650) throw new HttpError(400,'Precio o intervalo de revisión inválido')
   const reviewedAt = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guatemala',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
   const itemId=id || crypto.randomUUID()
-  if (id) await db.prepare('UPDATE catalog_items SET name=?,description=?,category=?,unit=?,duration=?,valid_until=?,unit_price=?,stale_after_days=?,reviewed_at=?,active=? WHERE id=? AND organization_id=?').bind(name,description,category,unit,duration,validUntil,data.unitPrice,data.staleAfterDays,reviewedAt,data.active===false?0:1,itemId,org).run()
-  else await db.prepare('INSERT INTO catalog_items (id,organization_id,name,description,category,unit,duration,valid_until,unit_price,stale_after_days,reviewed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(itemId,org,name,description,category,unit,duration,validUntil,data.unitPrice,data.staleAfterDays,reviewedAt).run()
+  const previous=id?await db.prepare('SELECT image FROM catalog_items WHERE id=? AND organization_id=?').bind(id,org).first<{image:string|null}>():null
+  const image=data.image===undefined?previous?.image||null:text(data.image,'Imagen del producto',false,productImageLimit)
+  try{await validateProductImage(image)}catch(e){throw new HttpError(400,(e as Error).message)}
+  if (id) await db.prepare('UPDATE catalog_items SET image=?,name=?,description=?,category=?,unit=?,duration=?,valid_until=?,unit_price=?,stale_after_days=?,reviewed_at=?,active=? WHERE id=? AND organization_id=?').bind(image,name,description,category,unit,duration,validUntil,data.unitPrice,data.staleAfterDays,reviewedAt,data.active===false?0:1,itemId,org).run()
+  else await db.prepare('INSERT INTO catalog_items (id,organization_id,name,description,category,unit,duration,valid_until,unit_price,stale_after_days,reviewed_at,image) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').bind(itemId,org,name,description,category,unit,duration,validUntil,data.unitPrice,data.staleAfterDays,reviewedAt,image).run()
   return Response.json(await db.prepare(`SELECT ${columns} FROM catalog_items c WHERE c.id=? AND c.organization_id=?`).bind(itemId,org).first(),{status:id?200:201})
 }

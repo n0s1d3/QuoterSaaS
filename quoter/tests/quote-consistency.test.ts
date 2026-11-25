@@ -1,3 +1,4 @@
+import {productPng} from './image-fixture.mjs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync,readdirSync } from 'node:fs'
@@ -86,7 +87,7 @@ test('100 quote items validate catalog references together and insert once with 
  const state=fixture();try {
   const items=Array.from({length:100},(_,index)=>({description:'Item '+index,quantity:index+0.125,unitPrice:100,catalogItemId:'catalog',unit:'hora',duration:'2 horas',validUntil:'2026-12-31'}))
   const quote=await createQuote(state.db,'org',{...input,items})
-  assert.equal(state.queries.filter(sql=>sql.startsWith('SELECT id FROM catalog_items')).length,1)
+  assert.equal(state.queries.filter(sql=>sql.startsWith('SELECT id,image FROM catalog_items')).length,1)
   assert.equal(state.batches.at(-1)!.filter(sql=>sql.startsWith('INSERT INTO quote_items')).length,1)
   assert.equal(state.batches.at(-1)!.length,6)
   assert.equal(quote.items.length,100)
@@ -111,5 +112,23 @@ test('saving terms, surcharge and template only changes the targeted quote, incl
   assert.deepEqual(await getQuote(state.db,'org',one.id),one)
   assert.deepEqual(await getQuote(state.db,'other',foreign.id),foreign)
   const saved=await getQuote(state.db,'org',two.id);assert.equal(saved.paymentTerms,'Edited terms');assert.equal(saved.surcharge,40);assert.equal(saved.branding.quoteTemplate,'default')
+ }finally{state.sqlite.close()}
+})
+
+test('product images and conditions freeze on quotes, inherit only on creation and remain tenant scoped',async()=>{
+ const state=fixture();try{
+  const image=productPng(),replacement=productPng(2,2,50)
+  state.sqlite.prepare('UPDATE catalog_items SET image=? WHERE id=?').run(image,'catalog')
+  state.sqlite.prepare('UPDATE organizations SET payment_terms=?,quote_conditions=? WHERE id=?').run('Original term',JSON.stringify({validityDays:15,warrantyPolicy:'Policy '.repeat(500),departmentShipping:'Cargo Expreso — Q40.00'}),'org')
+  const original=await createQuote(state.db,'org',{...input,paymentTerms:undefined})
+  assert.equal(original.items[0].image,image);assert.equal(original.expiryDate,'2026-10-29');assert.ok(original.paymentTerms.includes('Policy '.repeat(500).trim()));assert.ok(original.paymentTerms.includes('Q40.00'))
+  state.sqlite.prepare('UPDATE catalog_items SET image=? WHERE id=?').run(replacement,'catalog')
+  state.sqlite.prepare('UPDATE organizations SET quote_conditions=? WHERE id=?').run(JSON.stringify({warranty:'New warranty',validityDays:30}),'org')
+  const edited=await createQuote(state.db,'org',{...input,paymentTerms:undefined,revision:original.revision},original.id)
+  assert.equal(edited.items[0].image,image);assert.equal(edited.paymentTerms,original.paymentTerms);assert.equal(edited.expiryDate,original.expiryDate);assert.equal(edited.total,original.total)
+  const next=await createQuote(state.db,'org',{...input,paymentTerms:undefined});assert.equal(next.items[0].image,replacement);assert.ok(next.paymentTerms.includes('New warranty'));assert.equal(next.expiryDate,'2026-11-13')
+  const without=await createQuote(state.db,'org',{...input,expiryDate:null,items:[{...input.items[0],image:null}]});assert.equal(without.items[0].image,null);assert.equal(without.expiryDate,null)
+  await assert.rejects(()=>createQuote(state.db,'org',{...input,items:[{...input.items[0],catalogItemId:'other-catalog'}]}),rejected(400))
+  await assert.rejects(()=>createQuote(state.db,'org',{...input,items:[{...input.items[0],image:'https://other.example/image.png'}]}),rejected(400))
  }finally{state.sqlite.close()}
 })

@@ -1,6 +1,6 @@
 # Lanzamiento y documentación de Quoter
 
-Preparado el **19 de octubre de 2026**, horario de Guatemala. Mercado: Guatemala; moneda: quetzales. Presupuesto de marketing elegido: Q300–Q1,000 mensuales; piloto recomendado: Q300 antes de ampliar gasto. Versión funcional revisada: base `44e2561` y ampliación de periodos, esquema hasta `0022_billing_periods.sql` (requiere despliegue).
+Preparado el **19 de octubre de 2026**, horario de Guatemala. Mercado: Guatemala; moneda: quetzales. Presupuesto de marketing elegido: Q300–Q1,000 mensuales; piloto recomendado: Q300 antes de ampliar gasto. Versión funcional revisada: base `44e2561` y ampliación de periodos, esquema hasta `0023_product_images_conditions.sql` (requiere despliegue).
 
 Este paquete documenta lo que existe y propone cómo comercializarlo. **Incluye precios y periodos de la app, sin configurar anuncios, automatizar cobros ni publicar políticas legales.** Los importes base de venta y descuentos están definidos para esta versión; la publicación y obligaciones tributarias requieren revisión. Las tarifas de proveedores son presupuestos de referencia, pendientes de validación en sus paneles.
 
@@ -62,3 +62,7 @@ La versión con 0022 añade 1/3/6/12 meses y descuentos 0/5/10/15 %, con tarifa 
 Las tasas propuestas de conversión, devolución y renovación son sensibilidades, no estadísticas de clientes reales ni datos privados de competidores. El código, documentos y calculadora se verifican antes de publicar; producción no se modifica desde este entorno.
 
 Verificación de la ampliación: 94 pruebas unitarias, tipos/build/lint, 21 suites de integración y recuperación D1 aprobados; doce HTML y diez PDF comprobados. La verificación no confirma demanda de mercado ni cambia producción.
+
+## Actualización: imágenes y condiciones
+
+Los manuales 04 y 05 incluyen imágenes de producto/partida y los grupos de condiciones públicas del negocio. Esta actualización requiere esquema `0023_product_images_conditions.sql` y desplegar el código correspondiente. Las versiones HTML/PDF y el ZIP se regeneraron con estos cambios.

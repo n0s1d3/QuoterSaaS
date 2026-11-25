@@ -45,12 +45,12 @@ test('Accepted multiline letterheads stay bounded and paginate complete business
 
 for(const quoteTemplate of ['default','sidebar','minimal','corporate'] as const){
  test(`${quoteTemplate}: client PDF omits draft label, preserves amounts, privacy, logo and pagination`,()=>{
-  const input={...quote,status:'draft',notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment conditions. '.repeat(150),items:Array.from({length:100},(_,i)=>({...quote.items[0],description:`Service ${i+1} description spanning multiple lines and defining the full scope of work.`}))}
+  const input={...quote,status:'draft',notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment conditions. '.repeat(150),items:Array.from({length:100},(_,i)=>({...quote.items[0],image:png(),description:`Service ${i+1} description spanning multiple lines and defining the full scope of work.`}))}
   const original=JSON.stringify(input),events:string[]=[]
   const templateBrand={...brand,quoteTemplate}
   const pdf=createQuotePdf(input,{...templateBrand,logo:png()},event=>events.push(event)),output=pdf.output()
   assert.ok(output.includes('Service 100'));assert.ok(output.includes('Q 690.00'));assert.ok(output.includes('Public payment'));assert.ok(!output.includes(input.notes));assert.ok(!output.includes('(Borrador)'));assert.equal(JSON.stringify(input),original)
-  assert.ok(pdf.getNumberOfPages()>2);assert.ok(pdf.getNumberOfPages()<60)
+  assert.ok((output.match(/\/I\d+ Do/g)||[]).length>=100+pdf.getNumberOfPages());assert.ok(pdf.getNumberOfPages()>2);assert.ok(pdf.getNumberOfPages()<60)
   for(let page=1;page<=pdf.getNumberOfPages();page++)assert.ok(pdf.internal.pages[page].join('\n').includes('(Empresa PDF)'))
   assert.throws(()=>createQuotePdf(quote,{...templateBrand,logo:'data:image/png;base64,invalid'}))
   assert.equal(events.filter(event=>event==='pdf.logo.incrustado').length,pdf.getNumberOfPages())

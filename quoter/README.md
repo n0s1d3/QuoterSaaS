@@ -1,6 +1,6 @@
 # Quoter
 
-MicroSaaS de cotizaciones en español con React, TypeScript, Vite y Cloudflare Workers/D1. Incluye cuentas y negocios separados, catálogo, PDF con membrete, planes P2P de 1, 3, 6 y 12 meses, administración con MFA, historial, papelera y respaldos.
+MicroSaaS de cotizaciones en español con React, TypeScript, Vite y Cloudflare Workers/D1. Incluye cuentas y negocios separados, catálogo con imágenes de producto, PDF con membrete y condiciones del negocio, planes P2P de 1, 3, 6 y 12 meses, administración con MFA, historial, papelera y respaldos.
 
 La identidad visual de la plataforma utiliza el concepto [Conecta](BRAND_IDENTITY.md), con un símbolo SVG compartido por acceso, navegación y favicon.
 
@@ -97,3 +97,15 @@ Paquete preparado el 19 de octubre de 2026: [estado de lanzamiento, marketing, c
 Base mensual GTQ por negocio: Plan 1 Q49, Plan 2 Q89 y Plan 3 Q149. Periodos 1/3/6/12 meses con 0/5/10/15 % de descuento. Plan y uso muestra el pago total anticipado, ahorro y equivalente mensual. El maestro elige periodo al verificar el pago P2P; el servidor registra duración y tarifa. Una misma referencia solo se reutiliza si coinciden negocio, plan y periodo. Las activaciones anteriores conservan sus fechas y no se inventan sus tarifas históricas. Para el operador: `npm run plan:activate -- --business ID --plan 1 --months 12 --reference REFERENCIA --operator operador@correo.com --remote`.
 
 Aplicar `0022_billing_periods.sql` antes del despliegue. Los cupos y los siete días de prueba no cambian; no hay cargo automático ni devoluciones bancarias integradas. El estudio de mercado distingue hechos consultados, páginas bloqueadas y escenarios hipotéticos; no atribuye tasas privadas de conversión a competidores.
+
+## Imágenes y condiciones de cotización
+
+Aplicar `0023_product_images_conditions.sql` antes de desplegar esta actualización. En desarrollo local: `npm run db:migrate`. En producción, después de respaldar y verificar el destino: `npx wrangler d1 migrations apply quoter-db --remote`, seguido de `npm run deploy`.
+
+En Catálogo se puede cargar una imagen opcional al crear o editar un producto. También puede cargarse o quitarse directamente en una partida de la cotización. La imagen se optimiza localmente; aparece en el detalle, la vista previa y los cuatro modelos PDF. Cada partida guarda su propia copia: cambiar el catálogo no modifica las fotos de documentos anteriores.
+
+Mi negocio incluye condiciones editables por grupos: pagos/datos bancarios, entrega/envío, garantía/validez y asesor. Los campos vacíos no se imprimen. La opción **Completar campos vacíos con ejemplo** incorpora envío a departamentos Q40, garantía de 30 días, una política editable y 15 días de validez; no inventa cuentas bancarias ni correos. Revisar esos valores antes de guardar. Los costos de envío escritos como condición son informativos; para sumarlos al total hay que agregarlos como partida.
+
+Las nuevas cotizaciones toman los valores guardados. La validez en días calcula el vencimiento si no se elige otra fecha. Se puede personalizar el texto público desde el formulario; las cotizaciones anteriores conservan sus condiciones al editarse o actualizar su marca. Las notas siguen siendo internas y «Borrador» no se imprime.
+
+Origen de imagen PNG/JPEG/WebP hasta 10 MB y 16 megapíxeles. Se normaliza a un máximo de 480 px y 60 000 caracteres; la API exige imagen raster completa, sin URLs externas ni SVG, máximo 640 px. Las partidas de una cotización admiten 500 000 caracteres de imágenes en total. Las condiciones públicas admiten hasta 12 000 caracteres. El respaldo JSON 2 deduplica fotos y logos; la restauración admite formatos 1 y 2 y conserva imágenes, condiciones y fechas. Más detalle: [PRODUCT_IMAGES_CONDITIONS.md](PRODUCT_IMAGES_CONDITIONS.md).

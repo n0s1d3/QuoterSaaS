@@ -1,3 +1,5 @@
+import { composeQuoteTerms,quoteTermsLimit,quoteExpiryDate,type QuoteConditions } from '../../src/lib/quote-conditions.ts'
+import { validateProductImage,productImageLimit,quoteImageLimit } from '../../src/lib/product-image.ts'
 import { isQuoteTemplate } from '../../src/lib/quote-templates.ts'
 import { auditStatement } from '../db/audit.ts'
 import type { Account } from '../auth/session'
@@ -22,13 +24,14 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
   const customerId = text(data.customerId, 'Customer', true, 100)!
   if (!await findCustomer(db, org, customerId)) throw new HttpError(400, 'El cliente no pertenece a este negocio')
   const issueDate = date(data.issueDate, 'Issue date', true)
-  const expiryDate = date(data.expiryDate, 'Expiration date')
+  const defaults=await db.prepare('SELECT payment_terms AS paymentTerms,quote_conditions AS quoteConditions FROM organizations WHERE id=?').bind(org).first<{paymentTerms:string|null;quoteConditions:string|null}>()
+  const conditions:QuoteConditions|null=defaults?.quoteConditions?JSON.parse(defaults.quoteConditions):null
+  const expiryDate = date(data.expiryDate===undefined?(previous?.expiryDate??(!previous?quoteExpiryDate(issueDate!,conditions?.validityDays):null)):data.expiryDate, 'Expiration date')
   if (expiryDate && expiryDate < issueDate!) throw new HttpError(400, 'El vencimiento es anterior a la emisión')
-  const defaults=await db.prepare('SELECT payment_terms AS paymentTerms FROM organizations WHERE id=?').bind(org).first<{paymentTerms:string|null}>()
-  const paymentTerms=data.paymentTerms!==undefined?text(data.paymentTerms,'Payment terms',false,2000):previous?previous.paymentTerms:defaults?.paymentTerms||null
+  const paymentTerms=data.paymentTerms!==undefined?text(data.paymentTerms,'Payment terms',false,quoteTermsLimit):previous?previous.paymentTerms:composeQuoteTerms(defaults?.paymentTerms,conditions)
   const notes = text(data.notes, 'Notes', false, 10000)
   if (!Array.isArray(data.items) || !data.items.length || data.items.length > 100) throw new HttpError(400, 'Agrega entre 1 y 100 partidas')
-  const items = data.items.map((raw: unknown) => {
+  const items = data.items.map((raw: unknown,index:number) => {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, 'Partida inválida')
     const item = raw as Record<string, unknown>
     const description = text(item.description, 'Description', true, 2000)!
@@ -37,13 +40,20 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     const unit=text(item.unit,'Unit',false,50) || 'unidad'
     const duration=text(item.duration,'Duration',false,200)
     const validUntil=date(item.validUntil,'Item validity')
-    return { description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: 0, catalogItemId, unit, duration, validUntil }
+    const prior=previous?.items.find((row:{id?:string})=>typeof item.id==='string'&&row.id===item.id)||previous?.items[index]
+    const image=item.image===undefined?(previous?(prior?.catalogItemId===catalogItemId?prior?.image||null:null):undefined):text(item.image,'Imagen del producto',false,productImageLimit)
+    return { image, description, quantity: item.quantity, unitPrice: item.unitPrice, taxRate: 0, catalogItemId, unit, duration, validUntil }
   })
   const catalogIds = [...new Set(items.map(item => item.catalogItemId).filter((id): id is string => id !== null))]
+  let catalogImages=new Map<string,string|null>()
   if (catalogIds.length) {
-    const matches = await db.prepare('SELECT id FROM catalog_items WHERE organization_id=? AND id IN (SELECT value FROM json_each(?))').bind(org, JSON.stringify(catalogIds)).all<{id:string}>()
+    const matches = await db.prepare('SELECT id,image FROM catalog_items WHERE organization_id=? AND id IN (SELECT value FROM json_each(?))').bind(org, JSON.stringify(catalogIds)).all<{id:string;image:string|null}>()
+    catalogImages=new Map(matches.results.map(row=>[row.id,row.image]))
     if (matches.results.length !== catalogIds.length) throw new HttpError(400, 'La partida del catálogo no pertenece a este negocio')
   }
+  for(const item of items)if(item.image===undefined)item.image=item.catalogItemId?catalogImages.get(item.catalogItemId)||null:null
+  if(items.reduce((sum,item)=>sum+(item.image?.length||0),0)>quoteImageLimit)throw new HttpError(400,'Las imágenes de la cotización superan 500 KB. Usa menos fotos o imágenes más pequeñas.')
+  try{for(const image of new Set(items.map(item=>item.image).filter(Boolean)))await validateProductImage(image)}catch(e){throw new HttpError(400,(e as Error).message)}
   const additional = { type: (data.surchargeType ?? 'none') as 'none' | 'fixed' | 'percent', value: (data.surchargeValue ?? 0) as number }
   let totals
   try { totals = calculateQuote(items, data.discount === undefined ? 0 : data.discount as number, additional) } catch (error) { throw new HttpError(400, (error as Error).message) }
@@ -65,8 +75,8 @@ export async function createQuote(db: D1Database, org: string, data: Record<stri
     db.prepare(`UPDATE quotes SET surcharge_type=?,surcharge_value=?,surcharge=? WHERE id=? AND organization_id=? AND ${gate}`).bind(additional.type,additional.value,totals.surcharge,id,org,...gateValues),
     ...(!existingId ? [captureBranding(db, org, id)] : []),
     ...(data.quoteTemplate !== undefined ? [db.prepare(`UPDATE quotes SET branding_snapshot=json_set(branding_snapshot,'$.quoteTemplate',?) WHERE id=? AND organization_id=? AND ${gate} AND branding_snapshot IS NOT NULL`).bind(data.quoteTemplate,id,org,...gateValues)] : []),
-    db.prepare(`INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order, catalog_item_id, unit, duration, valid_until)
-      SELECT json_extract(value,'$.id'), ?, json_extract(value,'$.description'), json_extract(value,'$.quantity'), json_extract(value,'$.unitPrice'), json_extract(value,'$.taxRate'), json_extract(value,'$.lineSubtotal'), json_extract(value,'$.lineTax'), json_extract(value,'$.lineTotal'), CAST(key AS INTEGER), json_extract(value,'$.catalogItemId'), json_extract(value,'$.unit'), json_extract(value,'$.duration'), json_extract(value,'$.validUntil')
+    db.prepare(`INSERT INTO quote_items (id, quote_id, description, quantity, unit_price, tax_rate, line_subtotal, line_tax, line_total, sort_order, catalog_item_id, unit, duration, valid_until, image)
+      SELECT json_extract(value,'$.id'), ?, json_extract(value,'$.description'), json_extract(value,'$.quantity'), json_extract(value,'$.unitPrice'), json_extract(value,'$.taxRate'), json_extract(value,'$.lineSubtotal'), json_extract(value,'$.lineTax'), json_extract(value,'$.lineTotal'), CAST(key AS INTEGER), json_extract(value,'$.catalogItemId'), json_extract(value,'$.unit'), json_extract(value,'$.duration'), json_extract(value,'$.validUntil'), json_extract(value,'$.image')
       FROM json_each(?) WHERE ${gate}`).bind(id,JSON.stringify(totals.items.map(item=>({...item,id:crypto.randomUUID()}))),...gateValues),
     ...(actor ? [auditStatement(db,actor,existingId?'quote.edited':'quote.created',id,{}, {sql:gate,values:gateValues})] : []),
   ]

@@ -280,3 +280,15 @@ th { color: var(--muted); }
 
 .mfa-session-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; color: var(--muted); font-size: 12px; }
 .mfa-session-summary button { padding: 8px 10px; font-size: 12px; }
+
+.product-image-field { margin-block: 14px; min-width: 0; }
+.product-image-field small { display: block; color: var(--muted); line-height: 1.5; }
+.product-image-preview { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.product-image-preview img, .quote-product-image { display: block; width: 112px; height: 96px; object-fit: contain; background: #fff; border-radius: 8px; padding: 5px; max-width: 100%; }
+.catalog-product-image { display: block; width: 100%; height: 140px; object-fit: contain; background: #fff; border-radius: 8px; margin-block: 12px; padding: 8px; }
+.catalog-option-image { width: 64px; height: 64px; display: block; object-fit: contain; background: #fff; border-radius: 6px; margin-top: 8px; }
+.quote-product-image { margin-bottom: 8px; }
+.quote-conditions-settings { margin-block: 28px; border-top: 1px solid var(--border); padding-top: 20px; }
+.conditions-group { margin-block: 22px; }
+.conditions-group h3 { font-size: 15px; }
+.conditions-wide { grid-column: 1 / -1; }

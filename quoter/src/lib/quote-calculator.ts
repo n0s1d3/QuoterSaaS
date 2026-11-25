@@ -1,4 +1,4 @@
-export interface ItemInput { description: string; quantity: number; unitPrice: number; taxRate: number; catalogItemId?: string | null; unit?: string; duration?: string | null; validUntil?: string | null }
+export interface ItemInput { image?: string | null; description: string; quantity: number; unitPrice: number; taxRate: number; catalogItemId?: string | null; unit?: string; duration?: string | null; validUntil?: string | null }
 export interface CalculatedItem extends ItemInput { lineSubtotal: number; lineTax: number; lineTotal: number }
 function fraction(value: number): [bigint, bigint] {
   const [coefficient, exponent = '0'] = value.toString().split('e')

@@ -109,3 +109,20 @@ En el detalle puede abrirse **Historial de la cotización**. En **Datos y recupe
 Para soporte, comparte ID del negocio, número de documento si es indispensable, hora, acción y referencia del error. Recorta capturas; no envíes el JSON, contenido del cliente o contraseñas por canales abiertos. La cuenta maestra gestiona accesos/planes sin entrar a tus cotizaciones.
 
 Lista mensual del propietario: revisar accesos e invitaciones; actualizar tarifas; revisar vencimiento; exportar copia; controlar documentos en papelera; confirmar que la marca y condiciones siguen vigentes. Designa a una persona responsable de renovar: la app no cobra ni manda recordatorios comerciales automáticos.
+
+## Actualización: condiciones del negocio e imágenes
+
+En **Mi negocio → Condiciones de la Cotización**, configura los grupos siguientes:
+
+| Grupo | Datos |
+| --- | --- |
+| Pagos | Plazo de pago, métodos disponibles y transferencia: titular, tipo de cuenta, número y banco |
+| Entrega y envío | Tiempo de entrega, precio de envío y servicio/costo a departamentos |
+| Garantía y validez | Resumen de garantía, política completa, texto de validez y días predeterminados |
+| Asesor | Nombre y correo de contacto |
+
+Los campos son opcionales y solo se imprimen los que completes. La política admite texto largo. **Completar campos vacíos con ejemplo** ayuda a preparar envío Q40, garantía de 30 días y validez de 15 días; conserva los campos ya escritos y sustituye «Negocio» por el nombre configurado. Revisa y ajusta el ejemplo; después pulsa **Guardar marca**. Los datos bancarios y del asesor deben completarse con la información real del negocio.
+
+La configuración se aplica a nuevas cotizaciones; las condiciones de documentos anteriores se conservan incluso al cambiar su marca. Los costos de envío de esta sección son texto informativo y deben agregarse como partida para formar parte del total.
+
+El catálogo permite una foto por producto, que se copia como imagen de cada partida al cotizar. Las fotos guardadas se mantienen aunque cambies o archives el catálogo. Los permisos de creación/edición y la vigencia del negocio siguen aplicando. Los respaldos JSON incluyen estas imágenes y condiciones; protegen también datos bancarios, por lo que deben manejarse como archivos privados.

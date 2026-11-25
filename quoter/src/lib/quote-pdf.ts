@@ -1,3 +1,4 @@
+import {inspectProductImage,validateProductImage,quoteImageLimit} from './product-image.ts'
 import { inspectLogo, validateLogo } from './raster.ts'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
@@ -43,6 +44,9 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     const scale = Math.min(28 / properties.width, 28 / properties.height)
     logo = { width: properties.width * scale, height: properties.height * scale }
   }
+  if(quote.items.reduce((sum,item)=>sum+(item.image?.length||0),0)>quoteImageLimit)throw new Error('Las imágenes de la cotización superan 500 KB')
+  const productImages=new Map<string,{width:number;height:number}>()
+  for(const item of quote.items){if(!item.image||productImages.has(item.image))continue;inspectProductImage(item.image);const properties=doc.getImageProperties(item.image),scale=Math.min(26/properties.width,22/properties.height);productImages.set(item.image,{width:properties.width*scale,height:properties.height*scale})}
   const headedPages = new Set<number>()
   function image(x:number,y:number){if(brand.logo&&logo){doc.addImage(brand.logo,x,y,logo.width,logo.height);diagnostic('pdf.logo.incrustado',`Página ${doc.getCurrentPageInfo().pageNumber}; ${logo.width.toFixed(1)} × ${logo.height.toFixed(1)} mm`)}}
   function header() {
@@ -104,6 +108,8 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
   autoTable(doc,{
     ...common,startY:lastY()+6,theme:'striped',head:[['Descripción','Cantidad','Precio unitario','Importe']],
     body:quote.items.map(item=>[item.description+`\nUnidad: ${item.unit||'unidad'}`+(item.duration?` · Tiempo: ${item.duration}`:'')+(item.validUntil?`\nVigencia: ${item.validUntil}`:''),String(item.quantity),formatMoney(item.unitPrice),formatMoney(item.lineTotal)]),
+    didParseCell:cell=>{if(cell.section==='body'&&cell.column.index===0&&quote.items[cell.row.index]?.image)cell.cell.styles.cellPadding={top:28,right:lateral?2:3,bottom:lateral?2:3,left:lateral?2:3}},
+    didDrawCell:cell=>{const item=quote.items[cell.row.index];if(cell.section==='body'&&cell.column.index===0&&item?.image){const image=productImages.get(item.image)!;doc.addImage(item.image,cell.cell.x+3,cell.cell.y+3,image.width,image.height)}},
     headStyles:{fillColor:corporate?dark:primary,textColor:corporate?[255,255,255]:ink(primary),fontSize:lateral?7:10},
     alternateRowStyles:{fillColor:minimal?[241,242,244]:[246,248,247]},
     columnStyles:{0:{cellWidth:lateral?54:88},1:{cellWidth:lateral?16:22,halign:'right'},2:{cellWidth:lateral?24:36,halign:'right'},3:{cellWidth:lateral?24:36,halign:'right'}},
@@ -114,7 +120,7 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     body:totals,columnStyles:{1:{halign:'right'}},
     didParseCell:cell=>{if(cell.row.index===totals.length-1){cell.cell.styles.fontStyle='bold';cell.cell.styles.fillColor=corporate?dark:minimal?primary:accent;cell.cell.styles.textColor=ink(corporate?dark:minimal?primary:accent)}},
   })
-  if(quote.paymentTerms)autoTable(doc,{...common,startY:lastY()+8,theme:'plain',head:[['CONDICIONES DE PAGO']],body:[[quote.paymentTerms]],headStyles:{textColor:text}})
+  if(quote.paymentTerms)autoTable(doc,{...common,startY:lastY()+8,theme:'plain',head:[['CONDICIONES DE LA COTIZACIÓN']],body:[[quote.paymentTerms]],headStyles:{textColor:text}})
   const pages=doc.getNumberOfPages()
   for(let page=1;page<=pages;page++){
     doc.setPage(page)
@@ -126,5 +132,6 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
 }
 export async function downloadQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: (event: string, detail: string) => void = () => {}) {
   await validateLogo(brand.logo)
+  for(const image of new Set(quote.items.map(item=>item.image).filter(Boolean)))await validateProductImage(image)
   createQuotePdf(quote,brand,diagnostic).save(`${quote.quoteNumber.replace(/[^a-zA-Z0-9_-]/g,'_')}.pdf`)
 }
