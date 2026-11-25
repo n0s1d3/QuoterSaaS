@@ -78,7 +78,8 @@ export function createQuotePdf(quote: QuoteDetail, brand: Branding, diagnostic: 
     const titleY=corporate?bandBottom+14:16
     doc.text('COTIZACIÓN',corporate?14:196,titleY,{align:corporate?'left':'right'})
     doc.setFontSize(corporate?12:14);doc.text(quote.quoteNumber,196,corporate?titleY:24,{align:'right'})
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(statuses[quote.status]||quote.status,196,corporate?titleY+7:32,{align:'right'})
+    // Draft is an internal workflow state, not a label for the client document.
+    if(quote.status!=='draft'){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(statuses[quote.status]||quote.status,196,corporate?titleY+7:32,{align:'right'})}
     if(minimal){doc.setDrawColor(...primary);doc.setLineWidth(0.5);doc.line(14,headerBottom-4,196,headerBottom-4)}
   }
   const common = {

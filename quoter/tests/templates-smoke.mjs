@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 import { base,testAccount } from './auth-client.mjs'
 const account=await testAccount(),other=await testAccount()
 async function call(path,data,method='POST',status=200,user=account){const response=await user.request(base+'/api'+path,data===undefined?{}:{method,body:JSON.stringify(data)});assert.equal(response.status,status,await response.clone().text());return response.json()}
 const profile=await call('/branding'),customer=await call('/customers',{name:'Template customer'},'POST',201)
 const input={customerId:customer.id,issueDate:'2026-10-17',notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment terms',items:[{description:'Template service',quantity:1,unitPrice:10000}]}
-const original=await call('/quotes',input,'POST',201);assert.equal(original.branding.quoteTemplate,'default')
+const original=await call('/quotes',input,'POST',201);assert.equal(original.branding.quoteTemplate,'default');assert.equal(original.status,'draft')
 await call('/branding',{...profile,quoteTemplate:'unknown'},'PUT',400)
 await call('/branding',{...profile,quoteTemplate:'sidebar'},'PUT')
 const inherited=await call('/quotes',input,'POST',201);assert.equal(inherited.branding.quoteTemplate,'sidebar')
@@ -27,20 +28,33 @@ assert.equal((await call('/branding',undefined,'GET',200,other)).quoteTemplate,'
 const restored=await call('/backups/export',undefined,'GET',200,other)
 assert.deepEqual(restored.quotes.map(q=>JSON.parse(q.branding_snapshot).quoteTemplate).sort(),exported.quotes.map(q=>JSON.parse(q.branding_snapshot).quoteTemplate).sort())
 const browser=await chromium.launch({...(process.env.QUOTER_BROWSER_PATH?{executablePath:process.env.QUOTER_BROWSER_PATH}:{}),headless:true})
+async function checkPreview(page){
+ const frame=page.locator('dialog iframe');await frame.waitFor();const url=await frame.getAttribute('src');assert.ok(url.startsWith('blob:'))
+ const pdf=await page.evaluate(url=>window.readPreviewPdf(url),url)
+ assert.ok(pdf.startsWith('%PDF-'));assert.ok(!pdf.includes('(Borrador)'))
+}
 try{
  const context=await browser.newContext({viewport:{width:1280,height:900}}),page=await context.newPage(),errors=[],violations=[]
- page.on('pageerror',error=>errors.push(error.message));await page.exposeFunction('recordCsp',directive=>violations.push(directive));await page.addInitScript(()=>document.addEventListener('securitypolicyviolation',event=>window.recordCsp(event.violatedDirective)))
+ page.on('pageerror',error=>errors.push(error.message));await page.exposeFunction('recordCsp',directive=>violations.push(directive));await page.addInitScript(()=>{
+  document.addEventListener('securitypolicyviolation',event=>window.recordCsp(event.violatedDirective))
+  // Inspect the actual preview Blob without a fetch blocked by connect-src CSP.
+  const blobs=new Map(),create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL)
+  URL.createObjectURL=blob=>{const url=create(blob);if(blob instanceof Blob)blobs.set(url,blob);return url}
+  URL.revokeObjectURL=url=>{blobs.delete(url);revoke(url)}
+  window.readPreviewPdf=url=>{const blob=blobs.get(url);if(!blob)throw new Error('Missing preview Blob');return blob.text()}
+ })
  const [name,...value]=account.cookie().split('=');await context.addCookies([{name,value:value.join('='),url:base,httpOnly:true,sameSite:'Strict'}])
  await page.goto(base+'/settings');await page.getByRole('radio',{name:/^Corporativa/}).waitFor()
- await page.getByRole('radio',{name:/^Minimalista/}).check();await page.getByRole('button',{name:'Vista previa del PDF',exact:true}).click();await page.locator('dialog iframe').waitFor();assert.ok((await page.locator('dialog iframe').getAttribute('src')).startsWith('blob:'));await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'})
+ await page.getByRole('radio',{name:/^Minimalista/}).check();await page.getByRole('button',{name:'Vista previa del PDF',exact:true}).click();await checkPreview(page);await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'})
  await page.getByRole('button',{name:'Guardar marca',exact:true}).click();await page.getByRole('status').filter({hasText:'Marca guardada.'}).waitFor();assert.equal((await call('/branding')).quoteTemplate,'minimal')
  await page.goto(base+'/quotes/'+original.id);await page.getByRole('radio',{name:/^Lateral/}).waitFor();await page.getByRole('radio',{name:/^Corporativa/}).check();await page.getByText('Modelo actualizado.',{exact:false}).waitFor();assert.equal((await call('/quotes/'+original.id)).branding.name,profile.name)
- await page.getByRole('button',{name:'Vista previa del PDF',exact:true}).click();await page.locator('dialog iframe').waitFor();await page.getByRole('button',{name:'Cerrar vista previa'}).click()
+ await page.getByRole('button',{name:'Vista previa del PDF',exact:true}).click();await checkPreview(page);await page.getByRole('button',{name:'Cerrar vista previa'}).click()
  const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Descargar PDF',exact:true}).click();const download=await downloading;assert.equal(download.suggestedFilename(),original.quoteNumber+'.pdf');assert.equal(await download.failure(),null)
+ const pdf=readFileSync(await download.path(),'latin1');assert.ok(pdf.startsWith('%PDF-'));assert.ok(!pdf.includes('(Borrador)'));assert.equal((await call('/quotes/'+original.id)).status,'draft')
  for(const width of [375,768,1280]){
   await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'responsive layout at '+width)
  }
  await page.getByRole('button',{name:'Editar cotización',exact:true}).click();await page.getByRole('radio',{name:/^Corporativa/}).waitFor();await page.getByRole('radio',{name:/^Minimalista/}).check();await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();await page.getByRole('heading',{name:original.quoteNumber,exact:true}).waitFor();assert.equal((await call('/quotes/'+original.id)).branding.quoteTemplate,'minimal')
  assert.deepEqual(errors,[]);assert.deepEqual(violations,[])
- console.log('Templates passed: four layouts, business default and per-quote selection, frozen branding, optimistic concurrency, tenant isolation, backup roundtrip, browser preview/download, editing and mobile widths.')
+ console.log('Templates passed: four layouts, business default and per-quote selection, frozen branding, optimistic concurrency, tenant isolation, backup roundtrip, draft-free browser preview/download with internal draft status preserved, editing and mobile widths.')
 }finally{await browser.close()}

@@ -44,7 +44,7 @@ Los comandos individuales `test:api`, `test:auth`, etc. siguen disponibles para 
 ## Comportamiento relevante
 
 - Cotizaciones: totales calculados por servidor, revisión obligatoria al editar y respuesta 409 cuando otra edición cambió el documento. El formulario conserva el borrador ante conflicto y permite recargar explícitamente.
-- PDF: cuatro modelos (Clásica, Lateral, Minimalista y Corporativa), vista previa, membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
+- PDF: cuatro modelos (Clásica, Lateral, Minimalista y Corporativa), vista previa, membrete, logo, datos de empresa y condiciones de pago; **las notas internas no se exportan al PDF**. El estado «Borrador» se conserva en la app y no se imprime en el PDF ni en su vista previa. Los datos largos de empresa continúan fuera del membrete para mantener espacio útil.
 - Borradores: advertencia antes de salir, volver, cambiar de negocio o cerrar sesión. No se guardan documentos privados en almacenamiento del navegador.
 - Catálogo y clientes: búsqueda y carga por páginas. El catálogo conserva tarifas archivadas en las cotizaciones existentes.
 - JSON: exportación formato 2 con imágenes compartidas deduplicadas; admite formato 1. La revisión valida logos por lotes y la restauración conserva identidades/fechas originales de registros nuevos. Límites: 8 MiB y 2000 registros por archivo. Las bases mayores requieren respaldo del operador.

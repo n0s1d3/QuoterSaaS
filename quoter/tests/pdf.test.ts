@@ -7,7 +7,7 @@ const brand: Branding = { name: 'Empresa PDF', logo: null, primaryColor: '#24684
 const quote: QuoteDetail = { id:'pdf-test',quoteNumber:'Q-0042',status:'sent',customerName:'Juan Pérez',issueDate:'2026-10-12',expiryDate:'2026-10-26',customer:{id:'customer',name:'Juan Pérez',company:'JP Electric',phone:'5555-1111',email:'juan@example.com',address:null,taxId:null},items:[{description:'Instalación eléctrica',quantity:2,unitPrice:35000,taxRate:0,lineSubtotal:70000,lineTax:0,lineTotal:70000}],subtotal:70000,tax:0,discount:1000,total:69000,notes:'Pago al finalizar.' }
 test('PDF uses company and authoritative quote totals without mutating input',()=>{
   const original=JSON.stringify(quote);const doc=createQuotePdf(quote,brand);const output=doc.output()
-  assert.ok(output.startsWith('%PDF-'));assert.ok(output.includes('Empresa PDF'));assert.ok(output.includes('Q-0042'));assert.ok(output.includes('Q 690.00'));assert.equal(doc.getNumberOfPages(),1);assert.equal(JSON.stringify(quote),original)
+  assert.ok(output.startsWith('%PDF-'));assert.ok(output.includes('Empresa PDF'));assert.ok(output.includes('Q-0042'));assert.ok(output.includes('Q 690.00'));assert.ok(output.includes('(Enviada)'));assert.equal(doc.getNumberOfPages(),1);assert.equal(JSON.stringify(quote),original)
 })
 test('Long quotes and payment terms paginate and repeat letterhead',()=>{
   const long={...quote,items:Array.from({length:100},(_,i)=>({...quote.items[0],description:`Servicio ${i+1}: descripción extensa que ocupa varias líneas en la cotización y detalla el alcance del trabajo.`})),paymentTerms:'Condiciones adicionales. '.repeat(700)}
@@ -44,12 +44,12 @@ test('Accepted multiline letterheads stay bounded and paginate complete business
 })
 
 for(const quoteTemplate of ['default','sidebar','minimal','corporate'] as const){
- test(`${quoteTemplate}: consistent amounts, privacy, repeated logo and complete pagination`,()=>{
-  const input={...quote,notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment conditions. '.repeat(150),items:Array.from({length:100},(_,i)=>({...quote.items[0],description:`Service ${i+1} description spanning multiple lines and defining the full scope of work.`}))}
+ test(`${quoteTemplate}: client PDF omits draft label, preserves amounts, privacy, logo and pagination`,()=>{
+  const input={...quote,status:'draft',notes:'PRIVATE_TEMPLATE_NOTES',paymentTerms:'Public payment conditions. '.repeat(150),items:Array.from({length:100},(_,i)=>({...quote.items[0],description:`Service ${i+1} description spanning multiple lines and defining the full scope of work.`}))}
   const original=JSON.stringify(input),events:string[]=[]
   const templateBrand={...brand,quoteTemplate}
   const pdf=createQuotePdf(input,{...templateBrand,logo:png()},event=>events.push(event)),output=pdf.output()
-  assert.ok(output.includes('Service 100'));assert.ok(output.includes('Q 690.00'));assert.ok(output.includes('Public payment'));assert.ok(!output.includes(input.notes));assert.equal(JSON.stringify(input),original)
+  assert.ok(output.includes('Service 100'));assert.ok(output.includes('Q 690.00'));assert.ok(output.includes('Public payment'));assert.ok(!output.includes(input.notes));assert.ok(!output.includes('(Borrador)'));assert.equal(JSON.stringify(input),original)
   assert.ok(pdf.getNumberOfPages()>2);assert.ok(pdf.getNumberOfPages()<60)
   for(let page=1;page<=pdf.getNumberOfPages();page++)assert.ok(pdf.internal.pages[page].join('\n').includes('(Empresa PDF)'))
   assert.throws(()=>createQuotePdf(quote,{...templateBrand,logo:'data:image/png;base64,invalid'}))
